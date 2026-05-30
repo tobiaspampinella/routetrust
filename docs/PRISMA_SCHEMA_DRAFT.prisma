@@ -1,0 +1,10 @@
+# Prisma Schema Draft
+
+Status: [AWAITING_HUMAN_APPROVAL]
+
+Canonical schema file:
+
+- `prisma/schema.prisma`
+
+Do not run migrations until the CEO/founder approves the schema. This doc exists to keep prior references stable; the executable Prisma schema lives in `prisma/schema.prisma`.
+

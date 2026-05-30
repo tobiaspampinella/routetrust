@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+  routes    Route[]
+  drivers   Driver[]
+}
+
+model User {
+  id        String   @id @default(uuid())
+  tenantId  String
+  email     String   @unique
+  password  String
+  role      String   @default("VIEWER")
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+}
+
+model Driver {
+  id         String    @id @default(uuid())
+  tenantId   String
+  name       String
+  phone      String?
+  status     String    @default("available")
+  currentLat Float?
+  currentLng Float?
+  lastSeenAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  tenant     Tenant    @relation(fields: [tenantId], references: [id])
+  routes     Route[]
+
+  @@index([tenantId])
+}
+
+model Route {
+  id               String      @id @default(uuid())
+  tenantId         String
+  status           String      @default("draft")
+  driverId         String?
+  estimatedMinutes Int?
+  slaDeadline      DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  tenant           Tenant      @relation(fields: [tenantId], references: [id])
+  driver           Driver?     @relation(fields: [driverId], references: [id])
+  stops            RouteStop[]
+
+  @@index([tenantId])
+  @@index([status])
+}
+
+model RouteStop {
+  id          String    @id @default(uuid())
+  routeId     String
+  address     String
+  lat         Float
+  lng         Float
+  sequence    Int
+  status      String    @default("pending")
+  arrivedAt   DateTime?
+  completedAt DateTime?
+  route       Route     @relation(fields: [routeId], references: [id])
+
+  @@index([routeId])
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  tenantId     String
+  actorId      String
+  actorRole    String
+  action       String
+  module       String
+  resourceId   String?
+  resourceType String?
+  timestamp    DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([timestamp])
+}
+

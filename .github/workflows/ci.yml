@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+      - staging
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      DATABASE_URL: postgresql://postgres:postgres_dev@localhost:5432/logistics_db
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci_change_this_min_32_chars_value
+      JWT_REFRESH_SECRET: ci_refresh_this_min_32_chars_value
+      ROUTEPULSE_DEMO_SECRET: ci_demo_this_min_32_chars_value
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_MAP_PROVIDER: maplibre
+      DEMO_MODE: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
