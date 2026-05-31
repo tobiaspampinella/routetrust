@@ -13,11 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NEXT_TELEMETRY_DISABLED: "1"
-      DATABASE_URL: postgresql://postgres:postgres_dev@localhost:5432/logistics_db
+      DATABASE_URL: postgresql://localhost:5432/logistics_db
       REDIS_URL: redis://localhost:6379
-      JWT_SECRET: ci_change_this_min_32_chars_value
-      JWT_REFRESH_SECRET: ci_refresh_this_min_32_chars_value
-      ROUTEPULSE_DEMO_SECRET: ci_demo_this_min_32_chars_value
+      JWT_SECRET: ci-placeholder-not-a-secret
+      JWT_REFRESH_SECRET: ci-placeholder-not-a-secret
+      ROUTEPULSE_DEMO_SECRET: ci-placeholder-not-a-secret
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_PUBLIC_MAP_PROVIDER: maplibre
       DEMO_MODE: "true"
@@ -28,6 +28,7 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
-      - run: npm run lint
       - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
       - run: npm run build

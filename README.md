@@ -1,8 +1,33 @@
-# RoutePulse AI Web Tester
+# RoutePulse AI
 
 AI-built, human-orchestrated Operational Intelligence Platform for logistics operations.
 
-This project is a restored beta foundation for a SaaS B2B logistics platform. It is built with AI assistance and human strategic oversight; it is not positioned as fully autonomous software and it does not replace human operators.
+RoutePulse AI is a restored beta foundation for an AI-built, human-orchestrated SaaS B2B logistics platform. It is AI-built with human strategic oversight: the system supports operational teams with route simulation, tracking, SLA visibility, driver workflows and admin intelligence, while humans approve critical operational decisions.
+
+It is not positioned as a full ERP or a replacement for logistics operators.
+
+## Beta SaaS Controlada v0.1
+
+RoutePulse AI is being stabilized as **RoutePulse SaaS Beta**, a controlled B2B SaaS beta for logistics teams. Current scope is not a full TMS or ERP. The working product is a Next.js beta with local/demo state, protected admin and driver flows, customer tracking demo, CMS beta modules, QA/CX bug intake, and pure ETA/KPI simulation logic.
+
+Commercially usable positioning:
+
+- Control tower lite for last-mile operations.
+- Human-approved operational intelligence, not autonomous replacement of operators.
+- Role-oriented beta for Admin, Operations, Customer Experience, Customer Success, Finance/CFO, Direction, Driver and external tracking.
+- Explicit limits where backend persistence, tenant isolation, billing, advanced AI and realtime collaboration are still pending.
+
+## Suggested GitHub Topics
+
+`logistics`, `saas`, `b2b`, `operational-intelligence`, `route-simulation`, `tracking`, `fleet-management`, `human-in-the-loop`, `ai-built`, `nextjs`, `typescript`, `telegram-bot`, `maplibre`, `google-maps`
+
+## Repository Status
+
+- Product stage: beta recovery and stabilization.
+- Primary stack: Next.js, TypeScript, Tailwind CSS, Prisma.
+- Package manager: npm.
+- Human-in-the-loop: required for releases, route approvals, tenant changes and permission changes.
+- Secrets policy: `.env` files and provider tokens must never be committed.
 
 ## New PC Restore Status
 
@@ -66,6 +91,17 @@ Muchas operaciones logisticas pequenas y medianas en LatAm trabajan con choferes
 
 ## Como correr
 
+On this Windows machine, global `npm` is not available in PATH. Use the local Codex Node/npm wrapper documented in `docs/ENVIRONMENT_SETUP.md`:
+
+```powershell
+$nodeDir='C:\Users\tobii\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin'
+$node=Join-Path $nodeDir 'node.exe'
+$npmCli='C:\Users\tobii\.codex\tmp\npm-cli\package\bin\npm-cli.js'
+$env:PATH="$nodeDir;$env:PATH"
+& $node $npmCli install
+& $node $npmCli run dev
+```
+
 Desde la raiz del workspace:
 
 ```bash
@@ -87,6 +123,25 @@ Luego abre:
 http://localhost:3000/login
 ```
 
+Validation commands:
+
+```powershell
+& $node $npmCli run typecheck
+& $node $npmCli test
+& $node $npmCli run lint
+& $node $npmCli run build
+& $node $npmCli audit --omit=dev
+```
+
+Current verified status for Beta SaaS Controlada v0.1 baseline:
+
+- `typecheck`: passing.
+- `test`: passing, 6 Node test-runner tests.
+- `lint`: passing.
+- `build`: passing.
+- `audit --omit=dev`: failing due critical Next.js advisory and moderate PostCSS advisory. This blocks serious publication until Phase 2 dependency hardening.
+- `dev`: expected at `http://localhost:3000` after `npm run dev`.
+
 ### Mapa real opcional
 
 Para activar calles reales, rutas y trafico en el tracking demo:
@@ -106,8 +161,8 @@ Luego reinicia `npm run dev`. Sin esa clave, el demo sigue funcionando con fallb
 Variables reservadas para siguientes integraciones:
 
 ```txt
-NEXT_PUBLIC_MAP_PROVIDER=local
-OPENROUTESERVICE_API_KEY=
+NEXT_PUBLIC_MAP_PROVIDER=maplibre
+NEXT_PUBLIC_OPENROUTE_API_KEY=
 ```
 
 ## Usuarios demo
@@ -172,6 +227,11 @@ No usan APIs externas ni IA real. Son funciones puras para validar el flujo de p
 
 - No hay backend real.
 - No hay WebSockets.
+- No hay persistencia productiva para CMS, bug reports, audit logs, tenants, approvals, incidents or roles.
+- Prisma schema exists, but main app flows still use local state and mock data.
+- Tenant isolation is not proven against a real database.
+- Auth is still demo-grade and must be hardened before production.
+- Production dependency audit currently reports a critical Next.js advisory.
 - El mapa real requiere `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`; sin clave se usa fallback local.
 - Apple MapKit y OpenRouteService no estan integrados todavia.
 - No hay app movil nativa.
