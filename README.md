@@ -139,7 +139,7 @@ Current verified status for Beta SaaS Controlada v0.1 baseline:
 - `test`: passing, 6 Node test-runner tests.
 - `lint`: passing.
 - `build`: passing.
-- `audit --omit=dev`: failing due critical Next.js advisory and moderate PostCSS advisory. This blocks serious publication until Phase 2 dependency hardening.
+- `audit --omit=dev --audit-level=critical`: passing after Next.js/PostCSS dependency refresh.
 - `dev`: expected at `http://localhost:3000` after `npm run dev`.
 
 ### Mapa real opcional
@@ -231,7 +231,7 @@ No usan APIs externas ni IA real. Son funciones puras para validar el flujo de p
 - Prisma schema exists, but main app flows still use local state and mock data.
 - Tenant isolation is not proven against a real database.
 - Auth is still demo-grade and must be hardened before production.
-- Production dependency audit currently reports a critical Next.js advisory.
+- Production dependency audit critical check currently passes after Next.js/PostCSS dependency refresh.
 - El mapa real requiere `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`; sin clave se usa fallback local.
 - Apple MapKit y OpenRouteService no estan integrados todavia.
 - No hay app movil nativa.
