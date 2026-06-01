@@ -58,18 +58,11 @@ http://localhost:3000
 
 ## Usuarios disponibles hoy
 
-La web tester actual todavia usa el login demo local existente para admin/driver:
+La web tester actual usa credenciales demo locales para admin/driver.
 
-- Admin web tester: `admin@demo.com` / `admin123`
-- Driver 1 web tester: `driver1@demo.com` / `driver123`
-- Driver 2 web tester: `driver2@demo.com` / `driver123`
+Las credenciales concretas fueron movidas a `docs/DEMO_LOCAL_ONLY.md` para evitar publicarlas en la documentacion general del repositorio.
 
-El seed Prisma crea usuarios futuros para backend:
-
-- `admin@demo.com` / `Admin1234!`
-- `dispatcher@demo.com` / `Demo1234!`
-
-El backend NestJS real todavia no esta construido, por eso esos usuarios Prisma seran usados a partir del siguiente ciclo.
+El backend NestJS real todavia no esta construido, por eso los usuarios definitivos de backend no deben considerarse operativos todavia.
 
 ## Estado honesto
 
@@ -79,4 +72,3 @@ El backend NestJS real todavia no esta construido, por eso esos usuarios Prisma 
 - Docker Compose esta definido.
 - Migracion y seed requieren que Postgres este corriendo.
 - NestJS, API real, Redis runtime, Socket.io y TanStack Query todavia son siguiente fase.
-

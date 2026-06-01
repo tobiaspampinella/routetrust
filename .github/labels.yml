@@ -1,0 +1,72 @@
+- name: bug
+  color: "d73a4a"
+  description: Something is broken or behaving incorrectly.
+- name: enhancement
+  color: "a2eeef"
+  description: Improvement or new capability request.
+- name: documentation
+  color: "0075ca"
+  description: Documentation changes or gaps.
+- name: security
+  color: "b60205"
+  description: Security-sensitive issue or hardening work.
+- name: good first issue
+  color: "7057ff"
+  description: Suitable for first-time contributors.
+- name: help wanted
+  color: "008672"
+  description: Extra contributor help is useful here.
+- name: blocked
+  color: "000000"
+  description: Work cannot continue until a dependency is resolved.
+- name: needs review
+  color: "fbca04"
+  description: Ready for human or maintainer review.
+- name: beta
+  color: "1d76db"
+  description: Related to beta-stage behavior, scope or release.
+- name: priority: critical
+  color: "b60205"
+  description: Immediate action required.
+- name: priority: high
+  color: "d93f0b"
+  description: Important and time-sensitive.
+- name: priority: medium
+  color: "fbca04"
+  description: Important but not urgent.
+- name: priority: low
+  color: "cfd3d7"
+  description: Useful, but can wait.
+- name: agent: codex
+  color: "5319e7"
+  description: Workstream owned or prepared by Codex.
+- name: agent: antigravity
+  color: "5319e7"
+  description: Workstream owned or prepared by Antigravity.
+- name: agent: opencode
+  color: "5319e7"
+  description: Workstream owned or prepared by OpenCode.
+- name: agent: qa
+  color: "5319e7"
+  description: Workstream owned or prepared by QA.
+- name: agent: ux
+  color: "5319e7"
+  description: Workstream owned or prepared by UX.
+- name: area: cms
+  color: "0e8a16"
+  description: CMS and admin management areas.
+- name: area: demo
+  color: "0e8a16"
+  description: Demo flows, sandbox and sample data.
+- name: area: maps
+  color: "0e8a16"
+  description: Maps, tracking and provider integrations.
+- name: area: telegram
+  color: "0e8a16"
+  description: Telegram integration and bot flows.
+- name: area: bug-assistant
+  color: "0e8a16"
+  description: Bug intake, triage and assistant tooling.
+- name: area: security
+  color: "0e8a16"
+  description: Security controls, auth and secret-handling scope.

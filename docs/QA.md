@@ -45,10 +45,10 @@ Smoke routes:
 - `/` loads landing without runtime crash.
 - `/login` loads login form.
 - `/admin` redirects unauthenticated users to `/login?next=/admin`.
-- Login with `admin@demo.com` / `admin123`, then `/admin` loads dashboard.
+- Login with the local demo admin account documented in `docs/DEMO_LOCAL_ONLY.md`, then `/admin` loads dashboard.
 - `/admin/cms` loads CMS beta modules.
 - `/driver` redirects unauthenticated users to login.
-- Login with `driver1@demo.com` / `driver123`, then `/driver` loads driver home.
+- Login with a local demo driver account documented in `docs/DEMO_LOCAL_ONLY.md`, then `/driver` loads driver home.
 - `/track/demo` loads public tracking demo without exposing admin controls.
 
 ## Missing QA Coverage

@@ -1,259 +1,177 @@
-# RoutePulse AI
+# RouteTrust
 
-AI-built, human-orchestrated Operational Intelligence Platform for logistics operations.
+RouteTrust is an AI-built, human-orchestrated Operational Intelligence Platform for logistics operations.
 
-RoutePulse AI is a restored beta foundation for an AI-built, human-orchestrated SaaS B2B logistics platform. It is AI-built with human strategic oversight: the system supports operational teams with route simulation, tracking, SLA visibility, driver workflows and admin intelligence, while humans approve critical operational decisions.
+AI agents assist with implementation, testing, documentation and analysis. Human oversight remains mandatory for strategic product decisions, critical approvals, releases and business direction.
 
-It is not positioned as a full ERP or a replacement for logistics operators.
+This repository currently contains the RoutePulse AI beta application: a controlled SaaS B2B logistics foundation focused on route simulation, tracking, driver coordination, operational visibility, CMS workflows and demo validation.
 
-## Beta SaaS Controlada v0.1
+It is not a full TMS, ERP or autonomous dispatch system.
 
-RoutePulse AI is being stabilized as **RoutePulse SaaS Beta**, a controlled B2B SaaS beta for logistics teams. Current scope is not a full TMS or ERP. The working product is a Next.js beta with local/demo state, protected admin and driver flows, customer tracking demo, CMS beta modules, QA/CX bug intake, and pure ETA/KPI simulation logic.
+## Product Scope
 
-Commercially usable positioning:
+- Control tower lite for last-mile logistics operations.
+- Human-approved operational intelligence, not operator replacement.
+- Admin, operations, driver, customer tracking and CMS beta workflows.
+- Demo sandbox for route simulation, ETA changes, traffic scenarios and operational approvals.
+- Optional map-provider integration with a local fallback.
 
-- Control tower lite for last-mile operations.
-- Human-approved operational intelligence, not autonomous replacement of operators.
-- Role-oriented beta for Admin, Operations, Customer Experience, Customer Success, Finance/CFO, Direction, Driver and external tracking.
-- Explicit limits where backend persistence, tenant isolation, billing, advanced AI and realtime collaboration are still pending.
+## Core Modules
 
-## Suggested GitHub Topics
-
-`logistics`, `saas`, `b2b`, `operational-intelligence`, `route-simulation`, `tracking`, `fleet-management`, `human-in-the-loop`, `ai-built`, `nextjs`, `typescript`, `telegram-bot`, `maplibre`, `google-maps`
+- Admin dashboard and operational KPIs.
+- Driver portal and route execution views.
+- Customer tracking demo.
+- CMS beta modules for tenants, approvals, incidents, audit logs and demo controls.
+- QA and bug-report intake flows.
+- Telegram status/test integrations.
 
 ## Repository Status
 
-- Product stage: beta recovery and stabilization.
+- Stage: beta stabilization.
 - Primary stack: Next.js, TypeScript, Tailwind CSS, Prisma.
 - Package manager: npm.
-- Human-in-the-loop: required for releases, route approvals, tenant changes and permission changes.
-- Secrets policy: `.env` files and provider tokens must never be committed.
+- CI: GitHub Actions workflow included in `.github/workflows/ci.yml`.
+- Secrets policy: `.env` files, provider tokens and deployment credentials must never be committed.
 
-## New PC Restore Status
+## Suggested GitHub Topics
 
-- Restored from `RoutePulseAI_Portable_Cycle0_2026-05-27.zip` on 2026-05-30.
-- See `docs/RESTORE_REPORT.md`, `docs/ENVIRONMENT_SETUP.md` and `docs/INSTALLATION_REPORT.md`.
-- On this PC, npm commands require the explicit Node wrapper documented in `docs/ENVIRONMENT_SETUP.md` until Node/npm are installed normally.
+`logistics`, `saas`, `b2b`, `operational-intelligence`, `route-simulation`, `route-optimization`, `tracking`, `fleet-management`, `human-in-the-loop`, `ai-built`, `typescript`, `nextjs`, `nestjs`, `postgresql`, `telegram-bot`, `maplibre`, `google-maps`, `playwright`
 
-RoutePulse AI Web Tester es una demo local de **Control Tower Lite para ultima milla en LatAm**. Esta version esta pensada para validar el diferencial del producto antes de construir un TMS enterprise completo.
+## Installation
 
-El punto central: RoutePulse AI no es solo tracking. No muestra solamente donde esta el chofer; calcula que significa cada pausa, demora o zona compleja para las entregas pendientes, el ETA por parada, el riesgo de ruta y el cierre operativo del dia.
+Prerequisites:
 
-Version actual del tester: **v0.11**. Los cambios comerciales y tecnicos quedan documentados en `SOFTWARE_LOG.md` y visibles en el footer de la app.
+- Node.js 22 or newer.
+- npm.
 
-## Problema que resuelve
-
-Muchas operaciones logisticas pequenas y medianas en LatAm trabajan con choferes propios y tercerizados, direcciones incompletas, referencias manuales, tolerancias por entrega, trafico variable y poca visibilidad real del cierre del dia. Esta demo muestra como una torre de control liviana puede convertir eventos simples en decisiones operativas.
-
-## Que incluye esta actualizacion
-
-- Dashboard admin con posicionamiento **Control Tower Lite**.
-- ETA predictivo por ventana para cada parada.
-- Paradas antes del cliente.
-- Drop-off estimado por zona/localidad.
-- Riesgo operativo por ruta y por paquete.
-- Pausas del driver que impactan ETA, KPIs y cierre estimado.
-- Cierre operativo estimado y cumplimiento proyectado.
-- KPIs predictivos, no solo historicos.
-- Copiloto Operativo con insights generados por reglas simples.
-- Tracking cliente demo en `/track/demo`, sin mostrar ruta completa ni datos de otros clientes.
-- Tracking cliente mobile-first tipo iPhone/fleet management, con camion en movimiento, ETA vivo, trafico, drop-off y proximas 4 paradas anonimizadas.
-- Mapa real provider-ready: si configuras `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`, `/track/demo` usa Google Maps JavaScript API, Directions y capa de trafico. Sin clave, usa fallback local profesional sin consumir APIs.
-- Tracking Demo Builder en `/admin/cms` para administrar textos, soporte, privacidad, proveedor de mapa, hasta 5 paradas demo, trafico por parada e inicio/pausa/reinicio de la simulacion.
-- Demo Sandbox operativo dentro del CMS: activar/desactivar demo, generar/resetear datos, iniciar/pausar camion, modificar velocidad, simular trafico, calle bloqueada, retraso, entrega completada y entrega fallida.
-- Human Approval Layer visible en CMS con politicas, solicitudes pendientes y resolucion humana de aprobaciones.
-- Tracking publico sin controles de edicion; las mutaciones de demo quedan concentradas en admin.
-- Inbox QA/CX local en admin para reportar bugs y priorizar fricciones sin exponer credenciales ni tokens externos.
-- CMS Enterprise beta en `/admin/cms` para tenants, modulos SaaS, RBAC, approvals, audit logs y configuracion Telegram/branding como base de consola B2B.
-- CMS beta 7 dias con navegacion por Resumen, Tenants, Usuarios, Rutas, Drivers, Incidencias, Audit logs, Telegram y Demo sandbox.
-- Endpoints protegidos para Telegram status/test en `/api/cms/telegram/status` y `/api/cms/telegram/test`.
-- Documentacion de arquitectura CMS en `docs/CMS_AUDIT.md`, `docs/CMS_SPEC.md`, `docs/CMS_IMPLEMENTATION_PLAN.md` y `docs/ACTIVE_TASKS.md`.
-- Sistema visual inspirado en Apple.com: tipografia de sistema, fondo claro, cards limpias, botones redondeados, glass nav y jerarquia editorial premium.
-- Settings mock para SLA objetivo, tolerancias, drop-off base, modo predictivo, riesgo y tracking cliente.
-- Login protegido con cookie HTTP-only y middleware por rol para `/admin` y `/driver`.
-- Base pequena de usuarios tester en `src/data/testUsersDb.ts`, con hashes de password y sin credenciales visibles en pantalla.
-- Footer global con version del software y bitacora en `SOFTWARE_LOG.md`.
-
-## KPIs principales
-
-- Paquetes del dia
-- Entregados, pendientes y fallidos
-- Cumplimiento actual
-- SLA objetivo vs SLA proyectado
-- Cierre operativo estimado
-- Rutas en riesgo
-- Paquetes en riesgo de atraso
-- Confianza promedio del ETA
-- Drop-off promedio y drop-off por zona
-- Pausas acumuladas por driver
-- Productividad por driver
-- Reasignaciones sugeridas
-
-## Como correr
-
-On this Windows machine, global `npm` is not available in PATH. Use the local Codex Node/npm wrapper documented in `docs/ENVIRONMENT_SETUP.md`:
-
-```powershell
-$nodeDir='C:\Users\tobii\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin'
-$node=Join-Path $nodeDir 'node.exe'
-$npmCli='C:\Users\tobii\.codex\tmp\npm-cli\package\bin\npm-cli.js'
-$env:PATH="$nodeDir;$env:PATH"
-& $node $npmCli install
-& $node $npmCli run dev
-```
-
-Desde la raiz del workspace:
+From the repository root:
 
 ```bash
 npm install
 npm run dev
 ```
 
-O desde el proyecto:
-
-```bash
-cd routepulse-ai-tester
-npm install
-npm run dev
-```
-
-Luego abre:
+Then open:
 
 ```txt
 http://localhost:3000/login
 ```
 
-Validation commands:
+## Validation
 
-```powershell
-& $node $npmCli run typecheck
-& $node $npmCli test
-& $node $npmCli run lint
-& $node $npmCli run build
-& $node $npmCli audit --omit=dev
+Run the baseline checks before opening a pull request:
+
+```bash
+npm run typecheck
+npm test
+npm run lint
+npm run build
 ```
 
-Current verified status for Beta SaaS Controlada v0.1 baseline:
+## Environment Setup
 
-- `typecheck`: passing.
-- `test`: passing, 6 Node test-runner tests.
-- `lint`: passing.
-- `build`: passing.
-- `audit --omit=dev --audit-level=critical`: passing after Next.js/PostCSS dependency refresh.
-- `dev`: expected at `http://localhost:3000` after `npm run dev`.
-
-### Mapa real opcional
-
-Para activar calles reales, rutas y trafico en el tracking demo:
+Copy the example environment file:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Completa:
+Populate only the variables you need locally. Keep real credentials out of version control.
 
-```txt
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=tu_google_maps_key
-```
-
-Luego reinicia `npm run dev`. Sin esa clave, el demo sigue funcionando con fallback visual local, pero no promete trafico real.
-
-Variables reservadas para siguientes integraciones:
+Optional map-related variables:
 
 ```txt
 NEXT_PUBLIC_MAP_PROVIDER=maplibre
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
+NEXT_PUBLIC_GOOGLE_MAP_ID=
 NEXT_PUBLIC_OPENROUTE_API_KEY=
+NEXT_PUBLIC_APPLE_MAPKIT_TOKEN=
 ```
 
-## Usuarios demo
+If no external map key is configured, the demo uses a local fallback visualization.
 
-Las credenciales no se muestran en la pantalla de login. Para QA interno:
+## Demo Credentials
 
-Admin:
+Demo credentials are generated locally through seed/demo scripts and must not be used in production.
 
-```txt
-email: admin@demo.com
-password: admin123
-```
+If local QA access is required, see [`docs/DEMO_LOCAL_ONLY.md`](docs/DEMO_LOCAL_ONLY.md). That document is explicitly local-only and must not be used as deployment guidance.
 
-Drivers:
-
-```txt
-email: driver1@demo.com
-password: driver123
-assignedRouteId: route-001
-```
-
-```txt
-email: driver2@demo.com
-password: driver123
-assignedRouteId: route-002
-```
-
-## Rutas disponibles
+## Available Routes
 
 - `/login`
-- `/admin` requiere sesion admin
-- `/admin/routes` requiere sesion admin
-- `/admin/kpis` requiere sesion admin
-- `/admin/cms` requiere sesion admin
-- `/admin/settings` requiere sesion admin
-- `/driver` requiere sesion driver
-- `/driver/route` requiere sesion driver
+- `/admin`
+- `/admin/routes`
+- `/admin/kpis`
+- `/admin/cms`
+- `/admin/settings`
+- `/driver`
+- `/driver/route`
 - `/track/demo`
 
-## Datos demo
+## Telegram Bot
 
-`src/data/mockData.ts` contiene 1 empresa, 1 almacen, 3 drivers, 3 unidades, 3 rutas, 60 paquetes y zonas LatAm con trafico, dificultad de parking, tasa de fallo y drop-off promedio.
+The repository includes Telegram-oriented status and test flows for operational notifications. Bot tokens and chat identifiers must stay in local or deployment secrets only.
 
-Cada paquete incluye tracking, cliente, direccion, referencia, localidad, secuencia, estado, ETA por ventana, paradas antes, confianza ETA, riesgo, prioridad y drop-off estimado.
+Relevant endpoints and docs:
 
-## Logica de calculo
+- `/api/cms/telegram/status`
+- `/api/cms/telegram/test`
 
-Las reglas testeables estan en:
+## Demo Sandbox
 
-- `src/lib/etaCalculations.ts`
-- `src/lib/kpiCalculations.ts`
-- `src/lib/operationalInsights.ts`
+The demo sandbox allows controlled simulation of:
 
-Documentacion complementaria:
+- route starts and pauses
+- traffic changes
+- blocked streets and delays
+- completed and failed deliveries
+- approval and audit-log flows
 
-- `docs/DEMO_SANDBOX_SPEC.md`
-- `docs/CURRENT_DECISIONS.md`
+This is for beta validation and product discovery. It is not a production event engine.
 
-No usan APIs externas ni IA real. Son funciones puras para validar el flujo de producto.
+## Security
 
-## Limitaciones actuales
+Security reporting and repository policy are documented in [`SECURITY.md`](SECURITY.md).
 
-- No hay backend real.
-- No hay WebSockets.
-- No hay persistencia productiva para CMS, bug reports, audit logs, tenants, approvals, incidents or roles.
-- Prisma schema exists, but main app flows still use local state and mock data.
-- Tenant isolation is not proven against a real database.
-- Auth is still demo-grade and must be hardened before production.
-- Production dependency audit critical check currently passes after Next.js/PostCSS dependency refresh.
-- El mapa real requiere `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`; sin clave se usa fallback local.
-- Apple MapKit y OpenRouteService no estan integrados todavia.
-- No hay app movil nativa.
-- No hay optimizacion avanzada de rutas.
-- No hay OpenAI API ni copiloto con LLM.
-- La persistencia es local por navegador mediante `localStorage`.
-- Las credenciales tester siguen siendo semilla local, no un sistema de identidad productivo.
+Key constraints:
 
-## Checks manuales sugeridos
+- no committed `.env` files
+- no provider tokens in source
+- no production claims for demo-grade auth or mock persistence
+- human approval required for critical operational decisions
 
-- Login admin y revisar `/admin`: debe comunicar Control Tower Lite y mostrar Copiloto Operativo.
-- Ir a `/admin/routes`: cada parada debe mostrar ventana ETA, paradas antes, referencia, drop-off, confianza y riesgo.
-- Login driver y pausar ruta: el ETA de paradas pendientes, pausa acumulada, riesgo y cierre estimado deben cambiar.
-- Marcar una entrega como entregada o fallida: paradas restantes, cumplimiento, SLA proyectado y cierre deben recalcularse.
-- Abrir `/track/demo`: debe mostrar solo el paquete demo, su ventana ETA, paradas antes, confianza y ultimo evento.
-- Abrir `/admin/cms`: editar contenido, agregar paradas demo, iniciar/pausar/reiniciar la simulacion y verificar que impacta en `/track/demo`.
+## Contributing
 
-## Proximos pasos
+Contribution guidelines and branch workflow are documented in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
-- Backend con base de datos y roles reales.
-- Historial de eventos por paquete/ruta.
-- WebSockets para actualizacion multiusuario.
-- Motor real de eventos operativos.
-- Mapas y geocoding cuando el flujo mock este validado.
-- Optimizacion de rutas y prediccion avanzada de riesgo.
+Branch model:
+
+- `main`: stable releases only
+- `develop`: integration branch
+- `staging`: pre-release validation
+- `feature/*`: feature work
+- `fix/*`: bug fixes
+- `agent/*`: isolated agent work
+
+## Roadmap
+
+See [`ROADMAP.md`](ROADMAP.md) for the staged beta roadmap and [`docs/PROJECT_OPERATING_SYSTEM.md`](docs/PROJECT_OPERATING_SYSTEM.md) for operational governance.
+
+## AI-Built / Human-Orchestrated
+
+See [`AI_BUILT_PROJECT.md`](AI_BUILT_PROJECT.md) for communication rules, approval boundaries and positioning constraints.
+
+## Beta Stable Criteria
+
+The formal beta checklist and blockers are tracked in [`docs/BETA_STABLE_CRITERIA.md`](docs/BETA_STABLE_CRITERIA.md).
+
+A top-level summary copy is available in [`BETA_STABLE_CRITERIA.md`](BETA_STABLE_CRITERIA.md).
+
+## Current Limits
+
+- No production-grade backend persistence for the main product flows.
+- No realtime multi-user sync or WebSockets.
+- No production tenant isolation proof against a real database.
+- No production identity system.
+- Optional external maps are not mandatory and may remain disabled.
+- Several product areas still depend on local state and mock data.
