@@ -1,0 +1,1 @@
+- Public sessions receive contextual guidance but cannot create durable internal tickets.

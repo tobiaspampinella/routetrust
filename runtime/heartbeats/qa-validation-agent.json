@@ -1,0 +1,10 @@
+{
+  "agentId": "qa-validation-agent",
+  "status": "pending",
+  "currentTask": null,
+  "lastOutput": "Runner completed coordination pass but no matching tasks were assigned.",
+  "errors": [],
+  "pid": null,
+  "mode": "executable",
+  "lastSeen": "2026-06-01T03:15:58.818Z"
+}

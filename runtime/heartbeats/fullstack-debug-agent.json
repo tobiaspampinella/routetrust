@@ -1,0 +1,10 @@
+{
+  "agentId": "fullstack-debug-agent",
+  "status": "pending",
+  "currentTask": "DBG-003",
+  "lastOutput": "Runner completed coordination pass. Pending tasks: 1.",
+  "errors": [],
+  "pid": null,
+  "mode": "executable",
+  "lastSeen": "2026-06-01T03:15:58.799Z"
+}

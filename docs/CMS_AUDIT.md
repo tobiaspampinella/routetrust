@@ -1,339 +1,209 @@
-# CMS Audit - RoutePulse AI
+# FASE 4 - CMS/Admin Audit
 
-Date: 2026-05-27
-Agent: Principal AI Node Orchestrator
-Status: Day 1 audit completed
+Fecha: 2026-05-31
+Alcance: auditoria solamente. No se implementaron features.
+Proyecto auditado: `C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester`
 
-## Audit Result
+## Evidencia revisada
 
-The current repo is a functional Next.js web tester with local state. It is not yet the requested full backend platform. The CMS has useful beta UI, mock tenants/users/routes/drivers/incidents/audit/sandbox, and protected admin routes, but it does not yet have real persistence, API versioning, database-backed RBAC, tenant middleware, WebSockets, Redis, BullMQ, or Playwright tests.
-
-Last validation before this Day 1 cycle:
-
-- `npm run lint`: passed
-- `npm run build`: passed
-
-## Confirmed Stack
-
-- Next.js 15.1.3 App Router
-- React 19
-- TypeScript
-- Tailwind CSS
-- Zustand/localStorage
-- Next API routes
-- Next middleware
-- Local mock data
-- Optional Google Maps JavaScript API provider readiness
-- Local tracking fallback
-
-## Target Stack Not Yet Implemented
-
-- NestJS
-- Prisma Client runtime
-- PostgreSQL persistence
-- Redis
-- Socket.IO with Redis adapter
-- BullMQ
-- JWT access/refresh token backend
-- Swagger
-- Sentry/Pino
-- Playwright
-- GitHub Actions
-
-## File Inventory And Purpose
-
-| File | Purpose |
-| --- | --- |
-| `AGENTS.md` | Project agent rules and product guardrails. |
-| `CHANGELOG.md` | Human-readable product/change history. |
-| `NEXT_AGENT_PROMPT.md` | Handoff prompt for the next agent cycle. |
-| `README.md` | Project overview, setup, demo users, current limitations. |
-| `SOFTWARE_LOG.md` | Internal software evolution log. |
-| `.env.example` | Required environment variable template. |
-| `.eslintrc.json` | ESLint compatibility config for Next lint. |
-| `.gitignore` | Git ignore rules for local/build/secret files. |
-| `docker-compose.yml` | Local Postgres/Redis/app foundation for future backend beta. |
-| `next-env.d.ts` | Next.js generated TypeScript environment declarations. |
-| `next.config.ts` | Next.js config. |
-| `package.json` | Scripts and dependencies. |
-| `postcss.config.mjs` | PostCSS/Tailwind pipeline config. |
-| `tailwind.config.ts` | Tailwind theme/content config. |
-| `tsconfig.json` | TypeScript compiler config. |
-| `prisma/schema.prisma` | Proposed beta data model, awaiting human approval. |
-| `docs/ACTIVE_TASKS.md` | Active task board for agents. |
-| `docs/AGENT_OWNERSHIP.md` | Module ownership by agent role. |
-| `docs/AI_GOVERNANCE.md` | AI/human approval governance. |
-| `docs/BETA_BUILD_PLAN.md` | 7-day build plan. |
-| `docs/BETA_STABLE_CRITERIA.md` | 25-point beta stability checklist. |
-| `docs/CMS_AUDIT.md` | This audit. |
-| `docs/CMS_IMPLEMENTATION_PLAN.md` | Prior CMS implementation plan. |
-| `docs/CMS_SPEC.md` | Prior CMS spec. |
-| `docs/CURRENT_ARCHITECTURE.md` | Current architecture and gaps. |
-| `docs/CURRENT_DECISIONS.md` | Current locked decisions and schema approval gate. |
-| `docs/DEMO_SANDBOX_SPEC.md` | Demo sandbox spec. |
-| `docs/LOCKED_FILES.md` | File lock governance. |
-| `docs/PRISMA_SCHEMA_DRAFT.prisma` | Pointer to canonical schema. |
-| `src/middleware.ts` | Protects `/admin/*`, `/driver/*`, and login redirects. |
-| `src/app/layout.tsx` | Root app layout and metadata. |
-| `src/app/globals.css` | Global styles and tracking-map CSS. |
-| `src/app/page.tsx` | Public landing entry. |
-| `src/app/login/page.tsx` | Login UI. |
-| `src/app/cms/page.tsx` | Shortcut route to admin CMS. |
-| `src/app/track/demo/page.tsx` | Public customer tracking demo route. |
-| `src/app/admin/page.tsx` | Admin dashboard page. |
-| `src/app/admin/cms/page.tsx` | Admin CMS page. |
-| `src/app/admin/kpis/page.tsx` | Admin KPI page. |
-| `src/app/admin/routes/page.tsx` | Admin route page. |
-| `src/app/admin/settings/page.tsx` | Admin settings page. |
-| `src/app/driver/page.tsx` | Driver home page. |
-| `src/app/driver/route/page.tsx` | Driver route page. |
-| `src/app/api/auth/login/route.ts` | Demo login endpoint. |
-| `src/app/api/auth/logout/route.ts` | Demo logout endpoint. |
-| `src/app/api/auth/me/route.ts` | Current session endpoint. |
-| `src/app/api/cms/telegram/status/route.ts` | Telegram env status endpoint. |
-| `src/app/api/cms/telegram/test/route.ts` | Telegram test notification endpoint. |
-| `src/components/admin/AdminShell.tsx` | Admin navigation shell. |
-| `src/components/admin/AdminDashboard.tsx` | Operational dashboard UI. |
-| `src/components/admin/AdminCms.tsx` | CMS tab shell and demo builder. |
-| `src/components/admin/CmsEnterpriseOverview.tsx` | Main local CMS beta console. |
-| `src/components/admin/LiveCmsTab.tsx` | Live ops mock actions. |
-| `src/components/admin/AdminKpis.tsx` | KPI visualizations. |
-| `src/components/admin/AdminRoutes.tsx` | Route list/detail UI. |
-| `src/components/admin/AdminSettings.tsx` | Mock system settings UI. |
-| `src/components/customer/CustomerTrackingDemo.tsx` | Customer tracking page experience. |
-| `src/components/customer/FleetTrackingMap.tsx` | Provider-ready tracking map/fallback. |
-| `src/components/customer/CustomerTrackingMap3D.tsx` | Older 3D-style customer map component. |
-| `src/components/customer/DriverMap.tsx` | Driver/customer map helper. |
-| `src/components/driver/DriverShell.tsx` | Driver portal shell. |
-| `src/components/driver/DriverHome.tsx` | Driver route summary. |
-| `src/components/driver/DriverRoute.tsx` | Driver route workflow actions. |
-| `src/components/shared/CxAssistantWidget.tsx` | Local CX bug/report assistant. |
-| `src/components/shared/LandingPage.tsx` | Public landing page. |
-| `src/components/shared/PageHeader.tsx` | Shared page header. |
-| `src/components/shared/RouteMapPlaceholder.tsx` | Placeholder map component. |
-| `src/components/shared/StatCard.tsx` | Shared KPI card. |
-| `src/components/shared/StatusBadge.tsx` | Shared status badge. |
-| `src/components/shared/VersionFooter.tsx` | Version footer. |
-| `src/components/shared/status-labels.ts` | Status label helpers. |
-| `src/components/ui/badge.tsx` | UI badge primitive. |
-| `src/components/ui/button.tsx` | UI button primitive. |
-| `src/components/ui/card.tsx` | UI card primitive. |
-| `src/components/ui/input.tsx` | UI input primitive. |
-| `src/components/ui/label.tsx` | UI label primitive. |
-| `src/components/ui/modal.tsx` | UI modal primitive. |
-| `src/components/ui/progress.tsx` | UI progress primitive. |
-| `src/data/mockData.ts` | RoutePulse demo data. |
-| `src/data/testUsersDb.ts` | Local test users and password hashes. |
-| `src/lib/demoMapCoordinates.ts` | Buenos Aires demo coordinates. |
-| `src/lib/etaCalculations.ts` | Pure ETA calculations. |
-| `src/lib/kpiCalculations.ts` | Pure KPI calculations. |
-| `src/lib/operationalInsights.ts` | Rule-based operational insights. |
-| `src/lib/serverAuth.ts` | Demo auth password validation. |
-| `src/lib/sessionToken.ts` | Demo signed session cookie helpers. |
-| `src/lib/trackingSimulation.ts` | Customer tracking simulation helpers. |
-| `src/lib/types.ts` | Shared TypeScript domain types. |
-| `src/lib/utils.ts` | Shared className utility. |
-| `src/lib/version.ts` | Visible app version metadata. |
-| `src/modules/cms/types.ts` | CMS domain types. |
-| `src/services/audit/auditLog.ts` | Local audit log helpers. |
-| `src/services/cms/cmsService.ts` | CMS seed/default services. |
-| `src/services/cms/serverGuards.ts` | Server-side CMS permission guards. |
-| `src/services/permissions/rbac.ts` | Local RBAC helpers. |
-| `src/services/tenant/tenantService.ts` | Local tenant helpers. |
-| `src/store/routePulseStore.ts` | Zustand global app state. |
-
-## Broken Imports Or Missing Dependencies
-
-No broken imports were detected in the current source during the last successful lint/build.
-
-Current imports are covered by `package.json`:
-
-- `next`
-- `react`
-- `react-dom`
-- `zustand`
-- `lucide-react`
-- `clsx`
-- `tailwind-merge`
-- `class-variance-authority`
-- `@radix-ui/react-*`
-- `recharts`
-
-Dependencies missing for the requested target architecture:
-
-- `@nestjs/core`
-- `@nestjs/common`
-- `@nestjs/platform-express`
-- `@nestjs/platform-socket.io`
-- `@nestjs/swagger`
-- `@prisma/client`
-- `prisma`
-- `pg`
-- `redis` or `ioredis`
-- `socket.io`
-- `@socket.io/redis-adapter`
-- `bullmq`
-- `jsonwebtoken` or Nest JWT equivalent
-- `bcrypt` or `argon2`
-- `pino`
-- `@sentry/nextjs`
-- `@playwright/test`
-- `maplibre-gl`
-
-## Env Vars Referenced
-
-Referenced in active source:
-
-- `ROUTEPULSE_DEMO_SECRET`
-- `TELEGRAM_BOT_TOKEN`
-- `TELEGRAM_CHAT_ID`
-- `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
-- `NODE_ENV`
-
-Referenced by new proposed Prisma schema:
-
-- `DATABASE_URL`
-
-Referenced in docs/target beta:
-
-- `REDIS_URL`
-- `JWT_SECRET`
-- `JWT_REFRESH_SECRET`
-- `NEXT_PUBLIC_MAP_PROVIDER`
-- `NEXT_PUBLIC_GOOGLE_MAP_ID`
-- `NEXT_PUBLIC_OPENROUTE_API_KEY`
-- `SENTRY_DSN`
-- `APP_URL`
-- `DEMO_MODE`
-
-## Env Var Gaps Fixed In Day 1
-
-`.env.example` now includes:
-
-- `DATABASE_URL`
-- `REDIS_URL`
-- `JWT_SECRET`
-- `JWT_REFRESH_SECRET`
-- `ROUTEPULSE_DEMO_SECRET`
-- `NEXT_PUBLIC_MAP_PROVIDER`
-- `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
-- `NEXT_PUBLIC_GOOGLE_MAP_ID`
-- `NEXT_PUBLIC_OPENROUTE_API_KEY`
-- `TELEGRAM_BOT_TOKEN`
-- `TELEGRAM_CHAT_ID`
-- `SENTRY_DSN`
-- `APP_URL`
-- `DEMO_MODE`
-
-## Current CMS Gaps
-
-- CMS state is local/mock, not database-backed.
-- CMS roles are richer in UI than beta backend target; backend beta will use 5 roles first.
-- Existing admin/driver auth is demo-only and not true JWT refresh-token auth.
-- Tenant isolation is modeled, but not enforced by database.
-- Audit logs are local UI records only.
-- Approval workflow is visible but not enforced by backend.
-- Telegram settings are env-aware, but Telegram automation is deferred.
-- Map provider fallback works, but MapLibre default is not implemented yet.
-
-## Step 4 Git Audit
-
-Initial audit found no Git repository:
-
-`fatal: not a git repository (or any of the parent directories): .git`
-
-Day 1 action:
-
-- Initialized a local Git repo.
-- Created empty initial commit only.
-- Created branches:
-  - `main`
-  - `develop`
-  - `staging`
-  - `agent/fullstack-core`
-  - `agent/qa-stability`
-  - `agent/demo-experience`
-  - `agent/docs`
-
-Risk:
-
-- No remote is configured yet.
-- Project files are not committed yet; this avoids accidental bulk commit before CEO review.
-
-## Migration Blocker
-
-Prisma migration start is blocked by human approval of:
-
+- `package.json`
 - `prisma/schema.prisma`
-- tenant strategy
-- RBAC model
-- Redis GPS storage decision
-- approval/audit state machine
+- `src/app/**`
+- `src/components/admin/**`
+- `src/components/driver/**`
+- `src/components/customer/**`
+- `src/components/shared/CxAssistantWidget.tsx`
+- `src/lib/**`
+- `src/modules/cms/types.ts`
+- `src/services/**`
+- `src/store/routePulseStore.ts`
+- `.env.example`
 
-## Cycle 0 Local Run Audit - 2026-05-27
+## Rutas actuales
 
-Goal:
+| Ruta | Archivo | Estado |
+| --- | --- | --- |
+| `/` | `src/app/page.tsx` | Landing publica. |
+| `/login` | `src/app/login/page.tsx` | Login demo. |
+| `/cms` | `src/app/cms/page.tsx` | Redirect a `/admin/cms`. |
+| `/admin` | `src/app/admin/page.tsx` | Dashboard admin. |
+| `/admin/cms` | `src/app/admin/cms/page.tsx` | CMS shell + enterprise console + demo builder + live ops. |
+| `/admin/kpis` | `src/app/admin/kpis/page.tsx` | KPIs operativos mock. |
+| `/admin/routes` | `src/app/admin/routes/page.tsx` | Tabla y detalle de rutas mock. |
+| `/admin/settings` | `src/app/admin/settings/page.tsx` | Settings operativos mock. |
+| `/driver` | `src/app/driver/page.tsx` | Home driver. |
+| `/driver/route` | `src/app/driver/route/page.tsx` | Workflow driver. |
+| `/track/demo` | `src/app/track/demo/page.tsx` | Tracking cliente demo. |
+| `/api/auth/login` | `src/app/api/auth/login/route.ts` | Login demo. |
+| `/api/auth/logout` | `src/app/api/auth/logout/route.ts` | Logout demo. |
+| `/api/auth/me` | `src/app/api/auth/me/route.ts` | Session demo. |
+| `/api/cms/telegram/status` | `src/app/api/cms/telegram/status/route.ts` | Estado env Telegram protegido. |
+| `/api/cms/telegram/test` | `src/app/api/cms/telegram/test/route.ts` | Test Telegram protegido. |
 
-- Get the project running locally with minimum changes.
-- Do not add product features.
+## CMS/Admin actual
 
-Findings:
+Existe:
 
-- The repo currently contains a Next.js 15.1.3 app, not Next.js 14.
-- NestJS backend does not exist yet.
-- There is one project `package.json`; no separate backend package exists.
-- Before this cycle there was no local `node_modules` or `package-lock.json` inside `routepulse-ai-tester`; npm resolves workspace packages from the parent directory.
-- Active source imports are covered after dependency installation; no missing import package remains.
-- `npm run typecheck` passes.
-- `npm run lint` passes.
-- `npm run build` passes.
-- `npx prisma validate` passes after downgrading Prisma from 7 to 6.
+- `AdminShell` con navegacion admin, verificacion de session via `/api/auth/me`, logout y widget `CxAssistantWidget`.
+- `AdminCms` con tabs `Enterprise`, `Demo Builder` y `Live Ops`.
+- `CmsEnterpriseOverview` con secciones: resumen, tenants, usuarios, rutas, drivers, incidencias, aprobaciones, audit logs, Telegram y demo sandbox.
+- `LiveCmsTab` con acciones mock para iniciar ruta, recalcular ETA, reasignar, entregar y fallar paradas.
+- Tipos CMS en `src/modules/cms/types.ts`.
+- Seeds CMS en `src/services/cms/cmsService.ts`.
+- Helpers locales para tenants, audit log y RBAC.
 
-Dependencies added:
+Falta:
 
-- `@prisma/client@6`
-- `prisma@6`
-- `bcryptjs`
-- `tsx`
+- Persistencia real para CMS.
+- API CRUD real para tenants, users, roles, permisos, approvals, audit logs, demo sandbox e incidencias.
+- Validacion backend por schema.
+- Tenant isolation real en DB.
+- Audit log append-only en backend.
+- Approval workflow obligatorio antes de mutaciones criticas.
+- Secret manager o configuracion segura para notificaciones.
 
-Why Prisma 6:
+Roto o riesgoso:
 
-- Prisma 7 rejected the requested classic `datasource db { url = env("DATABASE_URL") }` schema format.
-- Cycle 0 explicitly requires `npx prisma generate` and `npx prisma migrate dev --name init`, which works with Prisma 6.
+- El CMS dice "enterprise", pero la fuente de verdad es React state/Zustand/localStorage.
+- `CmsEnterpriseOverview.tsx` es demasiado grande y mezcla UI, estado, acciones, audit local, Telegram UI y sandbox.
+- Hay mojibake en strings visibles del codigo (`Ãšltima`, `trÃ¡fico`, `camiÃ³n`, `direcciÃ³n`, etc.). Build puede pasar, pero la UI queda mal codificada.
+- `defaultBuildStatus` en `cmsService.ts` es seed estatico, no lee CI ni git.
+- Prisma schema existe, pero las pantallas actuales no usan Prisma Client.
 
-Files changed for local run:
+Reutilizable:
 
-- `prisma/schema.prisma` simplified to the Cycle 0 models only.
-- `prisma/seed.ts` created with Demo Company seed data.
-- `.env.example` completed.
-- `.env` and `.env.local` created locally and are gitignored.
-- `docker-compose.yml` replaced with Postgres 15 + Redis 7 per Cycle 0 instructions.
-- `package.json` updated with `typecheck` and Prisma seed command.
+- `src/modules/cms/types.ts`
+- `src/services/permissions/rbac.ts`
+- `src/services/audit/auditLog.ts`
+- `src/services/tenant/tenantService.ts`
+- `src/services/cms/cmsService.ts` como seed/reference, no como backend final.
+- `AdminShell`, `AdminDashboard`, `AdminRoutes`, `AdminKpis`, `AdminSettings`.
+- `CmsEnterpriseOverview` como prototipo funcional, aunque debe particionarse antes de crecer.
 
-Runtime status:
+No debe tocarse sin autorizacion:
 
-- `npm run dev` starts in foreground without TypeScript errors.
-- `npm run build` succeeds.
-- `next start` serves `http://localhost:3000` with HTTP 200 after build.
+- No reemplazar la shell admin completa.
+- No eliminar fallback local de mapas.
+- No convertir acciones mock en acciones productivas sin approvals y audit backend.
+- No exponer tokens Telegram o API keys en cliente.
+- No mezclar package managers.
+- No crear CMS backend hasta FASE autorizada.
 
-Blocked:
+## Dashboard CEO/Admin
 
-- Docker was not installed.
-- Docker CLI, Docker Compose, and Colima were installed via Homebrew.
-- Colima required QEMU.
-- QEMU began compiling from source on macOS 12 and was stopped because it was too slow for this local-run cycle.
-- Therefore `docker compose up` cannot complete yet.
-- PostgreSQL is not listening on port 5432.
-- Redis is not listening on port 6379.
-- `npx prisma migrate dev --name init` cannot reach `localhost:5432`.
-- `npx prisma db seed` cannot reach `localhost:5432`.
+Existe:
 
-Exact DB error:
+- `AdminDashboard` muestra KPIs diarios, avance, riesgo, cierre estimado, cumplimiento, paquetes en riesgo, drivers activos e insights.
+- `AdminKpis` muestra productividad por driver, SLA, fallos, drop-off y riesgo por zona.
 
-`Can't reach database server at localhost:5432`
+Falta:
 
-Security notes:
+- Dashboard CEO formal de negocio.
+- Estado de builds real.
+- Estado de agentes multiagente real.
+- Metricas por tenant reales.
+- Filtros por fecha, tenant, region y cliente.
 
-- `.env` and `.env.local` are ignored by Git.
-- `.env.example` contains placeholders only.
-- Demo seed contains only requested demo credentials, not production secrets.
+Roto o riesgoso:
+
+- Las metricas se calculan desde mocks; no representan operacion real.
+- No hay trazabilidad entre KPI y evento/audit log persistido.
+
+## Auth/RBAC actual
+
+Existe:
+
+- Middleware protege `/admin/*` para `admin` y `/driver/*` para `driver`.
+- Session cookie `routepulse_session` firmada con `ROUTEPULSE_DEMO_SECRET` o fallback local.
+- `serverAuth.ts` autentica contra `testUsersDb`.
+- RBAC CMS granular existe como helper local con roles y permisos.
+- `requireCmsPermission` protege endpoints Telegram con permiso `configure`.
+
+Falta:
+
+- Usuarios reales en DB.
+- Password hashing productivo con salt individual.
+- Refresh tokens.
+- CSRF hardening documentado.
+- Middleware por tenant/modulo.
+- RBAC persistido y versionado.
+
+Roto o riesgoso:
+
+- `ROUTEPULSE_DEMO_SECRET` tiene fallback default. Aceptable demo, inaceptable produccion.
+- Roles runtime reales son solo `admin` y `driver`; roles CMS amplios son simulados.
+- `requireCmsPermission` hardcodea tenants permitidos.
+
+## Componentes actuales
+
+Admin:
+
+- `AdminShell`
+- `AdminDashboard`
+- `AdminCms`
+- `CmsEnterpriseOverview`
+- `LiveCmsTab`
+- `AdminRoutes`
+- `AdminKpis`
+- `AdminSettings`
+
+Driver:
+
+- `DriverShell`
+- `DriverHome`
+- `DriverRoute`
+
+Customer/maps:
+
+- `CustomerTrackingDemo`
+- `FleetTrackingMap`
+- `CustomerTrackingMap3D`
+- `DriverMap`
+
+Shared/UI:
+
+- `CxAssistantWidget`
+- `PageHeader`
+- `RouteMapPlaceholder`
+- `StatCard`
+- `StatusBadge`
+- `VersionFooter`
+- UI primitives: badge, button, card, input, label, modal, progress.
+
+## Que falta para CMS beta estable
+
+1. Backend API real para CMS core.
+2. Persistencia DB y migraciones validadas.
+3. Service layer con permisos, tenant guard y audit obligatorio.
+4. Particion de `CmsEnterpriseOverview.tsx` en panels mantenibles.
+5. Tests de rutas protegidas, RBAC y flujos admin/driver/customer.
+6. Fix de encoding de textos visibles.
+7. Integracion CI real para build status.
+
+## Tareas por agente
+
+| Agente | Tareas |
+| --- | --- |
+| Codex Node | Mantener governance, locks, arquitectura, handoffs y secuencia de fases. |
+| Full Stack Agent | Diseñar API CMS, persistence layer, tenant guard, RBAC backend y audit append-only. |
+| QA Agent | Escribir matriz de regression para admin, driver, tracking, auth y Telegram endpoints. |
+| UX/UI Agent | Reducir densidad del CMS y separar paneles sin cambiar funcionalidad. |
+| Maps Agent | Auditar proveedor local/Google/MapLibre y terminos antes de integrar. |
+| Telegram Agent | Diseñar bot/event routing sin exponer secrets. |
+| Bug Assistant Agent | Diseñar modelo/API/panel de bug reports antes de tocar widget. |
+| Docs Agent | Mantener specs sincronizadas con codigo real, no aspiracional. |
+
+## Orden de implementacion recomendado
+
+1. Fix minimo de encoding de UI strings.
+2. Tests smoke para rutas protegidas y flujos mock actuales.
+3. Particion controlada de CMS UI en paneles.
+4. API CMS backend con tenant guard y audit log.
+5. RBAC persistido.
+6. Demo sandbox event contract persistido.
+7. Telegram event router.
+8. Bug assistant durable.
+
+## Estado FASE 4
+
+Auditoria completada. No se implementaron features.

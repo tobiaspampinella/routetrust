@@ -1,0 +1,74 @@
+#!/usr/bin/env node
+const { getRuntimeSnapshot, nowIso, readText, writeProjectStatus, writeText } = require("./agent-runtime-lib.js");
+
+const findings = [];
+const authFiles = [
+  "src/app/api/auth/login/route.ts",
+  "src/app/api/auth/logout/route.ts",
+  "src/app/api/auth/me/route.ts",
+  "src/services/cms/serverGuards.ts",
+  "src/services/permissions/rbac.ts",
+];
+
+for (const file of authFiles) {
+  const content = readText(file);
+  if (!content.trim()) findings.push(`Missing auth/security file: ${file}.`);
+}
+
+const envExample = readText(".env.example");
+if (!/TELEGRAM_BOT_TOKEN=/.test(envExample)) findings.push(".env.example is missing TELEGRAM_BOT_TOKEN.");
+if (!/NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=/.test(envExample)) findings.push(".env.example is missing NEXT_PUBLIC_GOOGLE_MAPS_API_KEY.");
+
+const sourceFiles = [
+  "src/app/api/cms/telegram/test/route.ts",
+  "src/app/api/cms/telegram/status/route.ts",
+  "src/components/shared/CxAssistantWidget.tsx",
+];
+for (const file of sourceFiles) {
+  const content = readText(file);
+  if (/sk-[a-z0-9]/i.test(content) || /AIza[0-9A-Za-z_-]{20,}/.test(content)) {
+    findings.push(`Potential hardcoded secret pattern in ${file}.`);
+  }
+}
+
+const securityAudit = `# Security Audit
+
+Generated: ${nowIso()}
+
+STATUS: ${findings.length === 0 ? "completed" : "warning"}
+
+## Findings
+
+${findings.length === 0 ? "- No obvious hardcoded secret or missing auth guard was detected in the scanned surface." : findings.map((item) => `- ${item}`).join("\n")}
+`;
+
+const qaReport = `# QA Security Report
+
+Generated: ${nowIso()}
+
+STATUS: ${findings.length === 0 ? "completed" : "warning"}
+
+## Coverage
+
+- auth routes
+- CMS server guards
+- env template
+- Telegram runtime handlers
+- local bug assistant surface
+
+## Findings
+
+${findings.length === 0 ? "- Baseline QA security checks passed." : findings.map((item) => `- ${item}`).join("\n")}
+`;
+
+writeText("docs/SECURITY_AUDIT.md", securityAudit);
+writeText("docs/QA_SECURITY_REPORT.md", qaReport);
+writeProjectStatus(getRuntimeSnapshot(), {
+  build: {
+    status: findings.length === 0 ? "healthy" : "warning",
+    lastRun: nowIso(),
+    detail: "QA security audit completed.",
+  },
+});
+console.log("Security audit reports written.");
+if (findings.length > 0) process.exit(1);

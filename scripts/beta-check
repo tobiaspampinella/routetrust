@@ -1,0 +1,154 @@
+#!/usr/bin/env node
+const {
+  appendAgentLog,
+  fileExists,
+  getRuntimeSnapshot,
+  nowIso,
+  recordStatusLog,
+  runPackageScript,
+  writeProjectStatus,
+  writeRuntimeStatusReport,
+  writeText,
+} = require("./agent-runtime-lib.js");
+
+const requiredFiles = [
+  "AGENTS.md",
+  "AGENT_RUNTIME.md",
+  "docs/AGENT_RUNTIME_STATUS.md",
+  "docs/BETA_STABLE_CRITERIA.md",
+  "docs/ACTIVE_TASKS.md",
+  "docs/LOCKED_FILES.md",
+  "docs/TELEGRAM_SETUP_REQUIRED.md",
+  "docs/LOCAL_24_7_OPERATION.md",
+  "runtime/project-status.json",
+  "scripts/agent-status",
+  "scripts/agent-runner",
+  "scripts/agent-scheduler",
+  "scripts/agent-heartbeat",
+  "scripts/watchdog",
+  "scripts/locks-sync",
+  "scripts/locks-check",
+  "scripts/ux-audit",
+  "scripts/debug-scan",
+  "scripts/qa-security",
+  "scripts/bugs-triage",
+];
+
+const snapshot = getRuntimeSnapshot();
+writeRuntimeStatusReport(snapshot);
+recordStatusLog(snapshot);
+
+const missing = requiredFiles.filter((file) => !fileExists(file));
+const testsResult = runPackageScript("test");
+const locksResult = runPackageScript("locks:check");
+const watchdogResult = runPackageScript("watchdog:once");
+const bugTriageResult = runPackageScript("bugs:triage");
+const telegramConfigured = Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID);
+
+const passed =
+  missing.length === 0 &&
+  snapshot.validation.missing.length === 0 &&
+  snapshot.validation.invalidStatuses.length === 0 &&
+  testsResult.status === 0 &&
+  locksResult.status === 0 &&
+  watchdogResult.status === 0 &&
+  bugTriageResult.status === 0;
+
+const body = `# Beta Check Report
+
+Generated: ${nowIso()}
+
+STATUS: ${passed ? "completed" : "failed"}
+
+## Runtime Validation
+
+- Missing required beta files: ${missing.length}
+- Missing runtime files: ${snapshot.validation.missing.length}
+- Invalid status files: ${snapshot.validation.invalidStatuses.length}
+- Active processes: ${snapshot.activeProcesses.length}
+- Telegram configured: ${telegramConfigured ? "yes" : "no"}
+
+## Missing Required Files
+
+${missing.length === 0 ? "- none" : missing.map((file) => `- ${file}`).join("\n")}
+
+## Command Results
+
+### Tests
+
+\`\`\`text
+${testsResult.command}
+\`\`\`
+
+Exit code: ${testsResult.status}
+
+\`\`\`text
+${`${testsResult.stdout}\n${testsResult.stderr}`.slice(0, 8000)}
+\`\`\`
+
+### Locks
+
+\`\`\`text
+${locksResult.command}
+\`\`\`
+
+Exit code: ${locksResult.status}
+
+\`\`\`text
+${`${locksResult.stdout}\n${locksResult.stderr}`.slice(0, 8000)}
+\`\`\`
+
+### Watchdog
+
+\`\`\`text
+${watchdogResult.command}
+\`\`\`
+
+Exit code: ${watchdogResult.status}
+
+\`\`\`text
+${`${watchdogResult.stdout}\n${watchdogResult.stderr}`.slice(0, 8000)}
+\`\`\`
+
+### Bug Triage
+
+\`\`\`text
+${bugTriageResult.command}
+\`\`\`
+
+Exit code: ${bugTriageResult.status}
+
+\`\`\`text
+${`${bugTriageResult.stdout}\n${bugTriageResult.stderr}`.slice(0, 8000)}
+\`\`\`
+`;
+
+writeText("docs/agent-reports/beta-check.md", body);
+writeProjectStatus(snapshot, {
+  tests: {
+    status: testsResult.status === 0 ? "passed" : "failed",
+    lastRun: nowIso(),
+    command: testsResult.command,
+  },
+  beta: {
+    status: passed ? "passed" : "failed",
+    lastRun: nowIso(),
+    report: "docs/agent-reports/beta-check.md",
+  },
+});
+
+appendAgentLog(
+  "codex-node",
+  `beta-check status=${passed ? "completed" : "failed"} missing=${missing.length} tests=${testsResult.status} locks=${locksResult.status} watchdog=${watchdogResult.status}`,
+);
+process.stdout.write(testsResult.stdout);
+process.stderr.write(testsResult.stderr);
+
+if (!passed) {
+  console.error("Beta check failed.");
+  console.error("Report: docs/agent-reports/beta-check.md");
+  process.exit(1);
+}
+
+console.log("Beta check completed.");
+console.log("Report: docs/agent-reports/beta-check.md");

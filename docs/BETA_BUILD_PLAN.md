@@ -1,50 +1,80 @@
-# Beta Build Plan
+# FASE 2 - Beta Build Plan
 
-Last updated: 2026-05-30
-Target: stable, demonstrable, sellable beta within 7 days.
+Fecha: 2026-05-31
+Objetivo: beta stable build en 7 dias, sin implementar features durante FASE 2.
 
-## Day 1 - Restore And Governance
+## Dia 1 - Restore + Validation + Governance
 
-- Restore ZIP into clean folder.
-- Install dependencies with detected package manager.
-- Run lint, typecheck, build and smoke.
-- Initialize Git safely.
-- Refresh governance, ownership, audit and setup docs.
+- Restore audit.
+- Install/build validation.
+- Multiagent governance.
+- Ownership and anti-conflict rules.
 
-## Day 2 - CMS Core
+## Dia 2 - CMS / Backend / RBAC
 
-- Persist CMS baseline.
-- Harden CEO/Admin dashboard.
-- Confirm RBAC and tenant isolation contracts.
-- Add audit logs for critical CMS actions.
+Agente sugerido: Full Stack Agent.
 
-## Day 3 - Demo Sandbox And Route Simulation
+Modulos:
 
-- Formalize `routeSimulationEngine` event contract.
-- Sync operator, driver and customer demo state.
-- Add incident and SLA risk timeline.
+- CMS core.
+- Backend API contracts.
+- RBAC.
+- Tenant isolation.
+- Audit logs.
 
-## Day 4 - Maps And Tracking
+## Dia 3 - Demo UX / Driver UX / Route Engine
 
-- Keep local/MapLibre fallback mandatory.
-- Add provider abstraction for Google key mode.
-- Document Google TrafficLayer, Routes, 3D and Apple MapKit tradeoffs.
+Agentes sugeridos: Full Stack Agent, UX/UI Agent.
 
-## Day 5 - Telegram And Bug Assistant
+Modulos:
 
-- Add Telegram command router and webhook setup.
-- Convert assistant into structured bug reporter.
-- Route critical bugs to Telegram and ACTIVE_TASKS.
+- Route engine.
+- Demo sandbox.
+- Driver portal.
+- Customer tracking.
 
-## Day 6 - QA
+## Dia 4 - Maps
 
-- Add Playwright critical path tests.
-- Run regression and fix critical bugs.
-- Update docs and beta checklist.
+Agente sugerido: Maps Agent.
 
-## Day 7 - Stable Build
+Modulos:
 
-- Run final release gates.
-- Prepare release notes and changelog.
-- Send Telegram stable build update if configured.
-- Hand off staging build.
+- Map fallback.
+- Google Maps research.
+- Traffic integration.
+
+## Dia 5 - Telegram + Bug Assistant
+
+Agentes sugeridos: Telegram Agent, Bug Assistant Agent.
+
+Modulos:
+
+- Telegram bot.
+- Project updates.
+- Internal bug chatbot.
+- Bug routing.
+
+## Dia 6 - QA
+
+Agente sugerido: QA Agent.
+
+Modulos:
+
+- tests.
+- webtester.
+- regression.
+
+## Dia 7 - Beta Stable Handoff
+
+Agentes sugeridos: Codex Node, Docs Agent, QA Agent.
+
+Modulos:
+
+- release checklist.
+- changelog.
+- final handoff.
+- stable build evidence.
+
+## Regla
+
+No avanzar a implementacion hasta que el usuario autorice la siguiente fase.

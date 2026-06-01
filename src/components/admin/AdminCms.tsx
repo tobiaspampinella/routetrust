@@ -27,7 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { buildDemoTrackingProjection, getTrackingSimulationElapsedSeconds } from "@/lib/trackingSimulation";
+import { buildDemoRouteSimulation } from "@/lib/routeSimulationEngine";
 import type { CustomerTrackingCms, DeliveryPriority, MapProviderMode, TrafficLevel } from "@/lib/types";
 import { useRoutePulseStore } from "@/store/routePulseStore";
 import { useShallow } from "zustand/react/shallow";
@@ -118,19 +118,21 @@ export function AdminCms() {
     );
   }, [dirty, trackingCms]);
 
-  const elapsedSeconds = getTrackingSimulationElapsedSeconds(trackingCms, now || Date.now());
-  const projection = useMemo(
+  const simulation = useMemo(
     () =>
-      buildDemoTrackingProjection(
-        trackingCms.demoStops,
+      buildDemoRouteSimulation({
         settings,
-        elapsedSeconds,
-        draft.showNextStopsCount,
-        draft.liveSimulationSpeed,
-        trackingCms.simulationStarted || elapsedSeconds > 0,
-      ),
-    [draft.liveSimulationSpeed, draft.showNextStopsCount, elapsedSeconds, settings, trackingCms.demoStops, trackingCms.simulationStarted],
+        trackingCms: {
+          ...trackingCms,
+          liveSimulationSpeed: draft.liveSimulationSpeed,
+          showNextStopsCount: draft.showNextStopsCount,
+        },
+        now: now || Date.now(),
+      }),
+    [draft.liveSimulationSpeed, draft.showNextStopsCount, now, settings, trackingCms],
   );
+  const elapsedSeconds = simulation.elapsedSeconds;
+  const projection = simulation.projection;
 
   const canAddStop = trackingCms.demoStops.length < 5;
   const demoStatus = trackingCms.simulationStarted

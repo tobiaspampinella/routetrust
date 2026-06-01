@@ -1,50 +1,38 @@
-# Demo Sandbox Spec - RoutePulse AI
+# Demo Sandbox Spec
 
-Fecha: 2026-05-27
+Fecha: 2026-05-31
+Estado: especificacion basada en auditoria FASE 4.
 
 ## Objetivo
 
-El Demo Sandbox debe ser un entorno comercial seguro para mostrar RoutePulse AI sin modificar datos productivos. Debe permitir simular una operacion de ultima milla con ruta, driver, camion, cliente, ETA, SLA, trafico, incidentes y aprobaciones humanas.
+El Demo Sandbox debe permitir mostrar una operacion de ultima milla sin tocar datos productivos. Debe simular rutas, driver, camion, ETA, trafico, incidentes, entregas y aprobaciones humanas.
 
-## Posicionamiento
+## Superficies
 
-RoutePulse AI es una plataforma **AI-built, human-orchestrated Operational Intelligence Platform for logistics operations**.
+### Operador
 
-El sandbox no debe comunicar que la IA reemplaza operadores. Debe demostrar que el sistema sugiere, estima y detecta riesgo, mientras el humano aprueba decisiones criticas.
+Ubicacion actual:
 
-## Vistas
+- `/admin/cms`
+- Tab `Enterprise`, seccion `Demo sandbox`
+- Tab `Demo Builder`
 
-### Vista Operador
+Debe permitir:
 
-Ubicacion actual: `/admin/cms` en tab `Enterprise > Demo sandbox` y `Demo Builder`.
+- Activar o desactivar sandbox.
+- Generar datos ficticios.
+- Reiniciar solo datos demo.
+- Iniciar y pausar camion.
+- Cambiar velocidad.
+- Simular trafico.
+- Simular calle bloqueada.
+- Simular retraso.
+- Simular entrega completada.
+- Simular entrega fallida.
+- Crear approval request demo.
+- Ver timeline de eventos.
 
-Debe mostrar:
-
-- estado sandbox
-- ruta activa
-- camion/driver simulado
-- ETA y SLA risk
-- trafico simulado
-- incidentes
-- panel de aprobacion humana
-- timeline de eventos
-- acciones seguras de simulacion
-
-Acciones beta:
-
-- activar/desactivar demo
-- resetear datos demo
-- generar datos ficticios
-- iniciar simulacion de camion
-- pausar simulacion
-- modificar velocidad
-- simular trafico
-- simular calle bloqueada
-- simular retraso
-- simular entrega completada
-- simular entrega fallida
-
-### Vista Driver
+### Driver
 
 Ubicacion actual:
 
@@ -53,16 +41,16 @@ Ubicacion actual:
 
 Debe permitir:
 
-- login driver demo
-- ver ruta asignada
-- iniciar ruta
-- marcar llegada
-- marcar entregado
-- reportar entrega fallida/incidencia
-- pausar/reanudar
-- finalizar ruta cuando no quedan paradas
+- Ver ruta asignada.
+- Iniciar ruta.
+- Marcar llegada.
+- Marcar entrega completada.
+- Marcar entrega fallida con motivo.
+- Pausar con motivo.
+- Reanudar.
+- Ver paradas restantes.
 
-### Vista Cliente Final
+### Cliente
 
 Ubicacion actual:
 
@@ -70,84 +58,85 @@ Ubicacion actual:
 
 Debe mostrar:
 
-- tracking simplificado
-- ETA en ventana
-- estado de pedido
-- ubicacion aproximada
-- mensaje de incidencia si aplica
-- privacidad: no mostrar datos de otros clientes
+- ETA en ventana.
+- Estado del pedido.
+- Camion o ubicacion aproximada.
+- Paradas anonimizadas.
+- Ultimo evento.
+- Soporte.
+- Nota de privacidad.
 
-## Mapa y tracking
+## Modelo de evento
 
-Estado actual:
+Cada evento sandbox debe tener:
 
-- fallback local 2.5D con camion animado
-- Google Maps provider-ready con `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
-
-Beta recomendada:
-
-- mantener fallback local estable
-- activar Google Maps real solo cuando haya API key legal
-- agregar MapLibre/OpenStreetMap como siguiente proveedor si se acepta dependencia externa
-- no bloquear la beta por Google Photorealistic 3D Tiles
-
-## Modelo de ruta demo
-
-Ruta conceptual:
-
-```ts
-type RoutePoint = {
-  lat: number;
-  lng: number;
-  elevation?: number;
-  speedLimit?: number;
-  trafficLevel?: "low" | "medium" | "high";
-  streetStatus?: "clear" | "traffic" | "blocked" | "incident";
-  checkpointType?: "pickup" | "delivery" | "waypoint";
-};
-```
-
-La beta actual usa `TrackingDemoStop` con `lat/lng`, `trafficLevel`, `dropoffMinutes` y `priority`.
-
-## Eventos sandbox
+- id
+- tenantId
+- sandboxId
+- type
+- actorId
+- actorRole
+- payload
+- result
+- createdAt
 
 Eventos minimos:
 
-- sandbox_generated
-- simulation_started
-- simulation_paused
-- speed_changed
-- traffic_simulated
-- street_blocked
-- delay_simulated
-- delivery_completed
-- delivery_failed
-- incident_created
-- route_approval_requested
-- route_approved_by_human
-- route_rejected_by_human
+- `sandbox_generated`
+- `simulation_started`
+- `simulation_paused`
+- `speed_changed`
+- `traffic_simulated`
+- `street_blocked`
+- `delay_simulated`
+- `delivery_completed`
+- `delivery_failed`
+- `incident_created`
+- `route_approval_requested`
+- `route_approved_by_human`
+- `route_rejected_by_human`
 
-Cada evento debe mostrarse en timeline y generar audit log CMS cuando ocurre desde admin.
+## Estado de sandbox
 
-## Human Approval Layer
+Campos minimos:
 
-Acciones que requieren decision humana:
+- enabled
+- status: `empty`, `ready`, `running`, `paused`
+- truckSimulation: `idle`, `running`, `paused`
+- speedMultiplier
+- trafficScenario: `normal`, `rush_hour`, `blocked_street`, `incident_delay`
+- activeIncident
+- delayMinutes
+- completedDeliveries
+- failedDeliveries
+- pendingApprovals
+- lastGeneratedAt
 
-- aprobacion final de ruta sugerida
-- reasignacion critica
-- cancelacion de ruta
-- cambio de SLA
-- cambio de permisos
-- cambio de tenant
-- configuracion operacional critica
+## Guardrails
 
-En sandbox, el sistema puede simular una sugerencia. El operador debe hacer click en aprobar/rechazar/modificar para cerrar la decision.
+- Sandbox no modifica datos productivos.
+- Acciones criticas crean approval request.
+- Cliente no ve nombres ni direcciones de otras paradas.
+- Fallback local debe funcionar sin API keys.
+- Si Google Maps falla, vuelve a fallback local.
+- MapLibre no se declara como implementado hasta instalar dependencia y provider real.
 
-## Limitaciones beta
+## Criterios de aceptacion beta
 
-- No hay backend real.
-- No hay WebSockets.
-- El estado se guarda localmente con Zustand/localStorage o estado React local segun modulo.
-- Telegram test depende de env server.
-- El trafico puede ser simulado si no hay proveedor configurado.
-- Google Maps real requiere API key y terminos/billing configurados.
+- `/track/demo` funciona sin secrets.
+- Admin puede iniciar/pausar/reiniciar demo.
+- Driver puede procesar parada mock.
+- Cliente ve ETA actualizada.
+- Evento critico queda registrado.
+- Fallo de proveedor de mapa no rompe demo.
+- No hay datos productivos mezclados con sandbox.
+- Tests smoke cubren al menos un flujo admin-driver-customer.
+
+## Dependencias no implementadas
+
+- Backend sandbox API.
+- Persistencia DB.
+- WebSocket/polling real.
+- MapLibre real.
+- Telegram event routing.
+- Bug report routing.

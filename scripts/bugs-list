@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+const { getBugReports } = require("./agent-runtime-lib.js");
+
+const reports = getBugReports();
+console.log(`Bug reports: ${reports.length}`);
+for (const report of reports.slice(0, 50)) {
+  console.log(`- ${report.id} ${report.severity} ${report.category} ${report.status} ${report.module}`);
+}

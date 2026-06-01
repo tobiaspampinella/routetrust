@@ -1,0 +1,159 @@
+#!/usr/bin/env node
+const {
+  appendAgentLog,
+  checkLocks,
+  getRuntimeSnapshot,
+  nowIso,
+  parseCliArgs,
+  readText,
+  sleep,
+  writeProjectStatus,
+  writeText,
+} = require("./agent-runtime-lib.js");
+
+async function checkServer() {
+  const candidates = [
+    process.env.APP_URL,
+    process.env.NEXT_PUBLIC_APP_URL,
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+  ].filter(Boolean);
+
+  let lastFailure = null;
+  for (const url of candidates) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      if (response.ok) {
+        return {
+          status: "on",
+          url,
+          detail: `HTTP ${response.status}`,
+        };
+      }
+      lastFailure = {
+        status: "warning",
+        url,
+        detail: `HTTP ${response.status}`,
+      };
+    } catch (error) {
+      lastFailure = {
+        status: "off",
+        url,
+        detail: error.message,
+      };
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+  return lastFailure || {
+    status: "off",
+    url: "unknown",
+    detail: "No server candidates were available.",
+  };
+}
+
+async function runOnce() {
+  const snapshot = getRuntimeSnapshot();
+  const fatalIssues = [];
+  const warnings = [];
+  const lockState = checkLocks(snapshot.activeTasks);
+  const server = await checkServer();
+  for (const agent of snapshot.agents) {
+    if (agent.lastRun === "never") {
+      fatalIssues.push(`${agent.id} has LAST_RUN never.`);
+    }
+    if (agent.status === "pending" && agent.pendingTasks.length === 0 && agent.tasks.length > 0) {
+      fatalIssues.push(`${agent.id} is pending while task evidence is already completed.`);
+    }
+  }
+
+  for (const task of snapshot.activeTasks) {
+    if (task.NORMALIZED_STATUS === "completed") {
+      const agent = snapshot.agents.find((item) => item.name === task.AGENT || item.role === task.ROLE || item.id === task.AGENT);
+      if (agent && agent.lastRun === "never") {
+        fatalIssues.push(`Task ${task.ID || "unknown"} is completed but ${agent.id} has no execution evidence.`);
+      }
+    }
+  }
+
+  if (lockState.inconsistencies.length > 0) {
+    fatalIssues.push(...lockState.inconsistencies);
+  }
+  if (/const operationalChecks = \[/.test(readText("src/app/admin/project-status/page.tsx"))) {
+    fatalIssues.push("Project status page is still static.");
+  }
+  if (!/locks:check/.test(readText("scripts/beta-check"))) {
+    fatalIssues.push("beta-check does not include locks:check.");
+  }
+  if (server.status === "off") {
+    warnings.push(`Server appears off at ${server.url}.`);
+  }
+  const issues = [...fatalIssues, ...warnings];
+
+  const report = `# Watchdog Report
+
+Generated: ${nowIso()}
+
+STATUS: ${fatalIssues.length === 0 ? (warnings.length === 0 ? "completed" : "warning") : "blocked"}
+
+## Issues
+
+${issues.length === 0 ? "- none" : issues.map((item) => `- ${item}`).join("\n")}
+`;
+
+  writeText("docs/agent-reports/watchdog.md", report);
+  writeProjectStatus(snapshot, {
+    server: {
+      status: server.status,
+      url: server.url,
+      detail: server.detail,
+      checkedAt: nowIso(),
+    },
+    locks: {
+      status: lockState.ok ? "healthy" : "warning",
+      active: lockState.activeLocks,
+      inconsistencies: lockState.inconsistencies,
+      lastUpdated: nowIso(),
+    },
+    telegram: {
+      status: "out_of_scope",
+      configured: false,
+      missingEnv: [],
+      lastRun: nowIso(),
+      report: "docs/TELEGRAM_SETUP_REQUIRED.md",
+    },
+    watchdog: {
+      status: fatalIssues.length === 0 ? (warnings.length === 0 ? "healthy" : "warning") : "blocked",
+      issues,
+      lastRun: nowIso(),
+      report: "docs/agent-reports/watchdog.md",
+    },
+  });
+  appendAgentLog(
+    "operational-auditor",
+    `watchdog status=${fatalIssues.length === 0 ? (warnings.length === 0 ? "completed" : "warning") : "blocked"} fatal=${fatalIssues.length} warnings=${warnings.length}`,
+  );
+  console.log(`Watchdog issues: ${issues.length}`);
+  if (issues.length > 0) {
+    for (const issue of issues) console.log(`- ${issue}`);
+    if (fatalIssues.length > 0) process.exit(1);
+  }
+}
+
+async function main() {
+  const args = parseCliArgs(process.argv.slice(2));
+  const watch = Boolean(args.watch);
+  const intervalMs = Number(args["interval-ms"] || 60000);
+  do {
+    await runOnce();
+    if (!watch) break;
+    sleep(intervalMs);
+  } while (watch);
+}
+
+main().catch((error) => {
+  console.error(error.stack || error.message);
+  process.exit(1);
+});

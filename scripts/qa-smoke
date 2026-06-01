@@ -1,0 +1,61 @@
+#!/usr/bin/env node
+const { appendAgentLog, fileExists, nowIso, runPackageScript, writeText } = require("./agent-runtime-lib.js");
+
+const requiredFiles = [
+  "src/lib/routeSimulationEngine.ts",
+  "src/lib/projectIntelligence.ts",
+  "src/lib/bugReporting.ts",
+  "src/app/api/bugs/route.ts",
+  "src/app/api/cms/telegram/project-intelligence/route.ts",
+  "docs/BETA_STABLE_CRITERIA.md",
+];
+
+const missing = requiredFiles.filter((file) => !fileExists(file));
+const testResult = runPackageScript("test");
+const passed = missing.length === 0 && testResult.status === 0;
+
+writeText(
+  "docs/agent-reports/qa-smoke.md",
+  `# QA Smoke Report
+
+Generated: ${nowIso()}
+
+STATUS: ${passed ? "completed" : "failed"}
+
+## Required Files
+
+${missing.length === 0 ? "- none missing" : missing.map((file) => `- missing: ${file}`).join("\n")}
+
+## Command
+
+\`\`\`text
+${testResult.command}
+\`\`\`
+
+Exit code: ${testResult.status}
+
+## Stdout
+
+\`\`\`text
+${testResult.stdout.slice(0, 12000)}
+\`\`\`
+
+## Stderr
+
+\`\`\`text
+${testResult.stderr.slice(0, 12000)}
+\`\`\`
+`,
+);
+
+appendAgentLog("qa-analyst", `qa-smoke status=${passed ? "completed" : "failed"} missing=${missing.length} testExit=${testResult.status}`);
+process.stdout.write(testResult.stdout);
+process.stderr.write(testResult.stderr);
+
+if (!passed) {
+  console.error(`QA smoke failed. Missing files: ${missing.length}. Test exit: ${testResult.status}.`);
+  process.exit(1);
+}
+
+console.log("QA smoke completed.");
+console.log("Report: docs/agent-reports/qa-smoke.md");

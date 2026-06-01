@@ -1,19 +1,25 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   AlertTriangle,
+  Bell,
   Boxes,
+  Bug,
   CheckCircle2,
   Clock3,
+  Map,
   Package,
   PackageCheck,
   PackageX,
   Radar,
   Sparkles,
   Route,
+  ShieldCheck,
   Truck,
   Users,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RouteMapPlaceholder } from "@/components/shared/RouteMapPlaceholder";
@@ -23,11 +29,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { calculateOperationsKpis, calculateRouteStats, getPackagesForRoute } from "@/lib/kpiCalculations";
 import { generateOperationalInsights } from "@/lib/operationalInsights";
+import { betaCoreModules, buildProjectIntelligenceReport } from "@/lib/projectIntelligence";
+import { APP_VERSION } from "@/lib/version";
+import { getDefaultEnterpriseCmsState } from "@/services/cms/cmsService";
 import { formatPercent } from "@/lib/utils";
 import { useRoutePulseStore } from "@/store/routePulseStore";
 import { useShallow } from "zustand/react/shallow";
+import type { BugReport } from "@/lib/bugReporting";
 
 export function AdminDashboard() {
+  const [recentBugs, setRecentBugs] = useState<BugReport[]>([]);
   const data = useRoutePulseStore(
     useShallow((state) => ({
       company: state.company,
@@ -40,10 +51,22 @@ export function AdminDashboard() {
       users: state.users,
       zones: state.zones,
       trackingCms: state.trackingCms,
+      incidents: state.incidents,
     })),
   );
+  const cmsState = getDefaultEnterpriseCmsState();
   const kpis = calculateOperationsKpis(data);
   const insights = generateOperationalInsights(data.routes, data.packages, data.drivers, data.settings);
+  const openIncidents = data.incidents.filter((incident) => incident.status !== "resolved");
+  const pendingApprovals = cmsState.approvalRequests.filter((request) => request.status === "pending");
+  const betaReport = buildProjectIntelligenceReport({
+    appVersion: APP_VERSION,
+    buildStatus: openIncidents.some((incident) => incident.severity === "high") ? "warning" : "ready",
+    modules: betaCoreModules,
+    risks: openIncidents.some((incident) => incident.severity === "high")
+      ? ["High severity incident open in demo operations."]
+      : ["No production database yet; beta uses local state."],
+  });
   const routeStats = data.routes.map((route) => ({
     route,
     stats: calculateRouteStats(route, data.packages, data.settings),
@@ -53,6 +76,23 @@ export function AdminDashboard() {
   const riskRoutes = routeStats.filter((item) => item.stats.risk !== "risk_low").length;
   const primaryRoute = routeStats[0]?.route;
   const primaryPackages = primaryRoute ? getPackagesForRoute(primaryRoute.id, data.packages) : [];
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadRecentBugs() {
+      const response = await fetch("/api/bugs", { credentials: "include" }).catch(() => null);
+      const payload = response?.ok ? ((await response.json().catch(() => null)) as { reports?: BugReport[] } | null) : null;
+      if (!active || !payload?.reports) return;
+      setRecentBugs(payload.reports.slice(0, 5));
+    }
+
+    loadRecentBugs();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <AdminShell>
@@ -86,6 +126,110 @@ export function AdminDashboard() {
             tone="slate"
           />
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>CEO beta overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+              <BetaReadinessTile
+                icon={ShieldCheck}
+                label="Core beta"
+                value={`${betaReport.implementedModules}/${betaReport.modules.filter((module) => module.status !== "excluded").length}`}
+                detail={`${betaReport.partialModules} partial`}
+                tone="green"
+              />
+              <BetaReadinessTile
+                icon={Clock3}
+                label="Human approval"
+                value={pendingApprovals.length}
+                detail="pending decisions"
+                tone={pendingApprovals.length ? "amber" : "green"}
+              />
+              <BetaReadinessTile
+                icon={AlertTriangle}
+                label="Incidents"
+                value={openIncidents.length}
+                detail="open operational"
+                tone={openIncidents.length ? "amber" : "green"}
+              />
+              <BetaReadinessTile
+                icon={Radar}
+                label="Audit logs"
+                value={cmsState.auditLogs.length}
+                detail="local events"
+                tone="blue"
+              />
+              <BetaReadinessTile
+                icon={Bell}
+                label="Telegram bot"
+                value="Basic"
+                detail="project intelligence"
+                tone="blue"
+              />
+              <BetaReadinessTile
+                icon={Map}
+                label="Maps"
+                value="Fallback"
+                detail="mock ready"
+                tone="green"
+              />
+            </div>
+            <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_1fr]">
+              <div className="rounded-2xl border border-border bg-slate-50 p-4">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500">
+                  <Bug className="h-4 w-4" />
+                  Bug assistant
+                </div>
+                <p className="mt-2 text-sm font-semibold text-slate-800">
+                  Assistant intake now persists locally, captures page context, classifies severity, and routes to real agent owners.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border bg-slate-50 p-4">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500">
+                  <Route className="h-4 w-4" />
+                  Route simulation engine
+                </div>
+                <p className="mt-2 text-sm font-semibold text-slate-800">
+                  Contrato puro activo para snapshot demo, eventos auditables y fallback map-ready.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Agent triage queue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {recentBugs.length === 0 ? (
+                <div className="rounded-lg border border-border bg-slate-50 p-4 text-sm text-slate-500">
+                  No persisted tickets yet. The queue will populate after the assistant creates durable reports.
+                </div>
+              ) : (
+                recentBugs.map((bug) => (
+                  <div key={bug.id} className="rounded-lg border border-border p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-slate-950">{bug.title}</p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {bug.id} · {bug.pageContext?.pageLabel || bug.routePath || "Unknown page"}
+                        </p>
+                      </div>
+                      <StatusBadge type="risk" status={bug.severity === "P0" || bug.severity === "P1" ? "risk_high" : bug.severity === "P2" ? "risk_medium" : "risk_low"} />
+                    </div>
+                    <p className="mt-3 text-xs text-slate-600">
+                      {bug.category} · {bug.status} · {bug.assignedAgents.join(", ")}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
           <Card className="animate-fade-in-up opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
@@ -148,5 +292,36 @@ export function AdminDashboard() {
         </Card>
       </div>
     </AdminShell>
+  );
+}
+
+function BetaReadinessTile({
+  icon: Icon,
+  label,
+  value,
+  detail,
+  tone,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string | number;
+  detail: string;
+  tone: "green" | "amber" | "blue";
+}) {
+  const toneClass = {
+    green: "bg-emerald-50 text-emerald-700",
+    amber: "bg-amber-50 text-amber-700",
+    blue: "bg-sky-50 text-sky-700",
+  }[tone];
+
+  return (
+    <div className="rounded-2xl border border-border bg-white p-4">
+      <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${toneClass}`}>
+        <Icon className="h-5 w-5" />
+      </div>
+      <p className="mt-3 text-xs font-bold uppercase text-slate-500">{label}</p>
+      <p className="mt-1 text-xl font-black text-slate-950">{value}</p>
+      <p className="mt-1 text-xs font-semibold text-slate-500">{detail}</p>
+    </div>
   );
 }

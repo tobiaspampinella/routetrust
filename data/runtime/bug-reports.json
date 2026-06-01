@@ -1,0 +1,178 @@
+{
+  "reports": [
+    {
+      "id": "bug-1780283066911-hgt2e1",
+      "source": "admin",
+      "module": "general",
+      "title": "beta audit smoke",
+      "description": "smoke evidence",
+      "severity": "P3",
+      "status": "triaged",
+      "category": "qa",
+      "intent": "qa_validation",
+      "createdAt": "2026-06-01T03:04:26.911Z",
+      "updatedAt": "2026-06-01T03:15:59.918Z",
+      "assignedAgents": [
+        "bug-triage-agent",
+        "local-website-assistant-agent",
+        "qa-validation-agent"
+      ],
+      "reproductionSteps": [
+        "Open general.",
+        "Trigger the reported behavior.",
+        "Compare actual result against expected flow."
+      ],
+      "actualResult": "smoke evidence",
+      "createdBy": {
+        "id": "user-admin-001",
+        "name": "Admin Demo",
+        "role": "admin"
+      },
+      "tags": [
+        "qa",
+        "qa_validation",
+        "general",
+        "admin",
+        "unknown-page"
+      ]
+    },
+    {
+      "id": "bug-1780280592244-jxnaz4",
+      "source": "admin",
+      "module": "admin",
+      "routePath": "/admin/bug-reports",
+      "title": "[P2] Admin Dashboard - admin bug",
+      "description": "seguis bugeado",
+      "severity": "P2",
+      "status": "triaged",
+      "category": "bug",
+      "intent": "bug_report",
+      "createdAt": "2026-06-01T02:23:12.244Z",
+      "updatedAt": "2026-06-01T03:15:59.918Z",
+      "assignedAgents": [
+        "bug-triage-agent",
+        "local-website-assistant-agent",
+        "fullstack-bug-fix-agent"
+      ],
+      "reproductionSteps": [
+        "Open /admin/bug-reports.",
+        "Use the Admin Dashboard flow tied to admin.",
+        "Observe the behavior described in the report."
+      ],
+      "expectedResult": "Admin Dashboard should behave consistently with its intended operations dashboard, kpis, incidents, and agent coordination.",
+      "actualResult": "seguis bugeado",
+      "quickResponse": "Admin Dashboard: bug intake classified as P2. Primary owner: Bug Triage Agent. The report now includes page context, module, and reproduction guidance.",
+      "createdBy": {
+        "id": "user-admin-001",
+        "name": "Admin Demo",
+        "role": "admin"
+      },
+      "pageContext": {
+        "pathname": "/admin/bug-reports",
+        "pageKey": "admin-dashboard",
+        "pageLabel": "Admin Dashboard",
+        "module": "admin",
+        "source": "admin",
+        "summary": "Operations dashboard, KPIs, incidents, and agent coordination."
+      },
+      "tags": [
+        "bug",
+        "bug_report",
+        "admin",
+        "admin-dashboard"
+      ]
+    },
+    {
+      "id": "bug-1780280587877-i4jxm5",
+      "source": "admin",
+      "module": "admin",
+      "routePath": "/admin/bug-reports",
+      "title": "[P3] Admin Dashboard - admin bug",
+      "description": "hola",
+      "severity": "P3",
+      "status": "triaged",
+      "category": "bug",
+      "intent": "bug_report",
+      "createdAt": "2026-06-01T02:23:07.877Z",
+      "updatedAt": "2026-06-01T03:15:59.918Z",
+      "assignedAgents": [
+        "bug-triage-agent",
+        "local-website-assistant-agent",
+        "fullstack-bug-fix-agent"
+      ],
+      "reproductionSteps": [
+        "Open /admin/bug-reports.",
+        "Use the Admin Dashboard flow tied to admin.",
+        "Observe the behavior described in the report."
+      ],
+      "expectedResult": "Admin Dashboard should behave consistently with its intended operations dashboard, kpis, incidents, and agent coordination.",
+      "actualResult": "hola",
+      "quickResponse": "Admin Dashboard: bug intake classified as P3. Primary owner: Bug Triage Agent. The report now includes page context, module, and reproduction guidance.",
+      "createdBy": {
+        "id": "user-admin-001",
+        "name": "Admin Demo",
+        "role": "admin"
+      },
+      "pageContext": {
+        "pathname": "/admin/bug-reports",
+        "pageKey": "admin-dashboard",
+        "pageLabel": "Admin Dashboard",
+        "module": "admin",
+        "source": "admin",
+        "summary": "Operations dashboard, KPIs, incidents, and agent coordination."
+      },
+      "tags": [
+        "bug",
+        "bug_report",
+        "admin",
+        "admin-dashboard"
+      ]
+    },
+    {
+      "id": "bug-1780280584002-twpqe8",
+      "source": "admin",
+      "module": "admin",
+      "routePath": "/admin/bug-reports",
+      "title": "[P3] Admin Dashboard - admin qa",
+      "description": "test chat bot}",
+      "severity": "P3",
+      "status": "triaged",
+      "category": "qa",
+      "intent": "qa_validation",
+      "createdAt": "2026-06-01T02:23:04.002Z",
+      "updatedAt": "2026-06-01T03:15:59.918Z",
+      "assignedAgents": [
+        "bug-triage-agent",
+        "local-website-assistant-agent",
+        "qa-validation-agent"
+      ],
+      "reproductionSteps": [
+        "Open /admin/bug-reports.",
+        "Use the Admin Dashboard flow tied to admin.",
+        "Observe the behavior described in the report."
+      ],
+      "expectedResult": "Admin Dashboard should behave consistently with its intended operations dashboard, kpis, incidents, and agent coordination.",
+      "actualResult": "test chat bot}",
+      "quickResponse": "Admin Dashboard: qa intake classified as P3. Primary owner: Bug Triage Agent. The report now includes page context, module, and reproduction guidance.",
+      "createdBy": {
+        "id": "user-admin-001",
+        "name": "Admin Demo",
+        "role": "admin"
+      },
+      "pageContext": {
+        "pathname": "/admin/bug-reports",
+        "pageKey": "admin-dashboard",
+        "pageLabel": "Admin Dashboard",
+        "module": "admin",
+        "source": "admin",
+        "summary": "Operations dashboard, KPIs, incidents, and agent coordination."
+      },
+      "tags": [
+        "qa",
+        "qa_validation",
+        "admin",
+        "admin-dashboard"
+      ]
+    }
+  ]
+}

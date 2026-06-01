@@ -387,6 +387,29 @@ export const initialRoutePulseData: RoutePulseData = {
   })),
   packages: generatePackages(),
   zones: zoneProfiles,
+  incidents: [
+    {
+      id: "incident-demo-001",
+      routeId: "route-002",
+      packageId: "pkg-026",
+      title: "Pausa extendida por incidente vial",
+      detail: "Impacta ETA de la ruta en GBA Oeste y requiere seguimiento del dispatcher.",
+      severity: "high",
+      status: "open",
+      source: "system",
+      createdAt: "2026-05-27T10:24:00.000Z",
+    },
+    {
+      id: "incident-demo-002",
+      routeId: "route-001",
+      title: "Cliente ausente reportado",
+      detail: "Driver marco una entrega fallida y requiere reintento o contacto CX.",
+      severity: "medium",
+      status: "in_review",
+      source: "driver",
+      createdAt: "2026-05-27T10:40:00.000Z",
+    },
+  ],
 };
 
 export function cloneInitialRoutePulseData() {

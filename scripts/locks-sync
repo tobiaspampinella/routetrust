@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+const { parseActiveTasks, syncLockedFilesDoc } = require("./agent-runtime-lib.js");
+
+const tasks = parseActiveTasks();
+const locks = syncLockedFilesDoc(tasks);
+console.log(`Active locks: ${locks.length}`);
+for (const lock of locks) {
+  console.log(`- ${lock.file}: ${lock.owners.join(", ")}`);
+}

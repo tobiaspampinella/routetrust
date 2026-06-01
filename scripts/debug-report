@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+const { runPackageScript } = require("./agent-runtime-lib.js");
+
+const result = runPackageScript("debug:scan");
+process.stdout.write(result.stdout);
+process.stderr.write(result.stderr);
+if (result.status !== 0) process.exit(result.status);

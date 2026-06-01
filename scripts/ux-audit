@@ -1,0 +1,49 @@
+#!/usr/bin/env node
+const { getRuntimeSnapshot, nowIso, readText, writeProjectStatus, writeText } = require("./agent-runtime-lib.js");
+
+const targets = [
+  { label: "CMS/Admin CEO", file: "src/components/admin/AdminDashboard.tsx" },
+  { label: "Project Status Dashboard", file: "src/app/admin/project-status/page.tsx" },
+  { label: "Demo Sandbox", file: "src/components/admin/CmsEnterpriseOverview.tsx" },
+  { label: "Driver Portal", file: "src/components/driver/DriverRoute.tsx" },
+  { label: "Customer Tracking", file: "src/components/customer/FleetTrackingMap.tsx" },
+  { label: "Local Agent Widget", file: "src/components/shared/CxAssistantWidget.tsx" },
+];
+
+const findings = [];
+for (const target of targets) {
+  const content = readText(target.file);
+  if (!content.trim()) {
+    findings.push(`${target.label}: missing source file ${target.file}.`);
+    continue;
+  }
+  if (/Â|Ã|�/.test(content)) findings.push(`${target.label}: mojibake detected in ${target.file}.`);
+  if (/TODO|placeholder|lorem ipsum/i.test(content)) findings.push(`${target.label}: generic placeholder copy detected in ${target.file}.`);
+  if (!/empty|loading|error|fallback/i.test(content)) findings.push(`${target.label}: no obvious empty/loading/error guidance detected in ${target.file}.`);
+}
+
+const report = `# UX Audit Report
+
+Generated: ${nowIso()}
+
+STATUS: ${findings.length === 0 ? "completed" : "warning"}
+
+## Scope
+
+${targets.map((target) => `- ${target.label}: ${target.file}`).join("\n")}
+
+## Findings
+
+${findings.length === 0 ? "- No critical UX text issues detected in the audited files." : findings.map((item) => `- ${item}`).join("\n")}
+`;
+
+writeText("docs/UX_AUDIT_REPORT.md", report);
+writeProjectStatus(getRuntimeSnapshot(), {
+  build: {
+    status: findings.length === 0 ? "healthy" : "warning",
+    lastRun: nowIso(),
+    detail: "UX audit completed.",
+  },
+});
+console.log("UX audit report written to docs/UX_AUDIT_REPORT.md");
+if (findings.length > 0) process.exit(1);

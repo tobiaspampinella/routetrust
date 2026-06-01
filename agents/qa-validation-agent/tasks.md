@@ -1,0 +1,3 @@
+- Confirm reported severity and reproduction.
+- Run regression checks after implementation changes.
+- Mark tickets ready for closure or bounce them back.

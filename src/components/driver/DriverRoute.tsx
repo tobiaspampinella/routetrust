@@ -15,12 +15,14 @@ import { formatPercent } from "@/lib/utils";
 import { useRoutePulseStore } from "@/store/routePulseStore";
 import { DriverMap } from "@/components/customer/DriverMap";
 
-const failReasons = ["cliente ausente", "dirección incorrecta", "acceso imposible", "rechazo", "otro"];
-const pauseReasons = ["comida", "baño", "combustible", "incidente", "otro"];
+const failReasons = ["cliente ausente", "direccion incorrecta", "acceso imposible", "rechazo", "otro"];
+const pauseReasons = ["comida", "bano", "combustible", "incidente", "otro"];
+const incidentReasons = ["calle bloqueada", "cliente reporta problema", "unidad con falla", "zona insegura", "otro"];
 
 export function DriverRoute() {
   const [failOpen, setFailOpen] = useState(false);
   const [pauseOpen, setPauseOpen] = useState(false);
+  const [incidentOpen, setIncidentOpen] = useState(false);
   const currentUser = useRoutePulseStore((state) => state.currentUser);
   const routes = useRoutePulseStore((state) => state.routes);
   const packages = useRoutePulseStore((state) => state.packages);
@@ -31,6 +33,7 @@ export function DriverRoute() {
   const markFailed = useRoutePulseStore((state) => state.markFailed);
   const pauseRoute = useRoutePulseStore((state) => state.pauseRoute);
   const resumeRoute = useRoutePulseStore((state) => state.resumeRoute);
+  const reportIncident = useRoutePulseStore((state) => state.reportIncident);
 
   const route = routes.find((item) => item.id === currentUser?.assignedRouteId);
   const routePackages = route ? getPackagesForRoute(route.id, packages) : [];
@@ -62,10 +65,24 @@ export function DriverRoute() {
     showToast(`Ruta pausada: ${reason}`);
   }
 
+  function submitIncident(reason: string) {
+    if (!route) return;
+    reportIncident({
+      routeId: route.id,
+      packageId: currentStop?.id,
+      title: `Incidencia driver en ${route.id}`,
+      detail: reason,
+      severity: reason === "calle bloqueada" || reason === "zona insegura" ? "high" : "medium",
+      source: "driver",
+    });
+    setIncidentOpen(false);
+    showToast(`Incidencia reportada: ${reason}`);
+  }
+
   function handleDeliver() {
     if (!route) return;
     markDelivered(route.id);
-    showToast("¡Paquete entregado!");
+    showToast("Paquete entregado.");
   }
 
   return (
@@ -97,7 +114,7 @@ export function DriverRoute() {
                   <div className="space-y-5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-slate-500">Próxima parada</p>
+                        <p className="text-sm font-semibold text-slate-500">Proxima parada</p>
                         <h2 className="mt-1 text-xl font-bold text-slate-950">{currentStop.customerName}</h2>
                         <p className="mt-2 flex items-start gap-2 text-sm text-slate-600">
                           <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-sky-700" />
@@ -152,9 +169,9 @@ export function DriverRoute() {
               <div className="grid grid-cols-2 gap-3">
                 <Button variant="outline" size="lg" onClick={() => markArrived(route.id)} disabled={isPaused || isComplete}>
                   <MapPin className="h-5 w-5" />
-                  Llegué
+                  Llegue
                 </Button>
-                <Button variant="success" size="lg" onClick={() => markDelivered(route.id)} disabled={isPaused || isComplete}>
+                <Button variant="success" size="lg" onClick={handleDeliver} disabled={isPaused || isComplete}>
                   <CheckCircle2 className="h-5 w-5" />
                   Entregado
                 </Button>
@@ -169,13 +186,17 @@ export function DriverRoute() {
                   Pausar
                 </Button>
               </div>
+              <Button variant="outline" size="lg" onClick={() => setIncidentOpen(true)} disabled={isComplete}>
+                <AlertTriangle className="h-5 w-5" />
+                Reportar incidencia
+              </Button>
             </div>
 
             {route.pauseReason ? (
               <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800">
                 <AlertTriangle className="h-5 w-5" />
                 <p className="text-sm font-semibold">
-                  Pausa activa: {route.pauseReason}. La pausa impactó el ETA de las próximas entregas.
+                  Pausa activa: {route.pauseReason}. La pausa impacto el ETA de las proximas entregas.
                 </p>
               </div>
             ) : null}
@@ -199,9 +220,9 @@ export function DriverRoute() {
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-slate-900">{item.customerName}</p>
                           <p className="truncate text-xs text-slate-500">
-                            {item.estimatedArrivalWindowStart} - {item.estimatedArrivalWindowEnd} · {item.stopsBeforeCustomer} antes
+                            {item.estimatedArrivalWindowStart} - {item.estimatedArrivalWindowEnd} - {item.stopsBeforeCustomer} antes
                           </p>
-                          <p className="truncate text-xs text-slate-500">{item.locality} · {item.addressReference}</p>
+                          <p className="truncate text-xs text-slate-500">{item.locality} - {item.addressReference}</p>
                         </div>
                       </div>
                       <StatusBadge type="package" status={item.status} />
@@ -213,6 +234,7 @@ export function DriverRoute() {
 
             <ReasonModal open={failOpen} onOpenChange={setFailOpen} title="Motivo por el que no pude entregar" reasons={failReasons} onSelect={submitFail} />
             <ReasonModal open={pauseOpen} onOpenChange={setPauseOpen} title="Motivo de pausa" reasons={pauseReasons} onSelect={submitPause} />
+            <ReasonModal open={incidentOpen} onOpenChange={setIncidentOpen} title="Reportar incidencia operativa" reasons={incidentReasons} onSelect={submitIncident} />
           </>
         ) : (
           <Card>

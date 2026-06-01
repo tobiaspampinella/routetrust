@@ -1,20 +1,21 @@
-# Environment Setup
+# FASE 0 - Environment Setup Audit
 
-Date: 2026-05-30
-Status: restored and build-validated with local workaround
+Fecha local: 2026-05-30T22:54:37-05:00
+Workspace: `C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester`
 
-## Machine
+## Herramientas detectadas
 
-- OS: Microsoft Windows 11 Home 10.0.26200
-- Git: 2.54.0.windows.1
-- Docker: not available on PATH
-- PATH Node: blocked by Windows with `Acceso denegado`
-- Bundled Node used for validation: `v24.14.0`
-- npm used for validation: `11.16.0`, downloaded into `C:\Users\tobii\.codex\tmp\npm-cli`
+| Herramienta | Estado | Evidencia |
+|---|---:|---|
+| Node en PATH | Bloqueado | `Acceso denegado` al ejecutar `node --version` |
+| Node empaquetado Codex | Disponible | `v24.14.0` |
+| npm temporal | Disponible | `11.16.0` en `C:\Users\tobii\.codex\tmp\npm-cli` |
+| Git | Disponible | `git version 2.54.0.windows.1` |
+| Docker | No disponible | `docker` no reconocido |
 
-## Required Local Command Wrapper
+## Node funcional para esta PC
 
-Use this PowerShell prefix before npm commands on this PC:
+Usar este wrapper PowerShell para comandos npm:
 
 ```powershell
 $nodeDir='C:\Users\tobii\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin'
@@ -23,57 +24,61 @@ $npmCli='C:\Users\tobii\.codex\tmp\npm-cli\package\bin\npm-cli.js'
 $env:PATH="$nodeDir;$env:PATH"
 ```
 
-Then run npm through:
+Ejemplo:
 
 ```powershell
-& $node $npmCli install --no-audit --no-fund
-& $node $npmCli run lint
-& $node $npmCli run typecheck
 & $node $npmCli run build
-& $node $npmCli run dev
 ```
 
-## Stack Detected
+## Package manager correcto
 
-- Frontend: Next.js 15.1.3 App Router, React 19, TypeScript
-- Styling: Tailwind CSS 3, custom UI components
-- State: Zustand and local mock data
-- Backend: Next.js route handlers in `src/app/api`
-- Database target: PostgreSQL through Prisma 6
-- Cache/queue target: Redis configured in Docker compose
-- Auth: HTTP-only cookie flow with local tester users and role middleware
-- Maps/tracking: local fallback plus Google Maps provider readiness
-- Telegram: protected status/test endpoints, no token committed
+Regla aplicada:
 
-## Package Manager
+- `pnpm-lock.yaml` no existe.
+- `package-lock.json` existe.
+- `yarn.lock` no existe.
 
-- No lockfile was restored.
-- No package manager field exists in `package.json`.
-- npm is the selected package manager for the restored project.
-- `package-lock.json` was generated during install and should be kept.
+Resultado: usar **npm**.
 
-## Environment Variables
+## Frameworks detectados
 
-Required local baseline:
+Frontend:
 
-```txt
-DATABASE_URL=
-REDIS_URL=
-JWT_SECRET=
-JWT_REFRESH_SECRET=
-ROUTEPULSE_DEMO_SECRET=
-APP_URL=
-NEXT_PUBLIC_APP_URL=
-NEXT_PUBLIC_MAP_PROVIDER=
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
-NEXT_PUBLIC_GOOGLE_MAP_ID=
-NEXT_PUBLIC_OPENROUTE_API_KEY=
-NEXT_PUBLIC_APPLE_MAPKIT_TOKEN=
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_CHAT_ID=
-TELEGRAM_WEBHOOK_SECRET=
-DEMO_MODE=
-NODE_ENV=
-```
+- `next` en dependencies.
+- `react` y `react-dom` en dependencies.
+- `next.config.ts` existe.
+- `src/app` existe.
 
-No real secrets should be committed.
+Backend:
+
+- No hay backend separado detectado.
+- API actual vive en `src/app/api`.
+- Prisma existe en `prisma/schema.prisma`.
+
+## Variables de entorno detectadas
+
+`.env.example` existe e incluye:
+
+- `DATABASE_URL`
+- `REDIS_URL`
+- `JWT_SECRET`
+- `JWT_REFRESH_SECRET`
+- `ROUTEPULSE_DEMO_SECRET`
+- `APP_URL`
+- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_MAP_PROVIDER`
+- `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
+- `NEXT_PUBLIC_GOOGLE_MAP_ID`
+- `NEXT_PUBLIC_OPENROUTE_API_KEY`
+- `NEXT_PUBLIC_APPLE_MAPKIT_TOKEN`
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+- `TELEGRAM_WEBHOOK_SECRET`
+- `DEMO_MODE`
+- `NODE_ENV`
+
+## Bloqueos actuales
+
+- Docker no esta instalado o no esta en PATH.
+- Node global no es usable por `Acceso denegado`.
+- Para instalar o ejecutar scripts, usar Node empaquetado Codex con npm temporal.

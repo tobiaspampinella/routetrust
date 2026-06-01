@@ -1,0 +1,3 @@
+- Resolve implementation defects from assistant-created tickets.
+- Repair broken API or state wiring.
+- Hand off completed fixes to QA Validation Agent.

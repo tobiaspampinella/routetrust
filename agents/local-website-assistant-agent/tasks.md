@@ -1,0 +1,3 @@
+- Detect route context and user role from the page.
+- Give quick useful answers without generic fallback noise.
+- Escalate durable tickets only when the message warrants it.

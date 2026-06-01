@@ -1,0 +1,1 @@
+- This is triage and validation, not a full security testing platform.

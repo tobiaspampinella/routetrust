@@ -1,0 +1,3 @@
+- Review driver, admin, and customer flows linked by assistant tickets.
+- Confirm whether the issue is UX, product logic, or implementation.
+- Produce concise remediation notes for engineering and QA.

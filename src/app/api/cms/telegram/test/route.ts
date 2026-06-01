@@ -7,14 +7,16 @@ export async function POST(request: NextRequest) {
 
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
+  const missing = [...(!token ? ["TELEGRAM_BOT_TOKEN"] : []), ...(!chatId ? ["TELEGRAM_CHAT_ID"] : [])];
 
-  if (!token || !chatId) {
+  if (missing.length > 0) {
     return NextResponse.json({
-      ok: false,
-      status: "skipped",
-      detail: "TELEGRAM_BOT_TOKEN o TELEGRAM_CHAT_ID no estan configurados.",
+      sent: false,
+      status: "missing_configuration",
+      missing,
+      detail: "Telegram no configurado en este entorno.",
       timestamp: new Date().toISOString(),
-    });
+    }, { status: 400 });
   }
 
   const text = encodeURIComponent(`RoutePulse AI CMS beta: test notification OK (${new Date().toISOString()})`);
@@ -24,7 +26,7 @@ export async function POST(request: NextRequest) {
 
   if (response instanceof Error) {
     return NextResponse.json({
-      ok: false,
+      sent: false,
       status: "failed",
       detail: response.message,
       timestamp: new Date().toISOString(),
@@ -33,7 +35,7 @@ export async function POST(request: NextRequest) {
 
   if (!response.ok) {
     return NextResponse.json({
-      ok: false,
+      sent: false,
       status: "failed",
       detail: `Telegram respondio ${response.status}.`,
       timestamp: new Date().toISOString(),
@@ -41,7 +43,7 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({
-    ok: true,
+    sent: true,
     status: "sent",
     detail: "Notificacion de prueba enviada.",
     timestamp: new Date().toISOString(),

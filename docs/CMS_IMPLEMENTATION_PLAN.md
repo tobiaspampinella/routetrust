@@ -1,160 +1,190 @@
 # CMS Implementation Plan
 
-## Fase 0 - Auditoria y base beta
+Fecha: 2026-05-31
+Estado: plan posterior a auditoria. No ejecutado.
 
-Estado: en progreso.
+## Objetivo
 
-Entregables:
+Convertir el CMS demo actual en una beta estable sin romper el sandbox comercial existente.
 
-- `docs/CMS_AUDIT.md`
-- `docs/CMS_SPEC.md`
-- `docs/CMS_IMPLEMENTATION_PLAN.md`
-- `docs/ACTIVE_TASKS.md`
-- `src/modules/cms/types.ts`
-- `src/services/cms/cmsService.ts`
-- `src/services/permissions/rbac.ts`
-- `src/services/audit/auditLog.ts`
-- `src/services/tenant/tenantService.ts`
-- Tab Enterprise en `/admin/cms`.
+## Regla de fase
 
-## Fase 1 - Consolidar CMS frontend beta
+Este documento no autoriza implementacion. La siguiente fase debe ser autorizada por el usuario.
 
-Prioridad P0:
+## Orden de implementacion
 
-- Separar `AdminCms.tsx` en subcomponentes por dominio:
-  - `CmsEnterpriseOverview`
-  - `CmsTenantPanel`
-  - `CmsUsersPanel`
-  - `CmsRbacPanel`
-  - `CmsApprovalPanel`
-  - `CmsAuditPanel`
-  - `CmsNotificationsPanel`
-  - `CmsDemoSandboxPanel`
-- Convertir acciones de Live Ops en propuestas auditables.
-- Mostrar confirmacion antes de acciones criticas.
-- Mostrar razon y estado de aprobacion pendiente.
-- Mantener tracking demo separado de operaciones reales.
+### 1. Correccion previa de calidad visible
 
-## Fase 2 - RBAC y seguridad
+Archivos candidatos:
 
-Prioridad P0:
+- `src/components/admin/**`
+- `src/components/driver/**`
+- `src/components/customer/**`
+- `src/components/shared/**`
+- `src/data/mockData.ts`
+- `src/lib/demoMapCoordinates.ts`
 
-- Expandir `UserRole` actual a roles CMS o crear capa separada `CmsRole`.
+Trabajo:
+
+- Corregir mojibake en strings visibles.
+- Ejecutar `npm run lint`, `npm run typecheck`, `npm run build`.
+- No cambiar comportamiento.
+
+Riesgo:
+
+- Alto impacto visual, bajo riesgo funcional si se limita a strings.
+
+### 2. Regression smoke tests
+
+Archivos candidatos:
+
+- `package.json`
+- `tests/**` o `e2e/**`
+- `playwright.config.ts`
+
+Trabajo:
+
+- Agregar test runner si se autoriza.
+- Cubrir login admin, login driver, `/admin/cms`, `/driver/route`, `/track/demo`, Telegram status sin secrets.
+
+Riesgo:
+
+- Hoy no existe script `test`; agregarlo cambia governance de QA.
+
+### 3. Particion controlada del CMS UI
+
+Archivos candidatos:
+
+- `src/components/admin/CmsEnterpriseOverview.tsx`
+- `src/components/admin/cms/*`
+
+Trabajo:
+
+- Extraer panels sin cambiar logica.
+- Mantener nombres de acciones y tipos existentes.
+- No introducir backend en esta etapa.
+
+Riesgo:
+
+- `CmsEnterpriseOverview.tsx` es monolitico; refactor sin tests puede romper UI.
+
+### 4. API CMS backend minima
+
+Archivos candidatos:
+
+- `src/app/api/cms/**`
+- `src/services/cms/**`
+- `src/services/permissions/**`
+- `src/services/audit/**`
+- `prisma/schema.prisma`
+
+Trabajo:
+
+- Crear endpoints CMS por dominio.
 - Validar permisos server-side.
-- Middleware por rol y modulo.
-- Bloquear cross-tenant access.
-- No renderizar datos de tenants no autorizados.
+- Registrar audit log desde API.
+- Mantener seeds como fallback demo.
 
-## Fase 3 - Backend y persistencia
+Riesgo:
 
-Prioridad P0/P1:
+- Requiere decision DB/runtime. No asumir Postgres operativo sin validar entorno.
 
-- Elegir DB para beta: SQLite/Prisma o Postgres.
-- Crear tablas para tenants, users, roles, permissions, approvals, audit logs, notification configs.
-- Migrar Zustand de fuente de verdad a cliente/cache.
-- Crear API routes CMS.
-- Agregar validacion con schemas.
+### 5. RBAC persistido
 
-## Fase 4 - Human Approval Layer
+Archivos candidatos:
 
-Prioridad P0:
+- `src/modules/cms/types.ts`
+- `src/services/permissions/rbac.ts`
+- `prisma/schema.prisma`
+
+Trabajo:
+
+- Persistir matriz role-permission.
+- Versionar cambios.
+- Requerir approval para cambios de permisos.
+
+Riesgo:
+
+- Roles runtime actuales son solo `admin` y `driver`; hay que mapearlos sin romper middleware.
+
+### 6. Audit append-only
+
+Archivos candidatos:
+
+- `src/services/audit/auditLog.ts`
+- `src/app/api/cms/audit-logs/**`
+- `prisma/schema.prisma`
+
+Trabajo:
+
+- Guardar audit log en DB.
+- Bloquear update/delete de audit entries.
+- Exponer filtros por tenant, actor, modulo, resultado y fecha.
+
+Riesgo:
+
+- Si audit es opcional, el CMS no es enterprise.
+
+### 7. Approval workflow real
+
+Archivos candidatos:
+
+- `src/app/api/cms/approvals/**`
+- `src/components/admin/**`
+- `src/modules/cms/types.ts`
+
+Trabajo:
 
 - Crear approval requests.
-- Requerir approval para:
-  - rutas sugeridas finales
-  - reasignacion critica
-  - cancelacion de ruta
-  - cambios SLA
-  - cambios permisos
-  - cambios tenant
-  - configuracion operacional critica
-- Registrar aprobaciones y rechazos con razon.
+- Resolver approvals.
+- Ejecutar mutacion productiva solo despues de approval.
 
-## Fase 5 - Auditoria productiva
+Riesgo:
 
-Prioridad P0:
+- Las acciones actuales mutan estado local inmediatamente.
 
-- Audit log append-only.
-- Captura IP/user agent en API.
-- Export CSV/JSON para roles permitidos.
-- Filtros por tenant, actor, modulo, resultado y fecha.
+### 8. CMS dashboard real
 
-## Fase 6 - Notificaciones
+Archivos candidatos:
 
-Prioridad P1:
+- `src/components/admin/AdminDashboard.tsx`
+- `src/components/admin/AdminKpis.tsx`
+- `src/app/api/cms/dashboard/**`
 
-- Configuracion Telegram server-side.
-- Token en secret manager/env.
-- Validar chat ID.
-- Eventos:
-  - rutas en riesgo alto
-  - SLA en riesgo
-  - approval pendiente
-  - build failed
-  - incidente critico
+Trabajo:
 
-## Fase 7 - Reportes CMS
+- Leer KPIs desde API.
+- Separar CEO view de operator view.
+- Mostrar build status real o estado "not configured".
 
-Prioridad P1:
+Riesgo:
 
-- Reportes por tenant.
-- Actividad por usuario.
-- Rutas completadas/fallidas.
-- SLA en riesgo.
-- Incidencias.
-- Eventos recientes.
+- La UI actual mezcla demo, ops y venta.
 
-## Tareas delegables a otros agentes
+## Tareas por agente
 
-QA Analyst:
+| Agente | Modulo | Tareas |
+| --- | --- | --- |
+| Codex Node | Governance | Mantener locks, revisar diffs, bloquear features fuera de fase. |
+| Full Stack Agent | CMS backend | API, Prisma, tenant guard, RBAC, audit, approvals. |
+| QA Agent | Regression | Smoke tests, auth tests, route tests, build validation. |
+| UX/UI Agent | Admin UX | Separar panels, reducir densidad, arreglar textos visibles. |
+| Maps Agent | Maps | Mantener fallback, auditar MapLibre/Google provider. |
+| Telegram Agent | Notifications | Diseñar event router y webhook sin exponer tokens. |
+| Bug Assistant Agent | Bug routing | Modelo BugReport, API, admin queue, routing. |
+| Docs Agent | Specs | Mantener docs alineadas a codigo real. |
 
-- Validar rutas protegidas.
-- Probar acciones Enterprise CMS.
-- Verificar que audit log registre cambios.
-- Confirmar que no hay controles de edicion en `/track/demo`.
+## Bloqueos previos
 
-Full Stack Developer:
+- No hay script `test`.
+- No hay DB levantada validada en esta fase.
+- No hay MapLibre dependency instalada.
+- No hay backend CMS persistido.
+- Hay cambios sin commit de fases anteriores.
 
-- Separar paneles CMS.
-- Crear API routes.
-- Agregar persistencia.
-- Conectar RBAC server-side.
+## No tocar
 
-UX Designer:
-
-- Reducir densidad visual del CMS.
-- Disenar tabla RBAC editable.
-- Disenar approval queue.
-- Pulir copy B2B logistico.
-
-Customer Experience:
-
-- Revisar lenguaje para operadores no tecnicos.
-- Detectar fricciones en admin y Live Ops.
-- Probar reportes de bugs desde inbox QA/CX.
-
-AI Orchestrator:
-
-- Definir limites de automatizacion.
-- Mapear acciones IA vs acciones humanas.
-- Mantener approvals como guardrail obligatorio.
-
-## Riesgos
-
-- Confundir demo local con plataforma productiva.
-- Acciones criticas sin aprobacion.
-- Tokens o secretos en frontend.
-- Roles frontend sin validacion backend.
-- Estado local no compartido entre navegadores.
-- Crecimiento de `AdminCms.tsx` como componente monolitico.
-
-## Definition of Done beta CMS
-
-- Tenants visibles y editables localmente.
-- Modulos por tenant editables localmente.
-- RBAC visible y preparado para edicion.
-- Approval policies visibles.
-- Audit log registra acciones.
-- Docs actualizadas.
-- `npm run lint` limpio.
-- `npm run build` limpio.
+- No reemplazar Zustand/store durante la primera particion UI.
+- No eliminar `FleetTrackingMap` fallback.
+- No conectar Google/Telegram en produccion sin secrets y terminos.
+- No crear features nuevas dentro de una fase de hardening.

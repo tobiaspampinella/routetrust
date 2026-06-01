@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest a beta feature or improvement
+about: Suggest a beta feature or operational improvement
 title: "[Feature] "
 labels: enhancement
 assignees: ""
@@ -9,6 +9,13 @@ assignees: ""
 ## Operational Problem
 
 ## Target User
+
+- [ ] CEO/Admin
+- [ ] Operations
+- [ ] Dispatcher
+- [ ] Driver
+- [ ] Customer Experience
+- [ ] Customer
 
 ## Proposed Outcome
 
@@ -19,5 +26,7 @@ assignees: ""
 - [ ] unsure
 
 ## Human Approval Needed?
+
+## Risks / Tradeoffs
 
 ## Notes

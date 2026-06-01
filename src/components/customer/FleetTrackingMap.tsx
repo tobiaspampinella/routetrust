@@ -163,7 +163,7 @@ function getRouteStatusLabel(status: RouteStatus, paused?: boolean) {
 
 function getProviderLabel(useGoogleMap: boolean, providerMode?: MapProviderMode) {
   if (useGoogleMap) return "Google Maps + trafico";
-  if (providerMode === "maplibre_osm_ready") return "MapLibre / OSM pendiente";
+  if (providerMode === "maplibre_osm_ready") return "MapLibre mock fallback";
   if (providerMode === "apple_mapkit_ready") return "Apple MapKit pendiente";
   return "Fallback local sin API key";
 }
@@ -225,7 +225,7 @@ export function FleetTrackingMap({
     () => routeCoordinates.map((coordinate) => `${coordinate.lat.toFixed(5)},${coordinate.lng.toFixed(5)}`).join("|"),
     [routeCoordinates],
   );
-  const useGoogleMap = Boolean(googleMapsApiKey) && providerMode !== "apple_mapkit_ready" && googleStatus !== "error";
+  const useGoogleMap = Boolean(googleMapsApiKey) && providerMode === "google_maps_ready" && googleStatus !== "error";
   const projectedStops = packages.length ? packages.filter((item) => item.status !== "delivered").slice(0, 4) : [];
   const activeStop = projectedStops[0] ?? order;
   const providerLabel = getProviderLabel(useGoogleMap && googleStatus === "ready", providerMode);

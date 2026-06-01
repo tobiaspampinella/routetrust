@@ -1,0 +1,1 @@
+- Persistence is local-file based; no distributed locking exists.

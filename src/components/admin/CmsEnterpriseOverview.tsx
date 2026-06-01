@@ -483,6 +483,38 @@ export function CmsEnterpriseOverview() {
     setTelegramBusy(false);
   }
 
+  async function sendProjectIntelligence() {
+    setTelegramBusy(true);
+    const response = await fetch("/api/cms/telegram/project-intelligence", {
+      method: "POST",
+      credentials: "include",
+    }).catch(() => null);
+    const payload = (await response?.json().catch(() => null)) as { status?: "sent" | "skipped" | "failed"; detail?: string } | null;
+    const event = {
+      id: `telegram-event-${Date.now()}`,
+      event: "project_intelligence",
+      status: payload?.status ?? "failed",
+      timestamp: new Date().toISOString(),
+      detail: payload?.detail ?? "Project intelligence report procesado.",
+    };
+    setCmsState((state) => ({
+      ...state,
+      telegram: {
+        ...state.telegram,
+        sentEvents: [event, ...state.telegram.sentEvents].slice(0, 8),
+      },
+    }));
+    appendAudit({
+      tenantId: "tenant-demo-latam",
+      action: "telegram_project_intelligence",
+      module: "telegram_notifications",
+      previousValue: "requested",
+      newValue: event.status,
+      result: event.status === "sent" ? "success" : event.status === "skipped" ? "blocked" : "failed",
+    });
+    setTelegramBusy(false);
+  }
+
   function generateSandbox() {
     const now = new Date().toISOString();
     setCmsState((state) => ({
@@ -936,6 +968,7 @@ export function CmsEnterpriseOverview() {
           telegramBusy={telegramBusy}
           refreshTelegramStatus={refreshTelegramStatus}
           sendTelegramTest={sendTelegramTest}
+          sendProjectIntelligence={sendProjectIntelligence}
         />
       ) : null}
       {section === "sandbox" ? (
@@ -1406,12 +1439,14 @@ function TelegramSection({
   telegramBusy,
   refreshTelegramStatus,
   sendTelegramTest,
+  sendProjectIntelligence,
 }: {
   telegram: ReturnType<typeof getDefaultEnterpriseCmsState>["telegram"];
   telegramStatus: string;
   telegramBusy: boolean;
   refreshTelegramStatus: () => void;
   sendTelegramTest: () => void;
+  sendProjectIntelligence: () => void;
 }) {
   return (
     <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
@@ -1421,9 +1456,10 @@ function TelegramSection({
         </CardHeader>
         <CardContent className="space-y-4">
           <MetricCard icon={Bell} label="Estado" value={telegramStatus} detail="TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID" tone={telegramStatus === "Configurado" ? "green" : "amber"} />
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid gap-2 sm:grid-cols-3">
             <Button disabled={telegramBusy} onClick={refreshTelegramStatus}><RefreshCw className="h-4 w-4" /> Validar env</Button>
             <Button disabled={telegramBusy} variant="outline" onClick={sendTelegramTest}>Test notification</Button>
+            <Button disabled={telegramBusy} variant="outline" onClick={sendProjectIntelligence}>Project intel</Button>
           </div>
           <div className="flex flex-wrap gap-2">
             {telegram.events.map((event) => <Badge key={event} variant="outline">{event}</Badge>)}

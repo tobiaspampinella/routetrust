@@ -1,0 +1,46 @@
+#!/usr/bin/env node
+const { getRuntimeSnapshot, nowIso, readText, writeProjectStatus, writeText } = require("./agent-runtime-lib.js");
+
+const checks = [
+  { label: "Bug API", file: "src/app/api/bugs/route.ts" },
+  { label: "Telegram status API", file: "src/app/api/cms/telegram/status/route.ts" },
+  { label: "Telegram test API", file: "src/app/api/cms/telegram/test/route.ts" },
+  { label: "Telegram intelligence API", file: "src/app/api/cms/telegram/project-intelligence/route.ts" },
+  { label: "Driver Portal", file: "src/app/driver/page.tsx" },
+  { label: "Customer Tracking", file: "src/app/track/demo/page.tsx" },
+  { label: "Project Status", file: "src/app/admin/project-status/page.tsx" },
+];
+
+const findings = [];
+for (const check of checks) {
+  const content = readText(check.file);
+  if (!content.trim()) {
+    findings.push(`${check.label}: missing or empty file ${check.file}.`);
+    continue;
+  }
+  if (/throw new Error|console\.error\(/.test(content)) {
+    findings.push(`${check.label}: manual error path found in ${check.file}; validate behavior in runtime.`);
+  }
+}
+
+const report = `# Fullstack Debug Report
+
+Generated: ${nowIso()}
+
+STATUS: ${findings.length === 0 ? "completed" : "warning"}
+
+## Findings
+
+${findings.length === 0 ? "- No obvious broken runtime entrypoints detected in scanned files." : findings.map((item) => `- ${item}`).join("\n")}
+`;
+
+writeText("docs/FULLSTACK_DEBUG_REPORT.md", report);
+writeProjectStatus(getRuntimeSnapshot(), {
+  build: {
+    status: findings.length === 0 ? "healthy" : "warning",
+    lastRun: nowIso(),
+    detail: "Fullstack debug scan completed.",
+  },
+});
+console.log("Fullstack debug report written to docs/FULLSTACK_DEBUG_REPORT.md");
+if (findings.length > 0) process.exit(1);

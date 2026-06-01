@@ -1,31 +1,51 @@
-# Technical Debt
+# FASE 1 - Technical Debt
 
-Date: 2026-05-30
+Fecha: 2026-05-31
 
-## Critical
+## Bloqueos tecnicos detectados
 
-- Upgrade Next.js from `15.1.3` to a patched version after restore branch is stable.
-- Add automated E2E tests for beta paths.
-- Validate Prisma migrations against a real Postgres instance.
-- Initialize Git and connect the intended GitHub remote.
+1. No existe script `test`.
+   - Impacto: no hay validacion automatizada de flujos beta.
+   - Fix minimo: agregar test runner y script `test` en fase QA autorizada.
 
-## High
+2. npm allow-scripts pendiente.
+   - Impacto: paquetes con install hooks requieren revision explicita.
+   - Paquetes: `@prisma/client`, `@prisma/engines`, `esbuild`, `prisma`, `sharp`, `unrs-resolver`.
+   - Fix minimo: revisar y aprobar scripts con politica definida antes de produccion.
 
-- Replace mock CMS state with durable tenant-scoped persistence.
-- Formalize route simulation events and audit logs.
-- Add BugReport model/API/admin panel.
-- Add Telegram webhook and command router.
-- Add CI workflow and branch protection expectations.
+3. Next.js 15.1.3 tiene warning de seguridad ya detectado.
+   - Impacto: riesgo antes de publicar.
+   - Fix minimo: upgrade controlado de Next.js en fase de dependency hardening.
 
-## Medium
+4. Docker no esta disponible localmente.
+   - Impacto: no se puede validar Postgres/Redis con `docker-compose.yml`.
+   - Fix minimo: instalar Docker Desktop o usar servicios locales equivalentes.
 
-- Upgrade Recharts 2 to v3.
-- Add MapLibre dependency and provider abstraction.
-- Add `.env.local.example` or setup script if local onboarding remains manual.
-- Normalize README instructions around restored project root.
+5. Node global en PATH no es usable.
+   - Impacto: comandos npm fallan si no se usa wrapper.
+   - Fix minimo: instalar Node LTS normal o mantener wrapper documentado.
 
-## Deferred
+## No abordado en FASE 1
 
-- Google Photorealistic 3D.
-- Apple MapKit JS integration.
-- Full ERP/TMS modules outside beta scope.
+- No se agregaron features.
+- No se hizo refactor.
+- No se agregaron tests.
+- No se cambio arquitectura.
+
+## 2026-06-01 - Stabilization debt still open
+
+1. `tsconfig.typecheck.json` exists as a safety rail because base `tsconfig.json` had been allowed to drift toward generated-artifact coupling.
+   - Impacto: future edits can silently reintroduce `.next` fragility if config discipline is lost.
+   - Fix minimo: keep generated folders out of base TypeScript includes.
+
+2. `npm run beta-check` is failing for governance/runtime reasons unrelated to the app runtime.
+   - Impacto: release automation still reports failure even though runtime/build/typecheck are healthy.
+   - Fix minimo: reconcile missing docs and lock/watchdog metadata.
+
+3. Project status UI is static.
+   - Impacto: operators can read a healthy-looking status page that is not real telemetry.
+   - Fix minimo: either wire it to live checks or label it explicitly as static documentation.
+
+4. Mojibake remains in UI strings.
+   - Impacto: visible quality regression in customer/admin surfaces.
+   - Fix minimo: normalize file encoding and replace corrupted literals.

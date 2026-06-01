@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+const {
+  getRuntimeSnapshot,
+  printStatus,
+  recordStatusLog,
+  writeAgentReport,
+  writeRuntimeStatusReport,
+} = require("./agent-runtime-lib.js");
+
+const snapshot = getRuntimeSnapshot();
+writeRuntimeStatusReport(snapshot);
+const reportPath = writeAgentReport(snapshot);
+recordStatusLog(snapshot);
+
+printStatus(snapshot);
+console.log("");
+console.log("Dashboard artifacts");
+console.log("- docs/AGENT_RUNTIME_STATUS.md");
+console.log(`- ${reportPath}`);
+console.log("");
+console.log("This dashboard is a terminal dashboard. It does not start autonomous workers.");

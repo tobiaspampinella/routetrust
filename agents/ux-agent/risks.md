@@ -1,0 +1,1 @@
+- UX findings still depend on human interpretation and do not auto-patch the UI.

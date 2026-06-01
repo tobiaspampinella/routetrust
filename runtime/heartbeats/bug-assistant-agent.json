@@ -1,0 +1,10 @@
+{
+  "agentId": "bug-assistant-agent",
+  "status": "completed",
+  "currentTask": "BUG-002",
+  "lastOutput": "Runner completed coordination pass with task evidence marked completed.",
+  "errors": [],
+  "pid": null,
+  "mode": "executable",
+  "lastSeen": "2026-06-01T03:15:58.783Z"
+}

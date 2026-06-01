@@ -1,5 +1,18 @@
 # RoutePulse AI Software Log
 
+## v0.14
+
+- Corte FASE 5 beta core implementado sin backend real ni microservicios.
+- Admin dashboard agrega CEO beta overview con core readiness, approvals, incidents, audit, Telegram y maps fallback.
+- Route Simulation Engine agregado como contrato puro testeable para snapshot demo y eventos auditables.
+- Driver portal agrega reporte basico de incidencias desde `/driver/route`.
+- Estado local agrega `incidents` con acciones `reportIncident` y `resolveIncident`.
+- Customer tracking mantiene fallback local y Google solo se activa cuando el provider mode es `google_maps_ready`.
+- Telegram agrega endpoint de project intelligence en `/api/cms/telegram/project-intelligence`.
+- Bug assistant agrega intake basico por `/api/bugs` y routing local por modulo.
+- Tests puros agregados con Node test runner via `tsx --test`.
+- Auth local en `next start` conserva sesion HTTP en localhost sin marcar la cookie como secure; produccion fuera de localhost sigue usando secure cookies.
+
 ## v0.11
 
 - Auditoria actualizada del CMS, Demo Sandbox, mapas/tracking, env, rutas, permisos y brechas P0/P1.

@@ -1,0 +1,1 @@
+- No browser automation suite exists yet, so validation is still partial.

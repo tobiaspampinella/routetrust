@@ -1,68 +1,103 @@
-# Installation Report
+# FASE 1 - Installation Report
 
-Date: 2026-05-30
-Owner: Principal AI Node Orchestrator
+Fecha: 2026-05-31
+Fase: INSTALL + BUILD VALIDATION
+Package manager: npm
+Motivo: existe `package-lock.json`; no existen `pnpm-lock.yaml` ni `yarn.lock`.
 
-## Commands Executed
+## Comandos ejecutados
 
-```powershell
-node --version
-npm --version
-git --version
-docker --version
-```
-
-PATH result:
-
-- `node.exe`: access denied from WindowsApps Codex path.
-- `npm`, `pnpm`, `yarn`, `corepack`: not found.
-- Docker: not found.
-
-Temporary npm bootstrap:
+Todos los comandos npm se ejecutaron con Node empaquetado de Codex:
 
 ```powershell
-Invoke-RestMethod https://registry.npmjs.org/npm/latest
-tar -xzf npm-latest.tgz
-node npm-cli.js --version
+$nodeDir='C:\Users\tobii\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin'
+$node=Join-Path $nodeDir 'node.exe'
+$npmCli='C:\Users\tobii\.codex\tmp\npm-cli\package\bin\npm-cli.js'
+$env:PATH="$nodeDir;$env:PATH"
 ```
 
-Install and checks:
+| Orden | Comando | Resultado |
+|---:|---|---|
+| 1 | `npm install --no-audit --no-fund` | OK |
+| 2 | `npm run lint` | OK |
+| 3 | `npm run typecheck` | OK |
+| 4 | `npm run test` | No existe script `test` |
+| 5 | `npm run build` | OK |
 
-```powershell
-npm install --no-audit --no-fund
-npm run lint
-npm run typecheck
-npm run build
-npm run dev
+## Resultado install
+
+`npm install` finalizo correctamente:
+
+```txt
+up to date in 49s
 ```
 
-## Installation Result
+Warnings:
 
-- First `npm install` failed because Prisma scripts called blocked `node` from PATH.
-- Second `npm install` passed after prepending bundled Node to PATH.
-- npm added 469 packages and generated `package-lock.json`.
+```txt
+npm warn allow-scripts 6 packages have install scripts not yet covered by allowScripts:
+@prisma/client@6.19.3
+@prisma/engines@6.19.3
+esbuild@0.28.0
+prisma@6.19.3
+sharp@0.33.5
+unrs-resolver@1.12.2
+```
 
-## Warnings
+Causa probable: npm 11 requiere revision explicita de scripts de instalacion para paquetes con hooks.
 
-- `next@15.1.3` has an npm security warning and must be upgraded in a dedicated hardening task.
-- `recharts@2.x` is deprecated and should be upgraded after beta stabilization.
-- npm reported install scripts pending approval for Prisma, Sharp, esbuild and related packages. Because build passed, this is not blocking local recovery but should be reviewed.
+Fix minimo propuesto: revisar con `npm approve-scripts --allow-scripts-pending` antes de produccion. No ejecutado en esta fase porque podria cambiar politica de instalacion.
 
-## Verification Results
+## Resultado lint
 
-- `npm run lint`: passed, no ESLint warnings or errors.
-- `npm run typecheck`: initially failed on `prisma/seed.ts`; fixed an implicit `any`, then passed.
-- `npm run build`: passed.
-- Dev server: started at `http://localhost:3000`.
-- Smoke HTTP:
-  - `/`: 200
-  - `/login`: 200
-  - `/admin`: redirected to login and returned 200
-  - `/admin/cms`: redirected to login and returned 200
-  - `/driver`: redirected to login and returned 200
-  - `/track/demo`: 200
-  - `/api/cms/telegram/status`: 401 without auth, expected for protected CMS endpoint
+```txt
+No ESLint warnings or errors
+```
 
-## Final State
+## Resultado typecheck
 
-Recovery install is operational. The project can lint, typecheck, build and run locally when commands use the explicit bundled Node PATH.
+```txt
+tsc --noEmit
+```
+
+Resultado: OK.
+
+## Resultado test
+
+No existe script `test` en `package.json`.
+
+Fix minimo propuesto: agregar test runner en fase QA autorizada. No se implemento porque esta fase no permite features ni setup nuevo fuera de validacion.
+
+## Resultado build
+
+`next build` finalizo correctamente.
+
+Rutas generadas: 19.
+
+Rutas relevantes:
+
+- `/`
+- `/admin`
+- `/admin/cms`
+- `/admin/kpis`
+- `/admin/routes`
+- `/admin/settings`
+- `/login`
+- `/driver`
+- `/track/demo`
+- `/api/auth/login`
+- `/api/auth/logout`
+- `/api/auth/me`
+- `/api/cms/telegram/status`
+- `/api/cms/telegram/test`
+
+## Build status
+
+PASSED.
+
+## Bloqueos restantes
+
+- No existe script `test`.
+- Warnings de npm allow-scripts pendientes.
+- Next.js 15.1.3 sigue siendo version con warning de seguridad detectado previamente.
+- Docker no esta disponible localmente para validar Postgres/Redis.

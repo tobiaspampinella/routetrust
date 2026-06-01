@@ -1,0 +1,10 @@
+{
+  "agentId": "codex-node",
+  "status": "pending",
+  "currentTask": "OPS-003",
+  "lastOutput": "Runner completed coordination pass. Pending tasks: 1.",
+  "errors": [],
+  "pid": null,
+  "mode": "executable",
+  "lastSeen": "2026-06-01T03:15:58.748Z"
+}

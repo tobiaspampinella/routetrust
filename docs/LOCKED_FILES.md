@@ -1,6 +1,6 @@
 # Locked Files
 
-Last updated: 2026-05-30
+Last updated: 2026-06-01T03:16:00.249Z
 
 ## Active Lock
 
@@ -8,7 +8,6 @@ None.
 
 ## Rules
 
-- No agent touches a locked file without updating this file first.
-- No agent modifies architecture core without a CURRENT_DECISIONS entry.
-- No agent runs a global refactor during restore.
-- Locks must be released or handed off at the end of each cycle.
+- This file is generated from pending tasks in `docs/ACTIVE_TASKS.md`.
+- Completed tasks do not keep locks.
+- Update task status or FILES_LOCKED entries before editing contested files.

@@ -1,0 +1,192 @@
+[
+  {
+    "id": "codex-node",
+    "name": "Codex Node",
+    "role": "Principal Project Orchestrator",
+    "branch": "agent/codex-node",
+    "module": "governance, architecture, integration, handoffs",
+    "aliases": ["codex node", "principal project orchestrator"],
+    "critical": false,
+    "siteVisible": false
+  },
+  {
+    "id": "fullstack-engineer",
+    "name": "Full Stack Agent",
+    "role": "Lead Full Stack Engineer",
+    "branch": "agent/fullstack-core",
+    "module": "CMS, backend, RBAC, route engine",
+    "aliases": ["full stack agent", "lead full stack engineer"],
+    "critical": false,
+    "siteVisible": false
+  },
+  {
+    "id": "qa-analyst",
+    "name": "QA Agent",
+    "role": "QA Director",
+    "branch": "agent/qa-stability",
+    "module": "tests, webtester, regression",
+    "aliases": ["qa agent", "qa director"],
+    "critical": false,
+    "siteVisible": false
+  },
+  {
+    "id": "operational-auditor",
+    "name": "Operational Auditor",
+    "role": "Operational Risk Auditor",
+    "branch": "agent/operational-audit",
+    "module": "audit logs, approvals, incident controls",
+    "aliases": ["operational auditor", "operational risk auditor"],
+    "critical": false,
+    "siteVisible": false
+  },
+  {
+    "id": "demo-engineer",
+    "name": "Demo Engineer",
+    "role": "Demo Sandbox Engineer",
+    "branch": "agent/demo-sandbox",
+    "module": "demo sandbox, guided scenario, beta flows",
+    "aliases": ["demo engineer", "demo sandbox engineer"],
+    "critical": false,
+    "siteVisible": false
+  },
+  {
+    "id": "maps-agent",
+    "name": "Maps Agent",
+    "role": "Maps and Tracking Engineer",
+    "branch": "agent/maps-fallback",
+    "module": "maps fallback, Google Maps research, traffic integration",
+    "aliases": ["maps agent", "maps and tracking engineer"],
+    "critical": false,
+    "siteVisible": false
+  },
+  {
+    "id": "telegram-agent",
+    "name": "Telegram Agent",
+    "role": "Telegram Integration Engineer",
+    "branch": "agent/telegram-bot",
+    "module": "Telegram bot, project updates",
+    "aliases": ["telegram agent", "telegram integration engineer"],
+    "critical": false,
+    "siteVisible": false
+  },
+  {
+    "id": "bug-assistant-agent",
+    "name": "Bug Assistant Agent",
+    "role": "Support Automation Engineer",
+    "branch": "agent/bug-assistant",
+    "module": "internal bug chatbot, bug routing",
+    "aliases": ["bug assistant agent", "support automation engineer"],
+    "critical": false,
+    "siteVisible": false
+  },
+  {
+    "id": "docs-agent",
+    "name": "Docs Agent",
+    "role": "Documentation Lead",
+    "branch": "agent/docs",
+    "module": "README, specs, changelog",
+    "aliases": ["docs agent", "documentation lead"],
+    "critical": false,
+    "siteVisible": false
+  },
+  {
+    "id": "ux-ui-agent",
+    "name": "UX/UI Agent",
+    "role": "UX Lead",
+    "branch": "agent/ux-admin",
+    "module": "admin dashboard, project status dashboard, demo sandbox, driver portal, customer tracking",
+    "aliases": ["ux/ui agent", "ux lead", "ux ui agent"],
+    "critical": false,
+    "siteVisible": false
+  },
+  {
+    "id": "fullstack-debug-agent",
+    "name": "Full Stack Debug Agent",
+    "role": "Runtime Debug Engineer",
+    "branch": "agent/fullstack-debug",
+    "module": "frontend, backend, endpoints, route simulation, runtime debugging",
+    "aliases": ["full stack debug agent", "runtime debug engineer"],
+    "critical": false,
+    "siteVisible": false
+  },
+  {
+    "id": "qa-security-agent",
+    "name": "QA Security Agent",
+    "role": "Security QA Lead",
+    "branch": "agent/qa-security",
+    "module": "auth, RBAC, tenant isolation, secrets, protected routes",
+    "aliases": ["qa security agent", "security qa lead"],
+    "critical": false,
+    "siteVisible": false
+  },
+  {
+    "id": "local-bug-assistant-agent",
+    "name": "Local Bug Assistant Agent",
+    "role": "Local Triage Assistant",
+    "branch": "agent/local-bug-assistant",
+    "module": "page-aware bug triage, severity, routing, local escalation",
+    "aliases": ["local bug assistant agent", "local triage assistant", "agente-local"],
+    "critical": false,
+    "siteVisible": false
+  },
+  {
+    "id": "ux-agent",
+    "name": "UX Agent",
+    "role": "User Experience Review Agent",
+    "branch": "agent/ux-review",
+    "module": "journeys, usability, content clarity, layout friction",
+    "aliases": ["ux agent", "user experience review agent"],
+    "critical": true,
+    "siteVisible": true
+  },
+  {
+    "id": "fullstack-bug-fix-agent",
+    "name": "Full Stack Bug Fix Agent",
+    "role": "Implementation Owner",
+    "branch": "agent/fullstack-bug-fix",
+    "module": "frontend/backend fixes, endpoints, integration remediation",
+    "aliases": ["full stack bug fix agent", "implementation owner"],
+    "critical": true,
+    "siteVisible": true
+  },
+  {
+    "id": "qa-validation-agent",
+    "name": "QA Validation Agent",
+    "role": "Reproduction and Regression Agent",
+    "branch": "agent/qa-validation",
+    "module": "reproduction, regression, release confidence",
+    "aliases": ["qa validation agent", "reproduction and regression agent"],
+    "critical": true,
+    "siteVisible": true
+  },
+  {
+    "id": "cybersecurity-validation-agent",
+    "name": "Cybersecurity Validation Agent",
+    "role": "Security Validation Engineer",
+    "branch": "agent/cybersecurity-validation",
+    "module": "risk confirmation, exposure review, containment guidance",
+    "aliases": ["cybersecurity validation agent", "security validation engineer"],
+    "critical": true,
+    "siteVisible": true
+  },
+  {
+    "id": "bug-triage-agent",
+    "name": "Bug Triage Agent",
+    "role": "Intake and Routing Owner",
+    "branch": "agent/bug-triage",
+    "module": "normalization, severity, ownership, dispatch",
+    "aliases": ["bug triage agent", "intake and routing owner"],
+    "critical": true,
+    "siteVisible": true
+  },
+  {
+    "id": "local-website-assistant-agent",
+    "name": "Local Website Assistant Agent",
+    "role": "Page-Aware Internal Assistant",
+    "branch": "agent/local-website-assistant",
+    "module": "page context, contextual answers, bug intake gatekeeping",
+    "aliases": ["local website assistant agent", "page-aware internal assistant"],
+    "critical": true,
+    "siteVisible": true
+  }
+]

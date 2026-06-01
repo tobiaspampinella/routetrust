@@ -1,0 +1,1 @@
+- No duplicate detection beyond exact ticket review metadata yet.

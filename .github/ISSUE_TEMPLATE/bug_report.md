@@ -8,6 +8,8 @@ assignees: ""
 
 ## Page / Module
 
+Examples: CMS/Admin, Demo Sandbox, Driver Portal, Customer Tracking, Maps, Telegram.
+
 ## Role / Tenant
 
 ## Severity
@@ -21,10 +23,18 @@ assignees: ""
 
 ## Steps To Reproduce
 
+1.
+2.
+3.
+
 ## Expected Behavior
+
+## Actual Behavior
 
 ## Screenshot / Evidence
 
 ## Browser / Device
+
+## Operational Impact
 
 ## Notes

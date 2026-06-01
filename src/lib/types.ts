@@ -18,6 +18,12 @@ export type MapProviderMode = "local_3d_mock" | "maplibre_osm_ready" | "google_m
 
 export type TrafficLevel = "low" | "medium" | "high";
 
+export type IncidentSeverity = "low" | "medium" | "high";
+
+export type IncidentStatus = "open" | "in_review" | "resolved";
+
+export type IncidentSource = "admin" | "driver" | "customer" | "system";
+
 export interface DemoUser {
   id: string;
   email: string;
@@ -174,6 +180,19 @@ export interface TrackingDemoStop {
   lng?: number;
 }
 
+export interface OperationalIncident {
+  id: string;
+  routeId: string;
+  packageId?: string;
+  title: string;
+  detail: string;
+  severity: IncidentSeverity;
+  status: IncidentStatus;
+  source: IncidentSource;
+  createdAt: string;
+  resolvedAt?: string;
+}
+
 export interface RoutePulseData {
   company: Company;
   warehouse: Warehouse;
@@ -185,6 +204,7 @@ export interface RoutePulseData {
   routes: RoutePlan[];
   packages: DeliveryPackage[];
   zones: ZoneProfile[];
+  incidents: OperationalIncident[];
 }
 
 export interface RouteStats {

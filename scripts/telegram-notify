@@ -1,0 +1,32 @@
+#!/usr/bin/env node
+const { appendAgentLog, parseCliArgs } = require("./agent-runtime-lib.js");
+
+async function main() {
+  const args = parseCliArgs(process.argv.slice(2));
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const text = args.message || `RouteTrust scheduler heartbeat ${new Date().toISOString()}`;
+
+  if (!token || !chatId) {
+    console.log("Telegram notify skipped: missing TELEGRAM_BOT_TOKEN and/or TELEGRAM_CHAT_ID.");
+    return;
+  }
+
+  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text }),
+  });
+
+  appendAgentLog("telegram-agent", `telegram-notify http=${response.status}`);
+  if (!response.ok) {
+    console.error(`Telegram notify failed with HTTP ${response.status}.`);
+    process.exit(1);
+  }
+  console.log("Telegram notify sent.");
+}
+
+main().catch((error) => {
+  console.error(error.stack || error.message);
+  process.exit(1);
+});

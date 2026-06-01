@@ -2,10 +2,13 @@
 
 ## Agent / Owner
 
+## Module
+
 ## Files Locked
 
 ## Validation
 
+- [ ] npm ci or npm install
 - [ ] npm run lint
 - [ ] npm run typecheck
 - [ ] npm run build
@@ -13,14 +16,20 @@
 
 ## Human Approval Required
 
-- [ ] route/driver critical decision
+- [ ] route or driver critical decision
 - [ ] permissions/RBAC
 - [ ] tenant change
 - [ ] release/main merge
 - [ ] not applicable
 
+## Secrets Check
+
+- [ ] no `.env` files committed
+- [ ] no provider keys or tokens committed
+- [ ] no full secrets exposed in frontend
+
 ## Docs Updated
 
 - [ ] CHANGELOG.md
-- [ ] NEXT_AGENT_PROMPT.md
+- [ ] docs/NEXT_AGENT_PROMPT.md
 - [ ] docs/CURRENT_DECISIONS.md if architecture changed

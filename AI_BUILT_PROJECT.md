@@ -2,12 +2,19 @@
 
 RoutePulse AI is AI-built with human strategic oversight.
 
-The product is not positioned as fully autonomous replacement software. It is a human-orchestrated operational intelligence platform for logistics teams. AI agents help audit, plan, implement, test and document the product, while humans approve releases, product direction and critical operational decisions.
+The product is a human-orchestrated operational intelligence platform for logistics teams. AI agents can help audit, plan, implement, test and document the system, but humans approve product direction, releases and critical operational decisions.
+
+## Positioning
+
+- Say: AI-built, human-orchestrated Operational Intelligence Platform for logistics operations.
+- Say: AI-built with human strategic oversight.
+- Avoid claims of unsupervised autonomy.
+- Do not imply that AI replaces dispatchers, drivers, support teams or operators.
 
 ## Agent Principles
 
 - Recommend, do not silently decide.
-- Keep a visible audit trail.
-- Preserve tenant and role boundaries.
+- Preserve tenant, role and approval boundaries.
+- Keep audit trails for critical actions.
 - Prefer stable beta value over enterprise scope expansion.
-- Never make premium APIs mandatory for demo mode.
+- Keep maps and provider APIs optional unless configured.

@@ -1,0 +1,49 @@
+#!/usr/bin/env node
+const { appendAgentLog, nowIso, runPackageScript, writeText } = require("./agent-runtime-lib.js");
+
+const commands = ["lint", "typecheck", "build"];
+
+const results = [];
+for (const scriptName of commands) {
+  console.log(`Running package script: ${scriptName}`);
+  const result = runPackageScript(scriptName);
+  results.push(result);
+  process.stdout.write(result.stdout);
+  process.stderr.write(result.stderr);
+  if (result.status !== 0) break;
+}
+
+const passed = results.length === commands.length && results.every((result) => result.status === 0);
+writeText(
+  "docs/agent-reports/qa-build.md",
+  `# QA Build Report
+
+Generated: ${nowIso()}
+
+STATUS: ${passed ? "completed" : "failed"}
+
+${results
+  .map(
+    (result) => `## ${result.command}
+
+Exit code: ${result.status}
+
+\`\`\`text
+${`${result.stdout}\n${result.stderr}`.slice(0, 16000)}
+\`\`\`
+`,
+  )
+  .join("\n")}
+`,
+);
+
+appendAgentLog("qa-analyst", `qa-build status=${passed ? "completed" : "failed"} commands=${results.length}`);
+
+if (!passed) {
+  console.error("QA build failed.");
+  console.error("Report: docs/agent-reports/qa-build.md");
+  process.exit(1);
+}
+
+console.log("QA build completed.");
+console.log("Report: docs/agent-reports/qa-build.md");

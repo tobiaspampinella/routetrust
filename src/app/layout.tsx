@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { CxAssistantWidget } from "@/components/shared/CxAssistantWidget";
 import { VersionFooter } from "@/components/shared/VersionFooter";
 import "./globals.css";
 
@@ -17,6 +18,7 @@ export default function RootLayout({
     <html lang="es">
       <body>
         {children}
+        <CxAssistantWidget />
         <VersionFooter />
       </body>
     </html>

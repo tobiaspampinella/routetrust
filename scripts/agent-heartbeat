@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+const { AGENTS, findAgent, getTasksForAgent, nowIso, parseCliArgs, writeHeartbeat } = require("./agent-runtime-lib.js");
+
+const args = parseCliArgs(process.argv.slice(2));
+const requested = args._[0];
+const targets = requested ? [findAgent(requested)].filter(Boolean) : AGENTS;
+
+if (requested && targets.length === 0) {
+  console.error("Unknown agent id.");
+  process.exit(1);
+}
+
+for (const agent of targets) {
+  const tasks = getTasksForAgent(agent);
+  const pending = tasks.filter((task) => task.NORMALIZED_STATUS !== "completed");
+  const heartbeat = writeHeartbeat(agent.id, {
+    status: pending.length > 0 ? "pending" : tasks.length > 0 ? "completed" : "pending",
+    currentTask: pending[0]?.ID || tasks[0]?.ID || null,
+    lastOutput: `Heartbeat refresh at ${nowIso()}`,
+    errors: [],
+    pid: null,
+    mode: "executable",
+  });
+  console.log(`${agent.id}: ${heartbeat.status} mode=${heartbeat.mode} currentTask=${heartbeat.currentTask || "none"}`);
+}

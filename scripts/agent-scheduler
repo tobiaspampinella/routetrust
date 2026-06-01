@@ -1,0 +1,117 @@
+#!/usr/bin/env node
+const {
+  appendAgentLog,
+  closeProcessMarker,
+  createProcessMarker,
+  getRuntimeSnapshot,
+  nowIso,
+  parseCliArgs,
+  runPackageScript,
+  sleep,
+  writeHeartbeat,
+  writeProjectStatus,
+  writeRuntimeStatusReport,
+} = require("./agent-runtime-lib.js");
+
+function runCycle(intervalMs) {
+  const steps = [
+    ["agent:runner", []],
+    ["beta-check", []],
+    ["watchdog:once", []],
+    ["agents:status", []],
+  ];
+
+  const results = [];
+  for (const [scriptName, extraArgs] of steps) {
+    const result = runPackageScript(scriptName, extraArgs);
+    results.push({ scriptName, result });
+  }
+
+  if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
+    results.push({ scriptName: "telegram:notify", result: runPackageScript("telegram:notify") });
+  }
+
+  const snapshot = getRuntimeSnapshot();
+  writeRuntimeStatusReport(snapshot, {
+    "Scheduler Cycle": results.map((entry) => `- ${entry.scriptName}: exit ${entry.result.status}`).join("\n"),
+  });
+  writeProjectStatus(snapshot, {
+    scheduler: {
+      status: results.every((entry) => entry.result.status === 0) ? "running" : "warning",
+      intervalMs,
+      lastRun: nowIso(),
+      steps: results.map((entry) => ({
+        script: entry.scriptName,
+        status: entry.result.status,
+      })),
+    },
+  });
+
+  return results;
+}
+
+function main() {
+  const args = parseCliArgs(process.argv.slice(2));
+  const watch = Boolean(args.watch);
+  const intervalMs = Number(args["interval-ms"] || 60000);
+
+  createProcessMarker("scheduler", { kind: "agent-scheduler", mode: "running" });
+  writeHeartbeat("scheduler", {
+    status: "running",
+    currentTask: "scheduler-cycle",
+    lastOutput: "Scheduler started.",
+    errors: [],
+    pid: process.pid,
+    mode: "running",
+  });
+  appendAgentLog("codex-node", `scheduler started pid=${process.pid} intervalMs=${intervalMs}`);
+
+  try {
+    do {
+      writeHeartbeat("scheduler", {
+        status: "running",
+        currentTask: "scheduler-cycle",
+        lastOutput: `Cycle started at ${nowIso()}`,
+        errors: [],
+        pid: process.pid,
+        mode: "running",
+      });
+      const results = runCycle(intervalMs);
+      const failures = results.filter((entry) => entry.result.status !== 0);
+      writeHeartbeat("scheduler", {
+        status: failures.length > 0 ? "blocked" : "running",
+        currentTask: watch ? "sleeping" : "completed",
+        lastOutput: `Cycle finished with ${failures.length} failures.`,
+        errors: failures.map((entry) => `${entry.scriptName} exit ${entry.result.status}`),
+        pid: process.pid,
+        mode: "running",
+      });
+      if (!watch) break;
+      sleep(intervalMs);
+    } while (watch);
+
+    closeProcessMarker("scheduler", "completed", { kind: "agent-scheduler", mode: "scheduled" });
+    writeHeartbeat("scheduler", {
+      status: "completed",
+      currentTask: null,
+      lastOutput: "Scheduler stopped cleanly.",
+      errors: [],
+      pid: null,
+      mode: "scheduled",
+    });
+  } catch (error) {
+    closeProcessMarker("scheduler", "failed", { kind: "agent-scheduler", mode: "scheduled", error: error.message });
+    writeHeartbeat("scheduler", {
+      status: "failed",
+      currentTask: null,
+      lastOutput: error.message,
+      errors: [error.message],
+      pid: null,
+      mode: "scheduled",
+    });
+    console.error(error.stack || error.message);
+    process.exit(1);
+  }
+}
+
+main();

@@ -1,0 +1,10 @@
+{
+  "agentId": "demo-engineer",
+  "agentName": "Demo Engineer",
+  "pid": 10548,
+  "status": "pending",
+  "finishedAt": "2026-06-01T03:15:58.770Z",
+  "command": "C:\\Program Files\\nodejs\\node.exe C:\\Users\\tobii\\OneDrive\\Documents\\RouteTrust\\routepulse-ai-tester\\scripts\\agent-runner",
+  "mode": "executable",
+  "kind": "agent-runner"
+}

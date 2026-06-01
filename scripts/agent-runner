@@ -1,0 +1,135 @@
+#!/usr/bin/env node
+const {
+  AGENTS,
+  appendAgentLog,
+  createProcessMarker,
+  closeProcessMarker,
+  findAgent,
+  getRuntimeSnapshot,
+  getTasksForAgent,
+  parseCliArgs,
+  recordStatusLog,
+  setAgentStatus,
+  sleep,
+  syncLockedFilesDoc,
+  writeAgentOutput,
+  writeAgentReport,
+  writeProjectStatus,
+  writeRuntimeStatusReport,
+} = require("./agent-runtime-lib.js");
+
+function taskSummary(tasks) {
+  if (tasks.length === 0) return "- No matching tasks found in docs/ACTIVE_TASKS.md.";
+  return tasks
+    .map((task) => `- ${task.ID || "unknown"}: ${task.NORMALIZED_STATUS}; ${task.NEXT_STEP || "No next step defined."}`)
+    .join("\n");
+}
+
+function inferStatus(agent, tasks) {
+  const pendingTasks = tasks.filter((task) => task.NORMALIZED_STATUS !== "completed");
+  if (agent.id === "telegram-agent" && (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_CHAT_ID)) {
+    return {
+      status: "completed",
+      note: "Telegram is out of operational scope. Missing credentials do not block the local runtime.",
+    };
+  }
+  if (pendingTasks.length > 0) {
+    return {
+      status: "pending",
+      note: `Runner completed coordination pass. Pending tasks: ${pendingTasks.length}.`,
+    };
+  }
+  if (tasks.length > 0) {
+    return {
+      status: "completed",
+      note: "Runner completed coordination pass with task evidence marked completed.",
+    };
+  }
+  return {
+    status: "pending",
+    note: "Runner completed coordination pass but no matching tasks were assigned.",
+  };
+}
+
+function runAgent(agent, holdMs) {
+  const marker = createProcessMarker(agent, { mode: "running", kind: "agent-runner" });
+  const tasks = getTasksForAgent(agent);
+  const pendingTasks = tasks.filter((task) => task.NORMALIZED_STATUS !== "completed");
+  const currentTask = pendingTasks[0]?.ID || tasks[0]?.ID || null;
+
+  setAgentStatus(agent, "running", "Runner process started. This is a supervised coordination pass, not autonomous product implementation.", {
+    mode: "running",
+    currentTask,
+    pid: process.pid,
+  });
+  appendAgentLog(agent.id, `runner started pid=${process.pid} tasks=${tasks.length}`);
+
+  writeAgentOutput(
+    agent,
+    `## Runner Result
+
+- Process: pid ${process.pid}
+- Scope: supervised coordination pass
+- Product changes made: none
+- Matching tasks: ${tasks.length}
+- Pending tasks: ${pendingTasks.length}
+
+## Task Snapshot
+
+${taskSummary(tasks)}
+`,
+  );
+
+  if (holdMs > 0) {
+    appendAgentLog(agent.id, `runner holding active marker holdMs=${holdMs}`);
+    console.log(`${agent.id}: running pid ${process.pid} for ${holdMs}ms`);
+    sleep(holdMs);
+  }
+
+  const finalState = inferStatus(agent, tasks);
+  setAgentStatus(agent, finalState.status, finalState.note, {
+    mode: "executable",
+    currentTask,
+    lastOutput: finalState.note,
+    errors: finalState.status === "blocked" ? [finalState.note] : [],
+  });
+  appendAgentLog(agent.id, `runner completed status=${finalState.status} pendingTasks=${pendingTasks.length}`);
+  closeProcessMarker(agent, finalState.status, { mode: "executable", kind: "agent-runner" });
+}
+
+function main() {
+  const args = parseCliArgs(process.argv.slice(2));
+  const holdMs = Number(args["hold-ms"] || 0);
+  const requested = args._[0];
+  const agents = requested ? [findAgent(requested)].filter(Boolean) : AGENTS;
+
+  if (requested && agents.length === 0) {
+    console.error("Missing or unknown agent id.");
+    console.error("Valid agents:");
+    for (const item of AGENTS) console.error(`- ${item.id}`);
+    process.exit(1);
+  }
+
+  syncLockedFilesDoc();
+  for (const agent of agents) {
+    runAgent(agent, holdMs);
+  }
+
+  const snapshot = getRuntimeSnapshot();
+  writeRuntimeStatusReport(snapshot);
+  writeAgentReport(snapshot);
+  writeProjectStatus(snapshot);
+  recordStatusLog(snapshot);
+
+  console.log(`Agents processed: ${agents.length}`);
+  for (const agent of agents) {
+    console.log(`- ${agent.id}`);
+  }
+}
+
+try {
+  main();
+} catch (error) {
+  console.error(error.stack || error.message);
+  process.exit(1);
+}

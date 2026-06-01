@@ -1,0 +1,3 @@
+- Review P0 and security-category tickets first.
+- Validate whether the report indicates a real exposure or false positive.
+- Define containment notes before engineering changes.

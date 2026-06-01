@@ -1,0 +1,47 @@
+#!/usr/bin/env node
+const fs = require("node:fs");
+const path = require("node:path");
+const { DATA_RUNTIME_DIR, getBugReports, getRuntimeSnapshot, nowIso, writeProjectStatus, writeText } = require("./agent-runtime-lib.js");
+
+function routeBug(report) {
+  const category = String(report.category || "").toLowerCase();
+  const moduleName = String(report.module || "").toLowerCase();
+  const assigned = ["bug-triage-agent", "local-website-assistant-agent"];
+  if (category.includes("security") || moduleName.includes("auth")) return [...assigned, "cybersecurity-validation-agent", "qa-validation-agent", "fullstack-bug-fix-agent"];
+  if (category.includes("ux") || category.includes("ui")) return [...assigned, "ux-agent", "qa-validation-agent"];
+  if (category.includes("qa")) return [...assigned, "qa-validation-agent"];
+  if (category.includes("map") || moduleName.includes("tracking")) return [...assigned, "ux-agent", "fullstack-bug-fix-agent", "qa-validation-agent"];
+  if (moduleName.includes("cms") || moduleName.includes("admin") || moduleName.includes("bugs") || category.includes("integration")) {
+    return [...assigned, "fullstack-bug-fix-agent"];
+  }
+  return [...assigned, "fullstack-bug-fix-agent"];
+}
+
+const reports = getBugReports();
+const triaged = reports.map((report) => ({
+  ...report,
+  assignedAgents: routeBug(report),
+  status: report.status === "new" ? "triaged" : report.status,
+  updatedAt: nowIso(),
+}));
+
+fs.mkdirSync(DATA_RUNTIME_DIR, { recursive: true });
+fs.writeFileSync(path.join(DATA_RUNTIME_DIR, "bug-reports.json"), `${JSON.stringify({ reports: triaged }, null, 2)}\n`, "utf8");
+
+const critical = triaged.filter((report) => ["P0", "P1"].includes(report.severity));
+writeText(
+  "docs/BUG_TRIAGE_REPORT.md",
+  `# Bug Triage Report
+
+Generated: ${nowIso()}
+
+## Reports
+
+${triaged.length === 0 ? "- none" : triaged.map((report) => `- ${report.id}: ${report.severity} ${report.category} -> ${report.assignedAgents.join(", ")}`).join("\n")}
+`,
+);
+writeProjectStatus(getRuntimeSnapshot(), {
+  bugs: triaged,
+});
+console.log(`Triaged bug reports: ${triaged.length}`);
+console.log(`Critical bug reports: ${critical.length}`);

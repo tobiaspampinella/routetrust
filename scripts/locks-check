@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+const { checkLocks, parseActiveTasks } = require("./agent-runtime-lib.js");
+
+const tasks = parseActiveTasks();
+const result = checkLocks(tasks);
+console.log(`Active locks: ${result.activeLocks.length}`);
+console.log(`Inconsistencies: ${result.inconsistencies.length}`);
+for (const issue of result.inconsistencies) {
+  console.log(`- ${issue}`);
+}
+if (!result.ok) process.exit(1);

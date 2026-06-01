@@ -12,7 +12,16 @@ import {
 } from "@/lib/etaCalculations";
 import { calculateProjectedSLA } from "@/lib/kpiCalculations";
 import { getTrackingSimulationElapsedSeconds } from "@/lib/trackingSimulation";
-import type { CustomerTrackingCms, DeliveryPackage, RiskLevel, RoutePulseData, SessionUser, SystemSettings, TrackingDemoStop } from "@/lib/types";
+import type {
+  CustomerTrackingCms,
+  DeliveryPackage,
+  IncidentSeverity,
+  RiskLevel,
+  RoutePulseData,
+  SessionUser,
+  SystemSettings,
+  TrackingDemoStop,
+} from "@/lib/types";
 
 type LoginResult =
   | {
@@ -45,6 +54,8 @@ interface RoutePulseStore extends RoutePulseData {
   markFailed: (routeId: string, reason: string) => void;
   pauseRoute: (routeId: string, reason: string) => void;
   resumeRoute: (routeId: string) => void;
+  reportIncident: (input: { routeId: string; packageId?: string; title: string; detail: string; severity?: IncidentSeverity; source?: "admin" | "driver" | "customer" | "system" }) => void;
+  resolveIncident: (incidentId: string) => void;
   recalculateRouteEta: (routeId: string) => void;
   markRouteRisk: (routeId: string, risk: RiskLevel) => void;
   mockReassignRoute: (routeId: string) => void;
@@ -462,6 +473,50 @@ export const useRoutePulseStore = create<RoutePulseStore>()(
           };
         });
       },
+      reportIncident: (input) => {
+        set((state) => ({
+          incidents: [
+            {
+              id: `incident-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+              routeId: input.routeId,
+              packageId: input.packageId,
+              title: input.title,
+              detail: input.detail,
+              severity: input.severity ?? "medium",
+              status: "open" as const,
+              source: input.source ?? "driver",
+              createdAt: new Date().toISOString(),
+            },
+            ...state.incidents,
+          ].slice(0, 20),
+          routes: state.routes.map((route) =>
+            route.id === input.routeId && input.severity === "high"
+              ? {
+                  ...route,
+                  riskLevel: "high" as const,
+                  manualRisk: "risk_high" as const,
+                  suggestedReassignments: [
+                    "Incidente abierto: requiere revision humana antes de reasignar o cambiar SLA.",
+                    ...route.suggestedReassignments.filter((item) => !item.includes("Incidente abierto")),
+                  ],
+                }
+              : route,
+          ),
+        }));
+      },
+      resolveIncident: (incidentId) => {
+        set((state) => ({
+          incidents: state.incidents.map((incident) =>
+            incident.id === incidentId
+              ? {
+                  ...incident,
+                  status: "resolved" as const,
+                  resolvedAt: new Date().toISOString(),
+                }
+              : incident,
+          ),
+        }));
+      },
       recalculateRouteEta: (routeId) => {
         set((state) => refreshPredictiveModel(state, [routeId]));
       },
@@ -502,7 +557,7 @@ export const useRoutePulseStore = create<RoutePulseStore>()(
     }),
     {
       name: "routepulse-ai-tester-state",
-      version: 6,
+      version: 7,
       storage: createJSONStorage(() => localStorage),
       migrate: () => {
         const freshState = cloneInitialRoutePulseData();

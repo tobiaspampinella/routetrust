@@ -1,69 +1,208 @@
-# Agent Ownership
+# FASE 2 - Agent Ownership
 
-Last updated: 2026-05-30
+Fecha: 2026-05-31
 
-## Principal AI Node Orchestrator
+## Codex Node
 
-Owns recovery, governance, sequencing, locks, branch policy, build gates and handoffs.
+Responsable:
 
-Primary files: `docs/ACTIVE_TASKS.md`, `docs/LOCKED_FILES.md`, `docs/CURRENT_DECISIONS.md`, `docs/PROJECT_OPERATING_SYSTEM.md`.
+- governance
+- architecture
+- integration
+- handoffs
 
-## Full Stack Engineer Agent
+Branch sugerida: `agent/codex-node`
 
-Owns CMS, backend APIs, auth, RBAC, tenant isolation, route simulation persistence, driver portal and customer tracking backend contracts.
+Archivos primarios:
 
-Primary files: `src/app/api/**`, `src/services/**`, `src/middleware.ts`, `prisma/schema.prisma`.
+- `docs/PROJECT_OPERATING_SYSTEM.md`
+- `docs/AI_GOVERNANCE.md`
+- `docs/ACTIVE_TASKS.md`
+- `docs/CURRENT_DECISIONS.md`
+- `docs/NEXT_AGENT_PROMPT.md`
 
-## QA Analyst Agent
+## Full Stack Agent
 
-Owns Playwright/Cypress, smoke tests, regression, beta checklist and release validation.
+Responsable:
 
-Primary files: `tests/**`, `playwright.config.ts`, `docs/QA_AUDIT.md`, `docs/BETA_STABLE_CRITERIA.md`.
+- CMS
+- backend
+- RBAC
+- route engine
 
-## Operational Intelligence Auditor Agent
+Branch sugerida: `agent/fullstack-core`
 
-Owns operational usefulness, ETA/SLA logic, human approval, incident logic and scope control.
+Archivos primarios:
 
-Primary files: `src/lib/etaCalculations.ts`, `src/lib/kpiCalculations.ts`, `src/lib/operationalInsights.ts`, approval/audit services.
+- `src/app/api/**`
+- `src/services/**`
+- `src/modules/**`
+- `prisma/schema.prisma`
 
-## Demo Experience Engineer Agent
+## QA Agent
 
-Owns demo sandbox, route playback, demo drivers, demo incidents and commercial demo flow.
+Responsable:
 
-Primary files: `src/lib/trackingSimulation.ts`, `src/store/routePulseStore.ts`, `src/components/customer/**`, `src/components/driver/**`.
+- tests
+- webtester
+- regression
 
-## UX/UI Admin Experience Agent
+Branch sugerida: `agent/qa-stability`
 
-Owns CEO/Admin CMS clarity, internal guides, onboarding, tooltips, empty states and navigation.
+Archivos primarios:
 
-Primary files: `src/components/admin/**`, `src/app/admin/**`, `src/app/globals.css`.
+- `tests/**`
+- `playwright.config.*`
+- `cypress.config.*`
+- `docs/QA_AUDIT.md`
 
-## Maps & Tracking Research Agent
+## UX/UI Agent
 
-Owns Google Maps, TrafficLayer, Routes API, Photorealistic 3D, Apple MapKit research and MapLibre fallback.
+Responsable:
 
-Primary files: `docs/MAP_INTEGRATION.md`, map provider components, `.env.example`.
+- admin dashboard
+- demo UX
+- driver UX
 
-## Telegram Project Intelligence Agent
+Branch sugerida: `agent/ux-admin`
 
-Owns Telegram bot, project events, command router and CMS test notification.
+Archivos primarios:
 
-Primary files: `src/app/api/cms/telegram/**`, `docs/TELEGRAM_BOT_SETUP.md`, `docs/TELEGRAM_EVENTS.md`.
+- `src/components/admin/**`
+- `src/components/driver/**`
+- `src/components/customer/**`
+- `src/app/globals.css`
 
-## Bug Reporting Assistant Agent
+## Full Stack Debug Agent
 
-Owns visible bug/support assistant, local classification, ticket creation, routing and critical Telegram notification.
+Responsable:
 
-Primary files: `src/components/shared/CxAssistantWidget.tsx`, bug report API/model, `docs/BUG_REPORTING_ASSISTANT.md`.
+- runtime debugging
+- route health
+- endpoint surface
+- CMS/Demo/Driver/Tracking validation
 
-## GitHub Public Repo Agent
+Branch sugerida: `agent/fullstack-debug`
 
-Owns README, CONTRIBUTING, SECURITY, ROADMAP, issue templates, PR template and CI workflow.
+Archivos primarios:
 
-Primary files: `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `ROADMAP.md`, `.github/**`.
+- `src/app/**`
+- `src/app/api/**`
+- `docs/FULLSTACK_DEBUG_REPORT.md`
 
-## Documentation Agent
+## QA Security Agent
 
-Owns changelog, handoff, specs and beta criteria.
+Responsable:
 
-Primary files: `CHANGELOG.md`, `NEXT_AGENT_PROMPT.md`, `docs/**`.
+- auth validation
+- RBAC validation
+- tenant isolation checks
+- secret handling
+
+Branch sugerida: `agent/qa-security`
+
+Archivos primarios:
+
+- `src/app/api/auth/**`
+- `src/services/**`
+- `.env.example`
+- `docs/SECURITY_AUDIT.md`
+- `docs/QA_SECURITY_REPORT.md`
+
+## Local Bug Assistant Agent
+
+Responsable:
+
+- local bug triage
+- category routing
+- severity assignment
+- critical escalation
+
+Branch sugerida: `agent/local-bug-assistant`
+
+Archivos primarios:
+
+- `data/runtime/bug-reports.json`
+- `src/components/shared/CxAssistantWidget.tsx`
+- `src/app/admin/bug-reports/**`
+- `docs/BUG_TRIAGE_REPORT.md`
+
+## Maps Agent
+
+Responsable:
+
+- maps fallback
+- Google Maps research
+- traffic integration
+
+Branch sugerida: `agent/maps-research`
+
+Archivos primarios:
+
+- `docs/MAP_INTEGRATION.md`
+- map/tracking components
+- `.env.example`
+
+## Telegram Agent
+
+Responsable:
+
+- Telegram bot
+- project updates
+
+Branch sugerida: `agent/telegram-bot`
+
+Archivos primarios:
+
+- `src/app/api/cms/telegram/**`
+- `docs/TELEGRAM_BOT_SETUP.md`
+- `docs/TELEGRAM_EVENTS.md`
+
+## Bug Assistant Agent
+
+Responsable:
+
+- internal bug chatbot
+- bug routing
+
+Branch sugerida: `agent/bug-assistant`
+
+Archivos primarios:
+
+- `src/components/shared/CxAssistantWidget.tsx`
+- bug report API/model
+- `docs/BUG_REPORTING_ASSISTANT.md`
+
+## Docs Agent
+
+Responsable:
+
+- README
+- specs
+- changelog
+
+Branch sugerida: `agent/docs`
+
+Archivos primarios:
+
+- `README.md`
+- `docs/**`
+- `CHANGELOG.md`
+- `docs/CHANGELOG.md`
+
+## Support Agents
+
+Antigravity/Gemini:
+
+- auditoria operacional
+- UX enterprise
+- analisis de friccion logistica
+
+OpenCode/Vibecode:
+
+- tests pequenos
+- fixtures
+- mocks
+- bugs aislados
+
+Regla: Support Agents no modifican core sin task, branch y lock.

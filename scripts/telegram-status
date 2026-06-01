@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+const { getRuntimeSnapshot, nowIso, writeProjectStatus } = require("./agent-runtime-lib.js");
+
+const configured = Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID);
+const missing = [
+  !process.env.TELEGRAM_BOT_TOKEN ? "TELEGRAM_BOT_TOKEN" : null,
+  !process.env.TELEGRAM_CHAT_ID ? "TELEGRAM_CHAT_ID" : null,
+].filter(Boolean);
+const snapshot = getRuntimeSnapshot();
+
+writeProjectStatus(snapshot, {
+  telegram: {
+    status: configured ? "configured" : "blocked",
+    configured,
+    missingEnv: missing,
+    lastRun: nowIso(),
+  },
+});
+
+console.log(`Telegram configured: ${configured ? "yes" : "no"}`);
+if (missing.length > 0) console.log(`Missing: ${missing.join(", ")}`);

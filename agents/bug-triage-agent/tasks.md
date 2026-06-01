@@ -1,0 +1,3 @@
+- Review all new assistant-created tickets.
+- Catch duplicates and severity drift.
+- Ensure every ticket has a primary owner and next step.

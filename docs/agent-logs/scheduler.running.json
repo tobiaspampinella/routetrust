@@ -1,0 +1,10 @@
+{
+  "agentId": "scheduler",
+  "agentName": "scheduler",
+  "pid": 15300,
+  "status": "running",
+  "startedAt": "2026-06-01T02:01:57.773Z",
+  "command": "C:\\Program Files\\nodejs\\node.exe C:\\Users\\tobii\\OneDrive\\Documents\\RouteTrust\\routepulse-ai-tester\\scripts\\agent-scheduler --watch",
+  "kind": "agent-scheduler",
+  "mode": "running"
+}

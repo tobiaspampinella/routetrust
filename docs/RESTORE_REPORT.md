@@ -1,61 +1,74 @@
-# Restore Report
+# FASE 0 - Restore Report
 
-Date: 2026-05-30
-Owner: Principal AI Node Orchestrator
-Project root: `C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester`
-Source ZIP: `C:\Users\tobii\OneDrive\Documents\RouteTrust\RoutePulseAI_Portable_Cycle0_2026-05-27.zip`
+Fecha local: 2026-05-30T22:54:37-05:00
+Workspace auditado: `C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester`
+Fase ejecutada: FASE 0 - Restore + Environment Audit
 
-## Restore Status
+## Estado de restauracion
 
-- ZIP located in `C:\Users\tobii\OneDrive\Documents\RouteTrust`.
-- ZIP contained one top-level folder: `routepulse-ai-tester`.
-- Restored into a clean folder; no previous project folder was overwritten.
-- No `.git` directory was included in the ZIP.
+El proyecto existe en carpeta restaurada:
 
-## Structure Detected
+`C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester`
 
-- Next.js app: `src/app`
-- API routes: `src/app/api`
-- Components: `src/components`
-- Domain logic: `src/lib`, `src/services`, `src/store`
-- Prisma schema and seed: `prisma/schema.prisma`, `prisma/seed.ts`
-- Documentation: `docs`
-- Local services: `docker-compose.yml`
+No se descomprimio ningun ZIP durante esta fase. Solo se audito el estado actual del proyecto ya restaurado.
 
-## Key Files Found
+## Estructura detectada
 
-- `package.json`
+Directorios principales:
+
+- `.git`
+- `.github`
+- `.next`
+- `docs`
+- `node_modules`
+- `prisma`
+- `src`
+
+Archivos principales:
+
 - `.env.example`
-- `README.md`
+- `.gitignore`
+- `AGENTS.md`
 - `CHANGELOG.md`
-- `NEXT_AGENT_PROMPT.md`
-- `docs/PROJECT_OPERATING_SYSTEM.md`
-- `docs/AI_GOVERNANCE.md`
-- `docs/ACTIVE_TASKS.md`
-- `docs/CURRENT_ARCHITECTURE.md`
-- `docs/CMS_AUDIT.md`
-- `docs/DEMO_SANDBOX_SPEC.md`
+- `docker-compose.yml`
+- `next.config.ts`
+- `package-lock.json`
+- `package.json`
+- `README.md`
+- `tailwind.config.ts`
+- `tsconfig.json`
 
-## Missing Or Not Included
+## Archivos requeridos
 
-- Lockfile was missing, so npm generated `package-lock.json`.
-- `.git` was missing, so this restore must initialize Git locally.
-- `public` folder was not present.
-- Dedicated backend app folder was not present; backend behavior is currently App Router API routes.
-- Playwright/Cypress tests were not present.
-- Docker CLI is not installed on this PC, so Postgres/Redis compose could not be validated locally.
+| Requisito | Estado | Evidencia |
+|---|---:|---|
+| `package.json` | Encontrado | `package.json` |
+| Lockfile | Encontrado | `package-lock.json` |
+| `pnpm-lock.yaml` | No encontrado | no existe |
+| `yarn.lock` | No encontrado | no existe |
+| `src` | Encontrado | `src` |
+| `src/app` | Encontrado | `src/app` |
+| `pages` | No encontrado | no existe |
+| `src/pages` | No encontrado | no existe |
+| `docs` | Encontrado | `docs` |
+| `.env.example` | Encontrado | `.env.example` |
+| `README.md` | Encontrado | `README.md` |
+| `.git` | Encontrado | `.git` |
 
-## Migration Risks
+## Stack inferido por estructura
 
-- Windows PATH points `node` to a blocked WindowsApps Codex executable. Install scripts fail unless PATH is prepended with the bundled Node path.
-- Next.js `15.1.3` is deprecated by npm with a security warning; upgrade must be planned after restore validation.
-- Recharts `2.x` is deprecated; upgrade to v3 should be planned after beta stabilization.
-- Prisma install scripts require a working `node` command.
-- OneDrive may lock `node_modules` paths during install cleanup.
+- Frontend: Next.js App Router.
+- Backend: Next.js API route handlers en `src/app/api`.
+- Base de datos esperada: Prisma con PostgreSQL.
+- Infra local esperada: `docker-compose.yml` con Postgres/Redis.
 
-## Next Steps
+## Riesgos de restauracion
 
-1. Keep using the explicit Node path for local commands until Node/npm are installed normally.
-2. Initialize Git and keep secrets out of commits.
-3. Address Next.js security upgrade in a dedicated dependency hardening task.
-4. Add Playwright smoke coverage for beta flows.
+- El proyecto esta dentro de OneDrive; puede haber locks de archivos durante installs/builds.
+- `.next`, `node_modules` y `tsconfig.tsbuildinfo` existen como artefactos locales; no son fuente.
+- No existe `pages` ni `src/pages`; el enrutamiento real es `src/app`.
+- No se detecto backend separado tipo Nest/Express.
+
+## Resultado FASE 0
+
+Restauracion actual detectada y documentada. No se ejecutaron features, refactors ni nuevas integraciones.

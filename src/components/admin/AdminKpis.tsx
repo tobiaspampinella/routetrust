@@ -26,6 +26,7 @@ export function AdminKpis() {
       users: state.users,
       zones: state.zones,
       trackingCms: state.trackingCms,
+      incidents: state.incidents,
     })),
   );
   const kpis = calculateOperationsKpis(data);

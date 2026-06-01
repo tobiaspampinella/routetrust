@@ -1,0 +1,63 @@
+#!/usr/bin/env node
+const fs = require("node:fs");
+const path = require("node:path");
+const { DATA_RUNTIME_DIR, nowIso, parseCliArgs } = require("./agent-runtime-lib.js");
+
+function inferCategory(moduleName, description) {
+  const value = `${moduleName} ${description}`.toLowerCase();
+  if (/security|permission|auth|login/.test(value)) return "Security concern";
+  if (/telegram/.test(value)) return "Telegram bug";
+  if (/map/.test(value)) return "Map bug";
+  if (/track/.test(value)) return "Tracking bug";
+  if (/driver/.test(value)) return "Driver Portal bug";
+  if (/cms|admin/.test(value)) return "CMS bug";
+  if (/sandbox/.test(value)) return "Demo Sandbox bug";
+  if (/route simulation|simulation/.test(value)) return "Route Simulation bug";
+  if (/ux|copy|text|layout/.test(value)) return "UX problem";
+  if (/build/.test(value)) return "Build bug";
+  if (/data/.test(value)) return "Data bug";
+  return "UI bug";
+}
+
+function inferSeverity(description) {
+  const value = description.toLowerCase();
+  if (/critical|crash|500|security|secret/.test(value)) return "P0";
+  if (/broken|cannot|blocked|login/.test(value)) return "P1";
+  if (/wrong|slow|ux|bug|error/.test(value)) return "P2";
+  return "P3";
+}
+
+function loadReports(filePath) {
+  if (!fs.existsSync(filePath)) return { reports: [] };
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch {
+    return { reports: [] };
+  }
+}
+
+const args = parseCliArgs(process.argv.slice(2));
+const moduleName = args.module || "general";
+const description = args.description || "Manual local bug report generated from CLI.";
+const filePath = path.join(DATA_RUNTIME_DIR, "bug-reports.json");
+fs.mkdirSync(DATA_RUNTIME_DIR, { recursive: true });
+
+const state = loadReports(filePath);
+const report = {
+  id: `bug-${Date.now()}`,
+  title: args.title || `[${moduleName}] ${description.slice(0, 60)}`,
+  module: moduleName,
+  description,
+  severity: args.severity || inferSeverity(description),
+  category: args.category || inferCategory(moduleName, description),
+  status: "new",
+  source: args.source || "system",
+  routePath: args.route || null,
+  assignedAgents: [],
+  createdAt: nowIso(),
+  updatedAt: nowIso(),
+};
+
+state.reports = [report, ...(state.reports || [])].slice(0, 200);
+fs.writeFileSync(filePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+console.log(`Created bug report ${report.id}`);

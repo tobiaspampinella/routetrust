@@ -1,40 +1,63 @@
-# AI Governance
+# FASE 2 - AI Governance
 
-Last updated: 2026-05-30
+Fecha: 2026-05-31
 
-## Product Position
+## Principio Human-In-The-Loop
 
-RoutePulse AI is AI-built with human strategic oversight. It assists logistics teams with operational intelligence; it does not replace human operators.
+La IA no toma decisiones finales sobre operaciones criticas. La IA recomienda, simula, clasifica, documenta y asiste.
 
-## AI May Suggest
+## La IA Puede
 
-- Routes
-- Driver assignments
-- ETA changes
-- SLA risk
-- Incident classification
-- Bug priority
-- Demo data and simulation states
+- Sugerir rutas.
+- Simular rutas.
+- Estimar ETA.
+- Detectar riesgo SLA.
+- Clasificar bugs.
+- Priorizar tareas.
+- Generar documentacion.
+- Generar tests.
+- Asistir soporte.
 
-## Human Must Approve
+## Humano Debe Aprobar
 
-- Final route approval
-- Critical reassignment
-- Permission and role changes
-- Tenant changes
-- Production release
-- Merge to `main`
-- Stable build publication
+- Rutas finales.
+- Reasignaciones criticas.
+- Cambios de permisos.
+- Cambios de tenant.
+- Releases.
+- Merges a `main`.
+- Publicacion de beta stable.
 
-## Agent Boundaries
+## Reglas Para Agentes
 
-- Agents can audit, document, implement scoped tasks and run checks.
-- Agents cannot expose secrets.
-- Agents cannot bypass RBAC/tenant checks.
-- Agents cannot auto-approve critical operational actions.
-- Agents cannot add premium provider dependencies that break missing-key mode.
-- Agents cannot run destructive refactors during restore.
+- Codex Node mantiene decisiones y handoffs.
+- Antigravity no reemplaza decisiones de arquitectura; entrega auditoria y recomendaciones.
+- OpenCode/Vibecode no modifica core sin task y lock.
+- QA no corrige features fuera de bugs autorizados.
+- UX no cambia flujos core sin task.
+- Docs no cambia comportamiento de producto.
 
-## Audit Log Requirement
+## Seguridad
 
-Critical actions must record actor, role, tenant, action, module, timestamp, previous value, new value and result. IP/user agent should be added where available.
+- No hardcodear secretos.
+- No mostrar tokens completos en frontend.
+- No commitear `.env`.
+- No usar APIs premium como requisito para demo.
+
+## Auditoria
+
+Acciones criticas deben registrar:
+
+- actor
+- rol
+- tenant
+- accion
+- modulo
+- timestamp
+- valor anterior
+- valor nuevo
+- resultado
+
+## Estado
+
+Governance definida. Features nuevas siguen bloqueadas hasta autorizacion.

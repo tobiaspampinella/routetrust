@@ -1,244 +1,197 @@
-# CMS Spec - RoutePulse AI SaaS Console
+# CMS Spec
 
-## Vision
+Fecha: 2026-05-31
+Estado: especificacion basada en auditoria FASE 4.
 
-El CMS de RoutePulse AI debe ser la consola interna enterprise para administrar el SaaS logistico: tenants, usuarios, roles, modulos, configuracion operacional, aprobaciones humanas, auditoria, notificaciones, demo sandbox, branding basico y reportes.
+## Proposito
 
-No es solo un gestor de contenido. Es el centro administrativo, operativo y comercial de la plataforma.
+El CMS debe ser la consola operativa y administrativa del SaaS logistico RoutePulse AI. Debe administrar tenants, usuarios, roles, modulos, rutas, drivers, incidencias, aprobaciones humanas, audit logs, demo sandbox, notificaciones y configuracion operacional.
 
-## Principios
+No debe ser tratado como un gestor de contenido. Es el panel de control B2B.
 
-- Multi-tenant desde el modelo, aunque la beta siga usando datos mock.
-- RBAC granular por rol y permiso.
-- Toda accion critica debe pasar por Human Approval Layer.
-- Todo cambio debe generar audit log.
-- No exponer secretos en frontend.
-- No integrar APIs externas sin provider legal, billing y terminos aprobados.
-- UI separada de servicios, permisos, auditoria y modelos.
+## Principios no negociables
 
-## Modulos CMS
+- Multi-tenant desde backend y DB.
+- RBAC validado server-side.
+- Audit log obligatorio para cambios de estado.
+- Acciones criticas pasan por Human Approval Layer.
+- Estado demo separado de estado productivo.
+- Secrets nunca renderizados en frontend.
+- Fallback local de mapas preservado.
+- Integraciones externas detras de provider adapters.
 
-### 1. Empresas / Tenants
+## Roles CMS objetivo
 
-Campos principales:
+- `super_admin`
+- `company_admin`
+- `operations`
+- `dispatcher`
+- `driver`
+- `customer_experience`
+- `customer_success`
+- `finance`
+- `commercial`
+- `external_customer`
+- `viewer`
+
+## Permisos CMS objetivo
+
+- `view`
+- `create`
+- `update`
+- `delete`
+- `approve`
+- `assign`
+- `export`
+- `configure`
+
+## Modulos CMS objetivo
+
+- Dashboard operacional
+- Tracking
+- Driver portal
+- Routes
+- Incidents
+- Customer tracking
+- Reports
+- Telegram notifications
+- Audit logs
+- Demo sandbox
+
+## Estado actual reutilizable
+
+| Area | Implementacion actual |
+| --- | --- |
+| Tipos CMS | `src/modules/cms/types.ts` |
+| Seeds CMS | `src/services/cms/cmsService.ts` |
+| RBAC helper | `src/services/permissions/rbac.ts` |
+| Tenant helper | `src/services/tenant/tenantService.ts` |
+| Audit helper | `src/services/audit/auditLog.ts` |
+| Admin shell | `src/components/admin/AdminShell.tsx` |
+| CMS UI | `src/components/admin/AdminCms.tsx`, `src/components/admin/CmsEnterpriseOverview.tsx` |
+| Live ops mock | `src/components/admin/LiveCmsTab.tsx` |
+| Telegram status/test | `src/app/api/cms/telegram/*` |
+
+## Entidades backend requeridas
+
+### Tenant
 
 - id
-- nombre
-- estado: active, inactive, suspended
-- plan: starter, growth, pro, enterprise
-- modulos habilitados
-- usuarios asociados
-- metricas generales
-- estado operativo
-- branding basico
+- slug
+- name
+- status
+- plan
+- enabledModules
+- branding
+- createdAt
+- updatedAt
 
-Acciones:
-
-- crear empresa
-- editar empresa
-- activar/desactivar
-- suspender
-- configurar plan
-- activar/desactivar modulos
-- ver usuarios
-- ver metricas
-- ver estado operativo
-
-### 2. Usuarios
-
-Campos principales:
+### CmsUser
 
 - id
 - tenantId
-- nombre
 - email
-- rol
-- departamento
-- estado
-- ultima actividad
+- passwordHash
+- name
+- role
+- department
+- status
+- lastActivityAt
+- createdAt
+- updatedAt
 
-Acciones:
+### RolePermission
 
-- crear usuario
-- editar usuario
-- suspender usuario
-- resetear password
-- asignar rol
-- asignar empresa
-- asignar departamento
-- ver actividad
+- id
+- tenantId nullable para defaults globales
+- role
+- permission
+- enabled
+- version
+- updatedBy
+- updatedAt
 
-### 3. Roles y permisos
+### ApprovalPolicy
 
-Roles minimos:
-
-- Super Admin
-- Admin Empresa
-- Operaciones
-- Dispatcher
-- Driver
-- Customer Experience
-- Customer Success
-- CFO / Finanzas
-- Comercial
-- Cliente Externo
-- Viewer
-
-Permisos minimos:
-
-- view
-- create
-- update
-- delete
-- approve
-- assign
-- export
-- configure
-
-La matriz RBAC debe ser editable desde CMS, pero cambios de permisos requieren aprobacion humana.
-
-### 4. Modulos SaaS por tenant
-
-Modulos:
-
-- dashboard operacional
-- tracking
-- portal driver
-- rutas
-- incidencias
-- customer tracking
-- reportes
-- Telegram notifications
-- audit logs
-- demo sandbox
-
-### 5. Configuracion operacional
-
-Debe administrar:
-
-- zonas
-- rutas base
-- drivers
-- vehiculos
-- SLA
-- reglas de asignacion
-- horarios operativos
-- prioridades
-- tipos de incidencia
-- estados de entrega
-
-### 6. Human Approval Layer
-
-Acciones que requieren aprobacion:
-
-- aprobacion final de rutas sugeridas
-- reasignacion critica
-- cancelacion de ruta
-- cambios de SLA
-- cambios de permisos
-- cambios de tenant
-- cambios de configuracion operacional critica
-
-Modelo:
-
+- id
+- tenantId nullable
 - action
 - required
 - approverRoles
 - automationLimit
-- status: pending, approved, rejected
-- reason
+- enabled
+
+### ApprovalRequest
+
+- id
+- tenantId
+- action
+- targetType
+- targetId
+- title
+- detail
 - requestedBy
-- approvedBy
-- timestamps
+- requestedAt
+- status
+- decidedBy
+- decidedAt
+- decisionReason
 
-### 7. Auditoria
+### AuditLog
 
-Todo cambio del CMS debe generar:
-
-- actor
-- rol
-- tenant
-- accion
-- modulo
-- valor anterior
-- valor nuevo
+- id
+- tenantId
+- actorId
+- actorRole
+- action
+- module
+- resourceType
+- resourceId
+- previousValue
+- newValue
+- result
+- ip
+- userAgent
 - timestamp
-- IP/user agent si existe
-- resultado
 
-El audit log productivo debe ser append-only.
+### OperationalConfig
 
-### 8. Notificaciones
+- id
+- tenantId
+- zones
+- slaRules
+- assignmentRules
+- operationHours
+- deliveryStatuses
+- incidentTypes
+- updatedAt
 
-Configurable por CMS:
+### NotificationConfig
 
-- Telegram bot token
-- Telegram chat ID
-- eventos notificados
-- responsables
-- alertas criticas
-- notificaciones de build
-- notificaciones operativas
+- id
+- tenantId
+- provider
+- enabled
+- events
+- owners
+- tokenSecretRef
+- chatIdSecretRef
+- createdAt
+- updatedAt
 
-Secretos:
+### DemoSandboxConfig
 
-- Nunca renderizar token en frontend.
-- Guardar token en backend/secret manager.
-- Mostrar solo estado: configured / missing.
+- id
+- tenantId
+- enabled
+- status
+- seedProfile
+- speedMultiplier
+- mapProviderMode
+- activeScenario
+- lastGeneratedAt
 
-### 9. Demo Sandbox
-
-Debe permitir:
-
-- activar modo demo
-- cargar datos ficticios
-- reiniciar demo
-- configurar rutas demo
-- configurar drivers demo
-- configurar clientes demo
-- ver estado demo
-
-### 10. Branding / White-label basico
-
-Beta:
-
-- logo
-- nombre empresa
-- color primario
-- color secundario
-- dominio futuro
-- textos basicos
-- idioma futuro
-
-No priorizar white-label avanzado hasta despues de validar beta.
-
-### 11. Reportes CMS
-
-Debe mostrar:
-
-- rutas activas
-- rutas completadas
-- rutas fallidas
-- incidencias
-- drivers activos
-- SLA en riesgo
-- entregas demoradas
-- actividad por usuario
-- eventos recientes
-
-### 12. Seguridad
-
-Requisitos:
-
-- proteccion por rol
-- validacion backend
-- bloqueo de acciones criticas
-- audit logs
-- tenant isolation
-- no exponer datos sensibles en frontend
-- no acciones cross-tenant sin Super Admin
-
-## APIs necesarias
+## API surface requerida
 
 Tenants:
 
@@ -246,7 +199,7 @@ Tenants:
 - `POST /api/cms/tenants`
 - `PATCH /api/cms/tenants/:tenantId`
 
-Usuarios:
+Users:
 
 - `GET /api/cms/users`
 - `POST /api/cms/users`
@@ -257,61 +210,74 @@ RBAC:
 - `GET /api/cms/rbac`
 - `PATCH /api/cms/rbac`
 
-Auditoria:
-
-- `GET /api/cms/audit-logs`
-
 Approvals:
 
 - `GET /api/cms/approvals`
 - `POST /api/cms/approvals`
 - `PATCH /api/cms/approvals/:approvalId`
 
-Notificaciones:
+Audit:
 
-- `GET /api/cms/notifications/telegram`
-- `PATCH /api/cms/notifications/telegram`
+- `GET /api/cms/audit-logs`
+- `GET /api/cms/audit-logs/export`
 
-Demo:
+Operations:
 
-- `POST /api/cms/demo/reset`
-- `PATCH /api/cms/demo/config`
+- `GET /api/cms/routes`
+- `PATCH /api/cms/routes/:routeId`
+- `GET /api/cms/drivers`
+- `PATCH /api/cms/drivers/:driverId`
+- `GET /api/cms/incidents`
+- `POST /api/cms/incidents`
+- `PATCH /api/cms/incidents/:incidentId`
 
-## Modelo de datos sugerido
+Demo sandbox:
 
-Entidades:
+- `GET /api/cms/demo-sandbox`
+- `POST /api/cms/demo-sandbox/generate`
+- `POST /api/cms/demo-sandbox/reset`
+- `POST /api/cms/demo-sandbox/events`
+- `PATCH /api/cms/demo-sandbox/config`
 
-- Tenant
-- TenantModule
-- CmsUser
-- Role
-- Permission
-- RolePermission
-- ApprovalPolicy
-- ApprovalRequest
-- AuditLog
-- OperationalConfig
-- NotificationConfig
-- DemoSandboxConfig
-- BrandingConfig
+Telegram:
 
-## Primera beta implementada
+- `GET /api/cms/telegram/status`
+- `POST /api/cms/telegram/test`
+- `POST /api/cms/telegram/events`
+- `POST /api/cms/telegram/webhook`
 
-Incluye:
+## Human Approval Layer
 
-- Tab Enterprise en `/admin/cms`.
-- Tenants mock con activar/desactivar/suspender.
-- Activacion/desactivacion local de modulos.
-- Matriz RBAC visible.
-- Human Approval policies visibles.
-- Audit log local generado por acciones de tenant/modulo.
-- Telegram config como estado seguro sin exponer secretos.
-- Lista de APIs necesarias.
+Acciones que requieren aprobacion:
 
-No incluye aun:
+- Publicar ruta sugerida.
+- Reasignacion critica.
+- Cancelar ruta.
+- Cambiar SLA.
+- Cambiar permisos.
+- Cambiar tenant, plan o modulo critico.
+- Cambiar configuracion operacional critica.
+- Enviar notificacion masiva.
 
-- Backend real.
-- Base de datos.
-- Persistencia cross-browser.
-- Approval workflow real.
-- Secret manager.
+Regla: una accion critica puede crear una solicitud, pero no debe ejecutar la mutacion productiva hasta `approved`.
+
+## Criterios de aceptacion CMS beta
+
+- Admin no ve tenants no autorizados.
+- Driver no accede a `/admin`.
+- Usuario sin `configure` no accede a configuracion Telegram.
+- Cambios de permisos generan approval.
+- Cambios de tenant generan audit log.
+- Audit log queda persistido y no editable.
+- Estado demo no modifica rutas productivas.
+- Tokens Telegram no aparecen en payload cliente.
+- Build status se lee de fuente real o se marca explicitamente como no configurado.
+
+## Limites actuales
+
+- UI actual es demo local.
+- No hay backend CMS real.
+- No hay WebSockets.
+- No hay tests automatizados de CMS.
+- Prisma schema no esta conectado al CMS actual.
+- MapLibre figura como readiness/docs, no como dependencia instalada.
