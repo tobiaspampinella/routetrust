@@ -1,5 +1,29 @@
 # Next Agent Prompt
 
+## 2026-05-31 Git recovery handoff
+
+Completed in this pass:
+
+- Confirmed `origin` is `https://github.com/tobiaspampinella/routetrust.git`.
+- Diagnosed the rejected push correctly: unrelated histories, not a meaningful remote codebase.
+- Confirmed `origin/main` only had the bootstrap `Initial commit` with a tiny `README.md`.
+- Created local checkpoint commit `620636e chore(repo): checkpoint local RouteTrust recovery state`.
+- Ran `git pull origin main --allow-unrelated-histories`.
+- Resolved the only merge conflict in `README.md` by keeping the local RouteTrust content.
+- Created merge commit `0b11b4d merge: integrate remote bootstrap README into RouteTrust history`.
+- Pushed `main` successfully to `origin`.
+
+Current reality:
+
+- Remote `main` now contains the RouteTrust history.
+- `develop`, `staging` and `stabilization/beta-saas-v0.1` are still local-only.
+- Labels, topics, branch protection and remote CI verification are still pending.
+- Repository visibility is not verified from this machine.
+
+Next allowed move:
+
+- Verify Actions on GitHub, then push `develop`, `staging` and `stabilization/beta-saas-v0.1`, and apply labels/topics/protection.
+
 ## 2026-05-31 GitHub publication handoff
 
 Completed in this pass:
@@ -14,7 +38,6 @@ Completed in this pass:
 Hard blockers:
 
 - `gh` is not installed on this machine.
-- No `origin` remote exists.
 - Remote CI, topics, labels and branch protection cannot be verified until the GitHub repository is created.
 
 What is ready:

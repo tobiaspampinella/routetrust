@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-05-31 - Git recovery and remote merge
+
+- Diagnosed push rejection as unrelated histories, not a meaningful remote code delta.
+- Confirmed `origin/main` only contained the bootstrap `Initial commit` with a minimal `README.md`.
+- Created a local recovery checkpoint before integrating the remote bootstrap history.
+- Merged `origin/main` with `--allow-unrelated-histories` and resolved the only conflict in `README.md` by preserving the RouteTrust README.
+- Pushed `main` successfully to `https://github.com/tobiaspampinella/routetrust.git`.
+- Updated publication reporting with the actual remote URL, merge strategy and remaining post-push risks.
+
 ## 2026-05-31 - GitHub publication hardening
 
 - Added `docs/GITHUB_PUBLICATION_REPORT.md` as the current source of truth for publication state.
@@ -8,7 +17,7 @@
 - Expanded repository label definitions and added manual setup docs for labels and branch protection.
 - Hardened `.gitignore` to exclude `.next-build`, `.next-dev` and typecheck cache artifacts.
 - Verified `npm test`, `npm run qa:security`, `npm run typecheck`, `npm run lint` and `npm run build`.
-- Confirmed publication remains blocked by missing GitHub CLI / remote creation on this machine.
+- Confirmed publication remained blocked at that moment by missing GitHub CLI / remote creation on this machine.
 
 ## 2026-06-01 - Runtime stabilization
 
