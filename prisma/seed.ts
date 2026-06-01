@@ -2,9 +2,10 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
+const prismaClient = prisma as any;
 
 async function main() {
-  const tenant = await prisma.tenant.upsert({
+  const tenant = await prismaClient.tenant.upsert({
     where: { slug: "demo" },
     update: {
       name: "Demo Company",
@@ -16,54 +17,58 @@ async function main() {
     },
   });
 
-  const existingRoutes = await prisma.route.findMany({
+  const existingRoutes = await prismaClient.route.findMany({
     where: { tenantId: tenant.id },
     select: { id: true },
   });
-  await prisma.routeStop.deleteMany({
+  await prismaClient.routeStop.deleteMany({
     where: { routeId: { in: existingRoutes.map((route: { id: string }) => route.id) } },
   });
-  await prisma.route.deleteMany({ where: { tenantId: tenant.id } });
-  await prisma.driver.deleteMany({ where: { tenantId: tenant.id } });
+  await prismaClient.route.deleteMany({ where: { tenantId: tenant.id } });
+  await prismaClient.driver.deleteMany({ where: { tenantId: tenant.id } });
 
   const adminPassword = await bcrypt.hash("Admin1234!", 10);
   const dispatcherPassword = await bcrypt.hash("Demo1234!", 10);
 
-  await prisma.user.upsert({
+  await prismaClient.user.upsert({
     where: { email: "admin@demo.com" },
     update: {
       tenantId: tenant.id,
-      password: adminPassword,
+      name: "Admin Demo",
+      passwordHash: adminPassword,
       role: "SUPER_ADMIN",
       status: "active",
     },
     create: {
       tenantId: tenant.id,
       email: "admin@demo.com",
-      password: adminPassword,
+      name: "Admin Demo",
+      passwordHash: adminPassword,
       role: "SUPER_ADMIN",
       status: "active",
     },
   });
 
-  await prisma.user.upsert({
+  await prismaClient.user.upsert({
     where: { email: "dispatcher@demo.com" },
     update: {
       tenantId: tenant.id,
-      password: dispatcherPassword,
+      name: "Dispatcher Demo",
+      passwordHash: dispatcherPassword,
       role: "DISPATCHER",
       status: "active",
     },
     create: {
       tenantId: tenant.id,
       email: "dispatcher@demo.com",
-      password: dispatcherPassword,
+      name: "Dispatcher Demo",
+      passwordHash: dispatcherPassword,
       role: "DISPATCHER",
       status: "active",
     },
   });
 
-  const driver = await prisma.driver.create({
+  const driver = await prismaClient.driver.create({
     data: {
       tenantId: tenant.id,
       name: "Carlos Mendez",
@@ -75,7 +80,7 @@ async function main() {
     },
   });
 
-  await prisma.route.create({
+  await prismaClient.route.create({
     data: {
       tenantId: tenant.id,
       driverId: driver.id,
@@ -110,7 +115,7 @@ async function main() {
     },
   });
 
-  await prisma.route.create({
+  await prismaClient.route.create({
     data: {
       tenantId: tenant.id,
       status: "suggested",
@@ -141,6 +146,35 @@ async function main() {
           },
         ],
       },
+    },
+  });
+
+  await prismaClient.bugReport.upsert({
+    where: { id: "bug-seed-demo-001" },
+    update: {
+      tenantId: tenant.id,
+      title: "[BUG] qa: Demo smoke persistence baseline",
+      description: "Seeded bug report to validate durable admin bug queue persistence.",
+      status: "triaged",
+      assignedAgents: ["bug-triage-agent", "fullstack-bug-fix-agent"],
+      tags: ["bug", "qa", "seed"],
+    },
+    create: {
+      id: "bug-seed-demo-001",
+      tenantId: tenant.id,
+      source: "qa",
+      module: "qa",
+      title: "[BUG] qa: Demo smoke persistence baseline",
+      description: "Seeded bug report to validate durable admin bug queue persistence.",
+      severity: "P3",
+      status: "triaged",
+      category: "bug",
+      intent: "bug_report",
+      assignedAgents: ["bug-triage-agent", "fullstack-bug-fix-agent"],
+      reproductionSteps: ["Open admin bug reports.", "Validate seeded persistent ticket."],
+      tags: ["bug", "qa", "seed"],
+      createdByName: "Prisma Seed",
+      createdByRole: "system",
     },
   });
 

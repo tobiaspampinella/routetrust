@@ -8,27 +8,30 @@ datasource db {
 }
 
 model Tenant {
-  id        String   @id @default(uuid())
-  name      String
-  slug      String   @unique
-  status    String   @default("active")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  users     User[]
-  routes    Route[]
-  drivers   Driver[]
+  id         String     @id @default(uuid())
+  name       String
+  slug       String     @unique
+  status     String     @default("active")
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  auditLogs  AuditLog[]
+  bugReports BugReport[]
+  users      User[]
+  routes     Route[]
+  drivers    Driver[]
 }
 
 model User {
-  id        String   @id @default(uuid())
-  tenantId  String
-  email     String   @unique
-  password  String
-  role      String   @default("VIEWER")
-  status    String   @default("active")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  id           String   @id @default(uuid())
+  tenantId     String
+  email        String   @unique
+  name         String?
+  passwordHash String
+  role         String   @default("VIEWER")
+  status       String   @default("active")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
 }
@@ -83,17 +86,54 @@ model RouteStop {
 }
 
 model AuditLog {
-  id           String   @id @default(uuid())
-  tenantId     String
-  actorId      String
-  actorRole    String
-  action       String
-  module       String
-  resourceId   String?
-  resourceType String?
-  timestamp    DateTime @default(now())
+  id         String    @id @default(uuid())
+  tenantId   String?
+  actorId    String?
+  actorName  String?
+  actorRole  String?
+  action     String
+  module     String
+  entityId   String?
+  entityType String?
+  result     String    @default("success")
+  metadata   Json?
+  createdAt  DateTime  @default(now())
+  tenant     Tenant?   @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
-  @@index([timestamp])
+  @@index([createdAt])
 }
 
+model BugReport {
+  id                String    @id
+  tenantId          String?
+  source            String
+  module            String
+  routePath         String?
+  title             String
+  description       String
+  severity          String
+  status            String
+  category          String
+  intent            String
+  assignedAgents    Json
+  reproductionSteps Json
+  expectedResult    String?
+  actualResult      String?
+  quickResponse     String?
+  createdById       String?
+  createdByName     String?
+  createdByRole     String?
+  pageContext       Json?
+  tags              Json
+  triageNotes       Json?
+  confidence        Float?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  tenant            Tenant?   @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([severity])
+  @@index([createdAt])
+}

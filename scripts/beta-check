@@ -1,15 +1,21 @@
 #!/usr/bin/env node
+const fs = require("node:fs");
+const path = require("node:path");
 const {
-  appendAgentLog,
   fileExists,
   getRuntimeSnapshot,
   nowIso,
   recordStatusLog,
   runPackageScript,
+  runShellCommand,
+  sanitizeText,
+  summarizeBugs,
   writeProjectStatus,
   writeRuntimeStatusReport,
   writeText,
 } = require("./agent-runtime-lib.js");
+
+const ROOT = path.resolve(__dirname, "..");
 
 const requiredFiles = [
   "AGENTS.md",
@@ -20,7 +26,6 @@ const requiredFiles = [
   "docs/LOCKED_FILES.md",
   "docs/TELEGRAM_SETUP_REQUIRED.md",
   "docs/LOCAL_24_7_OPERATION.md",
-  "runtime/project-status.json",
   "scripts/agent-status",
   "scripts/agent-runner",
   "scripts/agent-scheduler",
@@ -32,49 +37,350 @@ const requiredFiles = [
   "scripts/debug-scan",
   "scripts/qa-security",
   "scripts/bugs-triage",
+  "src/app/api/health/route.ts",
+  "tests/e2e/smoke.spec.ts",
 ];
 
-const snapshot = getRuntimeSnapshot();
-writeRuntimeStatusReport(snapshot);
-recordStatusLog(snapshot);
+function readText(relativeFile) {
+  const file = path.join(ROOT, relativeFile);
+  if (!fs.existsSync(file)) return "";
+  return fs.readFileSync(file, "utf8");
+}
 
-const missing = requiredFiles.filter((file) => !fileExists(file));
-const testsResult = runPackageScript("test");
-const locksResult = runPackageScript("locks:check");
-const watchdogResult = runPackageScript("watchdog:once");
-const bugTriageResult = runPackageScript("bugs:triage");
-const telegramConfigured = Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID);
+async function httpCheck(url) {
+  try {
+    const response = await fetch(url, { redirect: "manual" });
+    return {
+      ok: response.status < 500,
+      status: response.status,
+      body: sanitizeText(await response.text().catch(() => "")),
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      body: error.message,
+    };
+  }
+}
 
-const passed =
-  missing.length === 0 &&
-  snapshot.validation.missing.length === 0 &&
-  snapshot.validation.invalidStatuses.length === 0 &&
-  testsResult.status === 0 &&
-  locksResult.status === 0 &&
-  watchdogResult.status === 0 &&
-  bugTriageResult.status === 0;
+function hasConfiguredGitRemote() {
+  const result = runShellCommand(`git -c safe.directory="${ROOT}" remote get-url origin`, "git remote get-url origin");
+  return {
+    configured: result.status === 0 && Boolean(result.stdout.trim()),
+    value: sanitizeText(result.stdout || result.stderr),
+  };
+}
 
-const body = `# Beta Check Report
+function getGitWorktreeStatus() {
+  const result = runShellCommand(`git -c safe.directory="${ROOT}" status --short --branch`, "git status --short --branch");
+  const output = `${result.stdout || ""}\n${result.stderr || ""}`.trim();
+  const lines = output.split(/\r?\n/).filter(Boolean);
+  const entries = lines.filter((line) => !line.startsWith("##"));
+  return {
+    ok: result.status === 0,
+    clean: result.status === 0 && entries.length === 0,
+    entries,
+    preview: entries.slice(0, 12),
+  };
+}
 
-Generated: ${nowIso()}
+function hasSilentDemoSecret() {
+  const source = readText("src/lib/sessionToken.ts");
+  return /routepulse-local-demo-secret-v002|const DEFAULT_SECRET\s*=/.test(source);
+}
 
-STATUS: ${passed ? "completed" : "failed"}
+function runtimeChurnPolicyStatus() {
+  const gitignore = readText(".gitignore");
+  const requiredPatterns = [
+    "runtime/heartbeats/",
+    "runtime/logs/",
+    "runtime/project-status.json",
+    "docs/agent-logs/",
+  ];
+  const missing = requiredPatterns.filter((pattern) => !gitignore.includes(pattern));
+  return {
+    ok: missing.length === 0,
+    missing,
+  };
+}
 
-## Runtime Validation
+function uniquePids(entries) {
+  return [...new Set(entries.map((entry) => entry.pid).filter(Boolean))];
+}
 
-- Missing required beta files: ${missing.length}
-- Missing runtime files: ${snapshot.validation.missing.length}
-- Invalid status files: ${snapshot.validation.invalidStatuses.length}
-- Active processes: ${snapshot.activeProcesses.length}
-- Telegram configured: ${telegramConfigured ? "yes" : "no"}
+function listeningPids(port) {
+  const result = runShellCommand(`netstat -ano | findstr LISTENING | findstr :${port}`, `netstat :${port}`);
+  if (result.status !== 0) return [];
 
-## Missing Required Files
+  const listeners = result.stdout
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const parts = line.split(/\s+/);
+      return {
+        pid: Number(parts[parts.length - 1]) || null,
+      };
+    })
+    .filter((entry) => entry.pid);
 
-${missing.length === 0 ? "- none" : missing.map((file) => `- ${file}`).join("\n")}
+  return uniquePids(listeners);
+}
+
+function processCommandLine(pid) {
+  if (!pid) return "";
+  const result = runShellCommand(
+    `powershell -NoProfile -Command "(Get-CimInstance Win32_Process -Filter \\"ProcessId = ${pid}\\").CommandLine"`,
+    `command line pid ${pid}`,
+  );
+  if (result.status !== 0) {
+    const errorText = sanitizeText(`${result.stdout || ""} ${result.stderr || ""}`);
+    if (/access is denied|acceso denegado|permission denied/i.test(errorText)) {
+      return "ACCESS_DENIED";
+    }
+    return "";
+  }
+  return sanitizeText(result.stdout || "");
+}
+
+async function main() {
+  const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://127.0.0.1:3000";
+  const snapshot = getRuntimeSnapshot();
+  writeRuntimeStatusReport(snapshot);
+  recordStatusLog(snapshot);
+
+  const missing = requiredFiles.filter((file) => !fileExists(file));
+  const typecheckResult = runPackageScript("typecheck");
+  const lintResult = runPackageScript("lint");
+  const testsResult = runPackageScript("test");
+  const buildResult = runPackageScript("build");
+  const smokeResult = runPackageScript("qa:smoke");
+  const prismaValidateResult = process.env.DATABASE_URL
+    ? runShellCommand("npx prisma validate", "npx prisma validate")
+    : {
+        command: "npx prisma validate",
+        status: 1,
+        stdout: "",
+        stderr: "DATABASE_URL is not configured.",
+      };
+  const locksResult = runPackageScript("locks:check");
+  const watchdogResult = runPackageScript("watchdog:once");
+  const bugTriageResult = runPackageScript("bugs:triage");
+
+  const [healthCheck, loginCheck, adminCheck, adminCmsCheck, trackCheck, driverCheck, driverRouteCheck, projectStatusCheck, telegramStatusCheck] = await Promise.all([
+    httpCheck(`${baseUrl}/api/health`),
+    httpCheck(`${baseUrl}/login`),
+    httpCheck(`${baseUrl}/admin`),
+    httpCheck(`${baseUrl}/admin/cms`),
+    httpCheck(`${baseUrl}/track/demo`),
+    httpCheck(`${baseUrl}/driver`),
+    httpCheck(`${baseUrl}/driver/route`),
+    httpCheck(`${baseUrl}/admin/project-status`),
+    httpCheck(`${baseUrl}/api/cms/telegram/status`),
+  ]);
+
+  const storageFiles = ["data/runtime/bug-reports.json", "data/runtime/audit-log.json", "data/runtime/project-events.json"];
+  const storageOk = storageFiles.every((file) => fileExists(file));
+  const gitRemote = hasConfiguredGitRemote();
+  const gitWorktree = getGitWorktreeStatus();
+  const churnPolicy = runtimeChurnPolicyStatus();
+  const bugSummary = summarizeBugs();
+  const silentDemoSecret = hasSilentDemoSecret();
+  const healthPayload = healthCheck.ok ? JSON.parse(healthCheck.body || "{}") : null;
+  const databaseReady = healthPayload?.checks?.db === "ok";
+  const officialPortPids = listeningPids(3000);
+  const secondaryPortPids = listeningPids(3001);
+  const officialCommandLine = processCommandLine(officialPortPids[0]);
+  const commandLineAccessible = officialCommandLine !== "ACCESS_DENIED";
+  const runtimeOwnershipClear =
+    (Boolean(officialCommandLine) && officialCommandLine !== "ACCESS_DENIED" && /routepulse|routetrust|next/i.test(officialCommandLine)) ||
+    (officialPortPids.length === 1 && healthPayload?.app === "RouteTrust");
+  const runtimeAligned = officialPortPids.length === 1 && secondaryPortPids.length === 0 && runtimeOwnershipClear;
+
+  const localDemoReady =
+    missing.length === 0 &&
+    snapshot.validation.invalidStatuses.length === 0 &&
+    typecheckResult.status === 0 &&
+    lintResult.status === 0 &&
+    testsResult.status === 0 &&
+    loginCheck.ok &&
+    adminCheck.ok &&
+    trackCheck.ok;
+
+  const betaStableReady =
+    localDemoReady &&
+    buildResult.status === 0 &&
+    smokeResult.status === 0 &&
+    prismaValidateResult.status === 0 &&
+    healthCheck.status === 200 &&
+    healthPayload?.checks?.storage === "ok" &&
+    databaseReady &&
+    healthPayload?.checks?.bugStore === "ok" &&
+    adminCmsCheck.ok &&
+    driverCheck.ok &&
+    driverRouteCheck.ok &&
+    projectStatusCheck.ok &&
+    watchdogResult.status === 0 &&
+    locksResult.status === 0 &&
+    bugTriageResult.status === 0 &&
+    runtimeAligned &&
+    !silentDemoSecret &&
+    gitWorktree.clean;
+
+  const stagingReady =
+    betaStableReady &&
+    gitRemote.configured &&
+    storageOk &&
+    Boolean(process.env.STAGING_URL || process.env.NEXT_PUBLIC_STAGING_URL);
+
+  const blockers = [];
+  if (!storageOk) blockers.push("Persistent runtime files are missing.");
+  if (smokeResult.status !== 0) blockers.push("Browser smoke is failing or not runnable.");
+  if (buildResult.status !== 0) blockers.push("Production build is failing.");
+  if (prismaValidateResult.status !== 0) blockers.push(`Prisma validation is blocked: ${sanitizeText(prismaValidateResult.stderr || prismaValidateResult.stdout)}`);
+  if (healthCheck.status !== 200) blockers.push("/api/health is not returning HTTP 200.");
+  if (!adminCheck.ok) blockers.push("/admin is returning a server error.");
+  if (!adminCmsCheck.ok) blockers.push("/admin/cms is returning a server error.");
+  if (!driverCheck.ok) blockers.push("/driver is returning a server error.");
+  if (!driverRouteCheck.ok) blockers.push("/driver/route is returning a server error.");
+  if (!projectStatusCheck.ok) blockers.push("/admin/project-status is returning a server error.");
+  if (!runtimeAligned) blockers.push(`Runtime drift detected. Port 3000 PIDs: ${officialPortPids.join(", ") || "none"}; port 3001 PIDs: ${secondaryPortPids.join(", ") || "none"}; managed official process: ${runtimeOwnershipClear ? "yes" : "no"}.`);
+  if (silentDemoSecret) blockers.push("Demo auth secret fallback is still silent.");
+  if (!gitRemote.configured) blockers.push("GitHub remote origin is missing or unreadable.");
+  if (!gitWorktree.clean) blockers.push(`Git worktree is dirty (${gitWorktree.entries.length} entries). Stable cannot be claimed on an unvalidated dirty tree.`);
+  if (!churnPolicy.ok) blockers.push(`Runtime churn ignore policy missing: ${churnPolicy.missing.join(", ")}.`);
+
+  const passedChecks = [
+    ["typecheck", typecheckResult.status === 0],
+    ["lint", lintResult.status === 0],
+    ["unit_tests", testsResult.status === 0],
+    ["build", buildResult.status === 0],
+    ["qa_smoke", smokeResult.status === 0],
+    ["prisma_validate", prismaValidateResult.status === 0],
+    ["locks_check", locksResult.status === 0],
+    ["watchdog", watchdogResult.status === 0],
+    ["bug_triage", bugTriageResult.status === 0],
+    ["health_200", healthCheck.status === 200],
+    ["login_no_500", loginCheck.ok],
+    ["admin_no_500", adminCheck.ok],
+    ["admin_cms_no_500", adminCmsCheck.ok],
+    ["track_demo_no_500", trackCheck.ok],
+    ["driver_no_500", driverCheck.ok],
+    ["driver_route_no_500", driverRouteCheck.ok],
+    ["admin_project_status_no_500", projectStatusCheck.ok],
+    ["persistent_storage_files", storageOk],
+    ["database_health", databaseReady],
+    ["git_worktree_clean", gitWorktree.clean],
+    ["runtime_churn_policy", churnPolicy.ok],
+    ["runtime_aligned", runtimeAligned],
+  ].filter((entry) => entry[1]).map((entry) => entry[0]);
+
+  const failedChecks = [
+    ["missing_files", missing.length === 0],
+    ["invalid_status_files", snapshot.validation.invalidStatuses.length === 0],
+    ["typecheck", typecheckResult.status === 0],
+    ["lint", lintResult.status === 0],
+    ["unit_tests", testsResult.status === 0],
+    ["build", buildResult.status === 0],
+    ["qa_smoke", smokeResult.status === 0],
+    ["prisma_validate", prismaValidateResult.status === 0],
+    ["health_200", healthCheck.status === 200],
+    ["admin_no_500", adminCheck.ok],
+    ["admin_cms_no_500", adminCmsCheck.ok],
+    ["driver_no_500", driverCheck.ok],
+    ["driver_route_no_500", driverRouteCheck.ok],
+    ["persistent_storage_files", storageOk],
+    ["database_health", databaseReady],
+    ["admin_project_status_no_500", projectStatusCheck.ok],
+    ["git_worktree_clean", gitWorktree.clean],
+    ["runtime_churn_policy", churnPolicy.ok],
+    ["runtime_aligned", runtimeAligned],
+    ["silent_demo_secret_removed", !silentDemoSecret],
+  ].filter((entry) => !entry[1]).map((entry) => entry[0]);
+
+  const reportStatus = stagingReady ? "STAGING_READY" : betaStableReady ? "BETA_STABLE_READY" : localDemoReady ? "LOCAL_DEMO_READY" : "BLOCKED";
+  const timestamp = nowIso();
+
+  const body = `# Beta Check Report
+
+Generated: ${timestamp}
+
+STATUS: ${reportStatus}
+
+## Classification
+
+- LOCAL_DEMO_READY: ${localDemoReady ? "YES" : "NO"}
+- BETA_STABLE_READY: ${betaStableReady ? "YES" : "NO"}
+- STAGING_READY: ${stagingReady ? "YES" : "NO"}
+- Runtime aligned: ${runtimeAligned ? "YES" : "NO"}
+
+## Passed Checks
+
+${passedChecks.length === 0 ? "- none" : passedChecks.map((item) => `- ${item}`).join("\n")}
+
+## Failed Checks
+
+${failedChecks.length === 0 ? "- none" : failedChecks.map((item) => `- ${item}`).join("\n")}
+
+## Blockers
+
+${blockers.length === 0 ? "- none" : blockers.map((item) => `- ${item}`).join("\n")}
+
+## HTTP Checks
+
+- /api/health -> ${healthCheck.status}
+- /login -> ${loginCheck.status}
+- /admin -> ${adminCheck.status}
+- /admin/cms -> ${adminCmsCheck.status}
+- /track/demo -> ${trackCheck.status}
+- /driver -> ${driverCheck.status}
+- /driver/route -> ${driverRouteCheck.status}
+- /admin/project-status -> ${projectStatusCheck.status}
+- /api/cms/telegram/status -> ${telegramStatusCheck.status}
+
+## Environment Reality
+
+- Git remote origin: ${gitRemote.configured ? gitRemote.value : "missing"}
+- Git worktree clean: ${gitWorktree.clean ? "yes" : "no"}
+- Git dirty preview: ${gitWorktree.preview.length === 0 ? "none" : gitWorktree.preview.join(" | ")}
+- Silent demo secret fallback: ${silentDemoSecret ? "present" : "not detected"}
+- Critical bug reports: ${bugSummary.critical.length}
+- Telegram configured: ${Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) ? "yes" : "no"}
+- Official port 3000 PIDs: ${officialPortPids.join(", ") || "none"}
+- Secondary port 3001 PIDs: ${secondaryPortPids.join(", ") || "none"}
+- Official process ownership clear: ${runtimeOwnershipClear ? "yes" : "no"}
+- Process command line access: ${commandLineAccessible ? "available" : "denied by environment"}
+- Database health: ${healthPayload?.checks?.db || "unknown"}
+- Persistence mode: ${healthPayload?.checks?.persistence || "unknown"}
 
 ## Command Results
 
-### Tests
+### Typecheck
+
+\`\`\`text
+${typecheckResult.command}
+\`\`\`
+
+Exit code: ${typecheckResult.status}
+
+\`\`\`text
+${`${typecheckResult.stdout}\n${typecheckResult.stderr}`.slice(0, 6000)}
+\`\`\`
+
+### Lint
+
+\`\`\`text
+${lintResult.command}
+\`\`\`
+
+Exit code: ${lintResult.status}
+
+\`\`\`text
+${`${lintResult.stdout}\n${lintResult.stderr}`.slice(0, 6000)}
+\`\`\`
+
+### Unit Tests
 
 \`\`\`text
 ${testsResult.command}
@@ -83,72 +389,119 @@ ${testsResult.command}
 Exit code: ${testsResult.status}
 
 \`\`\`text
-${`${testsResult.stdout}\n${testsResult.stderr}`.slice(0, 8000)}
+${`${testsResult.stdout}\n${testsResult.stderr}`.slice(0, 6000)}
 \`\`\`
 
-### Locks
+### Build
 
 \`\`\`text
-${locksResult.command}
+${buildResult.command}
 \`\`\`
 
-Exit code: ${locksResult.status}
+Exit code: ${buildResult.status}
 
 \`\`\`text
-${`${locksResult.stdout}\n${locksResult.stderr}`.slice(0, 8000)}
+${`${buildResult.stdout}\n${buildResult.stderr}`.slice(0, 6000)}
 \`\`\`
 
-### Watchdog
+### Smoke Browser
 
 \`\`\`text
-${watchdogResult.command}
+${smokeResult.command}
 \`\`\`
 
-Exit code: ${watchdogResult.status}
+Exit code: ${smokeResult.status}
 
 \`\`\`text
-${`${watchdogResult.stdout}\n${watchdogResult.stderr}`.slice(0, 8000)}
+${`${smokeResult.stdout}\n${smokeResult.stderr}`.slice(0, 6000)}
 \`\`\`
 
-### Bug Triage
+### Prisma Validate
 
 \`\`\`text
-${bugTriageResult.command}
+${prismaValidateResult.command}
 \`\`\`
 
-Exit code: ${bugTriageResult.status}
+Exit code: ${prismaValidateResult.status}
 
 \`\`\`text
-${`${bugTriageResult.stdout}\n${bugTriageResult.stderr}`.slice(0, 8000)}
+${`${prismaValidateResult.stdout}\n${prismaValidateResult.stderr}`.slice(0, 6000)}
 \`\`\`
 `;
 
-writeText("docs/agent-reports/beta-check.md", body);
-writeProjectStatus(snapshot, {
-  tests: {
-    status: testsResult.status === 0 ? "passed" : "failed",
-    lastRun: nowIso(),
-    command: testsResult.command,
-  },
-  beta: {
-    status: passed ? "passed" : "failed",
-    lastRun: nowIso(),
-    report: "docs/agent-reports/beta-check.md",
-  },
-});
+  writeText("docs/agent-reports/beta-check.md", body);
+  writeProjectStatus(snapshot, {
+    tests: {
+      status: testsResult.status === 0 ? "passed" : "failed",
+      lastRun: timestamp,
+      command: testsResult.command,
+    },
+    beta: {
+      status: reportStatus,
+      lastRun: timestamp,
+      report: "docs/agent-reports/beta-check.md",
+      passedChecks,
+      failedChecks,
+      blockers,
+    },
+    smokeBrowser: {
+      status: smokeResult.status === 0 ? "passed" : "failed",
+      lastRun: timestamp,
+      command: smokeResult.command,
+    },
+    storage: {
+      status: storageOk ? "ok" : "missing",
+      files: storageFiles,
+    },
+    github: {
+      status: gitRemote.configured ? "configured" : "missing",
+      remote: gitRemote.value,
+    },
+    staging: {
+      status: process.env.STAGING_URL || process.env.NEXT_PUBLIC_STAGING_URL ? "configured" : "missing",
+      url: process.env.STAGING_URL || process.env.NEXT_PUBLIC_STAGING_URL || null,
+    },
+    autonomy: {
+      llmWorkers: "none",
+      autonomousAgents: "none",
+      localScripts: "available",
+      coordinator: snapshot.schedulerActive ? "running" : "available",
+    },
+    classifications: {
+      localDemoReady,
+      betaStableReady,
+      stagingReady,
+    },
+    runtime: {
+      status: runtimeAligned ? "ALIGNED" : "RUNTIME_DRIFT",
+      activePort: 3000,
+      secondaryPorts: secondaryPortPids.length > 0 ? [3001] : [],
+      listeners: {
+        3000: officialPortPids,
+        3001: secondaryPortPids,
+      },
+      managedProcess: runtimeOwnershipClear,
+      officialUrl: baseUrl,
+      checkedAt: timestamp,
+    },
+    criticalBlockers: blockers,
+  });
 
-appendAgentLog(
-  "codex-node",
-  `beta-check status=${passed ? "completed" : "failed"} missing=${missing.length} tests=${testsResult.status} locks=${locksResult.status} watchdog=${watchdogResult.status}`,
-);
-process.stdout.write(testsResult.stdout);
-process.stderr.write(testsResult.stderr);
+  if (!localDemoReady || !betaStableReady || !stagingReady) {
+    console.log(reportStatus);
+  }
 
-if (!passed) {
-  console.error("Beta check failed.");
-  console.error("Report: docs/agent-reports/beta-check.md");
-  process.exit(1);
+  if (!localDemoReady || !betaStableReady) {
+    console.error("Beta check found blockers.");
+    console.error("Report: docs/agent-reports/beta-check.md");
+    process.exit(1);
+  }
+
+  console.log("Beta check passed.");
+  console.log("Report: docs/agent-reports/beta-check.md");
 }
 
-console.log("Beta check completed.");
-console.log("Report: docs/agent-reports/beta-check.md");
+main().catch((error) => {
+  console.error(error.stack || error.message);
+  process.exit(1);
+});
