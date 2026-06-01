@@ -3,7 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, LockKeyhole, Truck } from "lucide-react";
+import { ArrowRight, LockKeyhole, Radar, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,11 +21,14 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [nextPath, setNextPath] = useState<string | null | undefined>(undefined);
 
-  const getTargetPath = useCallback((user: SessionUser) => {
-    if (nextPath?.startsWith("/admin") && user.role === "admin") return nextPath;
-    if (nextPath?.startsWith("/driver") && user.role === "driver") return nextPath;
-    return user.role === "admin" ? "/admin" : "/driver";
-  }, [nextPath]);
+  const getTargetPath = useCallback(
+    (user: SessionUser) => {
+      if (nextPath?.startsWith("/admin") && user.role === "admin") return nextPath;
+      if (nextPath?.startsWith("/driver") && user.role === "driver") return nextPath;
+      return user.role === "admin" ? "/admin" : "/driver";
+    },
+    [nextPath],
+  );
 
   useEffect(() => {
     setNextPath(new URLSearchParams(window.location.search).get("next"));
@@ -71,88 +74,85 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="apple-hero-bg min-h-screen px-5 py-8">
-      <div className="mx-auto w-full max-w-6xl">
-        <nav className="mb-10 flex h-11 items-center justify-between rounded-full bg-white/70 px-5 text-sm font-semibold text-[#1d1d1f] shadow-sm backdrop-blur-2xl">
-          <Link href="/login" className="flex items-center gap-2">
-            <Truck className="h-4 w-4" />
-            RoutePulse AI
+    <main className="ops-shell-bg min-h-screen px-4 py-4 sm:px-6 sm:py-6">
+      <div className="mx-auto max-w-[1480px]">
+        <nav className="ops-panel flex h-16 items-center justify-between rounded-[1.8rem] px-5 text-sm">
+          <Link href="/login" className="flex items-center gap-3 text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/5 text-[#b49bff] ring-1 ring-white/10">
+              <Truck className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="font-semibold">RouteTrust</p>
+              <p className="text-xs text-white/40">Operations access</p>
+            </div>
           </Link>
-          <Link href="/track/demo" className="apple-link">
+          <Link href="/track/demo" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-white/68 hover:bg-white/10 hover:text-white">
             Ver demo cliente
           </Link>
         </nav>
 
-        <div className="mb-10 text-center">
-          <p className="text-sm font-semibold text-[#0066cc]">Control Tower Lite</p>
-          <h1 className="mx-auto mt-3 max-w-4xl text-5xl font-semibold tracking-normal text-[#1d1d1f] sm:text-7xl">
-            Ultima milla, clara al instante.
-          </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg font-medium leading-8 text-[#6e6e73]">
-            ETA predictivo, pausas, riesgo operativo y KPIs vivos para operadores logisticos en LatAm.
-          </p>
-        </div>
-
-        <div className="grid overflow-hidden rounded-[34px] bg-white shadow-apple lg:grid-cols-[1fr_0.82fr]">
-          <section className="relative min-h-[520px] apple-dark-hero p-8 text-white">
-            <div className="absolute inset-0 opacity-45 route-grid" />
-            <div className="relative z-10 flex h-full flex-col justify-between">
-              <div>
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#1d1d1f]">
-                  <Truck className="h-6 w-6" />
-                </div>
-                <h2 className="mt-8 max-w-lg text-5xl font-semibold tracking-normal">RoutePulse AI</h2>
-                <p className="mt-4 max-w-md text-lg font-medium leading-8 text-[#f5f5f7]/80">
-                  No mostramos solo donde esta el chofer. Calculamos que significa para cada entrega pendiente.
-                </p>
+        <div className="mt-6 grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+          <section className="ops-panel relative overflow-hidden rounded-[2rem] p-6 sm:p-8 lg:p-10">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(180,155,255,0.18),transparent_28%)]" />
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#b49bff]/18 bg-[#b49bff]/10 px-4 py-2 text-sm text-[#d7ceff]">
+                <Radar className="h-4 w-4" />
+                Control Tower Lite
               </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <Metric value="60" label="paquetes" />
-                <Metric value="3" label="rutas" />
-                <Metric value="0" label="API keys" />
+              <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-tight text-white sm:text-6xl">
+                Acceso a una plataforma operativa diseñada para lectura rápida y control real.
+              </h1>
+              <p className="mt-5 max-w-2xl text-base leading-8 text-white/58 sm:text-lg">
+                El login ahora entra a un entorno visual consistente con el dashboard: oscuro, denso, jerarquizado y usable en desktop y móvil.
+              </p>
+
+              <div className="mt-10 grid gap-4 sm:grid-cols-3">
+                <Metric value="20K" label="despachos" />
+                <Metric value="65%" label="margen operativo" />
+                <Metric value="3" label="rutas activas" />
               </div>
             </div>
           </section>
 
-          <section className="p-6 sm:p-10">
-            <Card className="border-0 shadow-none">
-              <CardHeader className="px-0">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#e8f2ff] text-[#0071e3]">
-                  <LockKeyhole className="h-5 w-5" />
+          <Card className="rounded-[2rem]">
+            <CardHeader className="p-6 sm:p-8">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-[#b49bff] ring-1 ring-white/10">
+                <LockKeyhole className="h-5 w-5" />
+              </div>
+              <CardTitle className="mt-4 text-3xl">Login demo</CardTitle>
+              <p className="text-sm leading-7 text-white/48">Las credenciales de acceso se generan y gestionan solo en entornos locales autorizados.</p>
+            </CardHeader>
+            <CardContent className="space-y-5 p-6 pt-0 sm:p-8 sm:pt-0">
+              <form onSubmit={submit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" />
                 </div>
-                <CardTitle className="mt-4 text-2xl font-semibold">Login demo</CardTitle>
-              </CardHeader>
-              <CardContent className="px-0">
-                <form onSubmit={submit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      type="password"
-                      autoComplete="current-password"
-                    />
-                  </div>
-                  {error ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700">{error}</p> : null}
-                  <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-                    {submitting ? "Validando..." : "Entrar"}
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </form>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    type="password"
+                    autoComplete="current-password"
+                  />
+                </div>
+                {error ? <p className="rounded-2xl border border-rose-400/18 bg-rose-400/10 px-3 py-2 text-sm font-medium text-rose-200">{error}</p> : null}
+                <Button type="submit" size="lg" className="h-14 w-full rounded-full bg-[#b49bff] text-[#090910] hover:bg-[#c7b7ff]" disabled={submitting}>
+                  {submitting ? "Validando..." : "Entrar"}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </form>
 
-                <div className="mt-6">
-                  <Link href="/track/demo" className="flex w-full justify-center apple-link rounded-2xl bg-white px-4 py-3 text-sm font-semibold border border-slate-200 hover:bg-[#f5f5f7]">
-                    Ver tracking cliente demo
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
+              <Link
+                href="/track/demo"
+                className="flex w-full justify-center rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white/72 hover:bg-white/10 hover:text-white"
+              >
+                Ver tracking cliente demo
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </main>
@@ -161,9 +161,9 @@ export default function LoginPage() {
 
 function Metric({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
-      <p className="text-3xl font-semibold">{value}</p>
-      <p className="text-sm font-medium text-white/65">{label}</p>
+    <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.035] p-5">
+      <p className="text-3xl font-semibold text-white">{value}</p>
+      <p className="mt-1 text-sm text-white/44">{label}</p>
     </div>
   );
 }
