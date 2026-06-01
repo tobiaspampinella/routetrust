@@ -9,12 +9,14 @@ interface ProjectStatusSnapshot {
   smokeBrowser?: { status?: string };
   storage?: { status?: string };
   telegram?: { status?: string; configured?: boolean };
+  criticalBlockers?: string[];
 }
 
-function authStatus() {
-  if (process.env.ROUTEPULSE_DEMO_SECRET || process.env.AUTH_SECRET) return "configured";
+function authMode() {
+  if (process.env.AUTH_SECRET?.trim()) return "real";
+  if (process.env.ROUTEPULSE_DEMO_SECRET?.trim()) return "demo";
   if (process.env.NODE_ENV === "production") return "missing";
-  return "demo_supervised";
+  return "demo";
 }
 
 async function checkJsonFile(fileName: string) {
@@ -52,19 +54,25 @@ export async function GET() {
   const maps = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? "configured" : "fallback";
   const runtime = projectStatus.scheduler?.status === "running" ? "ok" : "degraded";
   const bugStoreStatus = bugStore === "ok" ? "ok" : "fail";
-  const auth = authStatus();
-  const persistence = database.status === "ok" ? "database" : "file_fallback";
+  const auth = authMode();
+  const demoMode = process.env.DEMO_MODE !== "false";
+  const storageMode = database.status === "ok" ? "db" : storage === "fail" ? "unavailable" : "file_fallback";
+  const databaseState =
+    database.status === "ok" ? "connected" : database.status === "fail" ? "disconnected" : "not_configured";
+  const betaBlockers = [
+    ...(database.status !== "ok" ? [`Database is ${databaseState}.`] : []),
+    ...(storageMode !== "db" ? [`Storage mode is ${storageMode}.`] : []),
+    ...(auth !== "real" ? [`Auth mode is ${auth}.`] : []),
+    ...(demoMode ? ["DEMO_MODE is enabled."] : []),
+    ...(runtime !== "ok" ? ["Runtime scheduler is not healthy."] : []),
+    ...(projectStatus.criticalBlockers ?? []),
+  ];
+  const serverReady = database.status === "ok" && bugStoreStatus === "ok" && auth === "real" && runtime === "ok" && !demoMode;
 
   let status: "ok" | "degraded" | "fail" = "ok";
   if (storage === "fail" || bugStoreStatus === "fail" || database.status === "fail") {
     status = "fail";
-  } else if (
-    telegram !== "configured" ||
-    runtime !== "ok" ||
-    auth === "demo_supervised" ||
-    maps === "fallback" ||
-    database.status === "missing"
-  ) {
+  } else if (!serverReady || telegram !== "configured" || maps === "fallback") {
     status = "degraded";
   }
 
@@ -75,16 +83,24 @@ export async function GET() {
       app: "RouteTrust",
       environment: process.env.NODE_ENV || "development",
       version: APP_VERSION,
+      database: databaseState,
+      storageMode,
+      demoMode,
+      authMode: auth,
+      serverReady,
+      betaBlockers,
       checks: {
         server: "ok",
         storage,
         db: database.status,
-        persistence,
+        persistence: storageMode,
         bugStore: bugStoreStatus,
         telegram,
         maps,
         auth,
         runtime,
+        demoMode: demoMode ? "true" : "false",
+        serverReady: serverReady ? "true" : "false",
       },
       details: {
         db: database.detail,
