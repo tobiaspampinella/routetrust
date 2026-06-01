@@ -2,17 +2,26 @@
 
 RoutePulse AI is an AI-built, human-orchestrated Operational Intelligence Platform for logistics operations.
 
-## Workflow
+## Branch Workflow
 
-- Work from `develop` or an `agent/*` branch.
-- Do not push directly to `main`.
-- Check `docs/ACTIVE_TASKS.md` and `docs/LOCKED_FILES.md` before editing.
-- Keep changes scoped to the task owner.
-- Update `CHANGELOG.md` and `NEXT_AGENT_PROMPT.md` for meaningful changes.
+- `main`: stable approved builds only.
+- `develop`: integration branch.
+- `staging`: release candidate validation.
+- `stabilization/*`: recovery and stabilization work.
+- `agent/*`: isolated work by agent or module.
+- `feature/*`: feature work.
+- `fix/*`: bug fixes.
 
-## Local Gates
+Do not push directly to `main`.
 
-Run before opening a PR:
+## Before Editing
+
+1. Read `docs/ACTIVE_TASKS.md`.
+2. Read `docs/LOCKED_FILES.md`.
+3. Confirm the target files are not locked by another agent.
+4. Keep the change scoped to the assigned task.
+
+## Required Local Checks
 
 ```bash
 npm ci
@@ -21,8 +30,16 @@ npm run typecheck
 npm run build
 ```
 
-On the restored Windows PC, use the command wrapper documented in `docs/ENVIRONMENT_SETUP.md`.
+If a script is unavailable or fails, document the failure and minimum proposed fix in the task handoff.
 
-## Human-In-The-Loop
+## Human-In-The-Loop Rule
 
-AI agents may suggest and implement scoped changes, but humans approve releases, merges to main, permissions, tenant changes and critical operational decisions.
+AI agents may suggest and implement scoped changes. Humans approve releases, merges to `main`, permission changes, tenant changes and critical operational decisions.
+
+## Documentation
+
+Meaningful changes must update:
+
+- `CHANGELOG.md`
+- `docs/NEXT_AGENT_PROMPT.md`
+- `docs/CURRENT_DECISIONS.md` when architecture or policy changes

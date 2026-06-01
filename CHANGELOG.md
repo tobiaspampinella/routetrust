@@ -1,5 +1,76 @@
 # Changelog
 
+## 2026-05-31 - GitHub publication hardening
+
+- Added `docs/GITHUB_PUBLICATION_REPORT.md` as the current source of truth for publication state.
+- Reworked public-facing repository docs for README status, security disclosure and milestone roadmap clarity.
+- Replaced generic GitHub issue-template placeholders with actionable publication assumptions.
+- Expanded repository label definitions and added manual setup docs for labels and branch protection.
+- Hardened `.gitignore` to exclude `.next-build`, `.next-dev` and typecheck cache artifacts.
+- Verified `npm test`, `npm run qa:security`, `npm run typecheck`, `npm run lint` and `npm run build`.
+- Confirmed publication remains blocked by missing GitHub CLI / remote creation on this machine.
+
+## 2026-06-01 - Runtime stabilization
+
+- Removed stale Next build artifacts and rebuilt from a clean state.
+- Updated `tsconfig.json` to stop including generated `.next` and `.next-app` type folders.
+- Verified `npm test`, `npm run typecheck`, and `npm run build` after cleanup.
+- Hardened `/api/cms/telegram/status` and `/api/cms/telegram/test` so missing Telegram env returns controlled non-500 responses.
+- Added stabilization and HTTP smoke reports under `docs/`.
+
+## 2026-06-01 - Supervised runtime hardening
+
+- Added supervised runtime commands for scheduler, heartbeat, watchdog, lock sync/check, Telegram status/notify and local bug triage.
+- Expanded agent runtime coverage with UX/UI, full stack debug, QA security and local bug assistant agents.
+- Added `runtime/project-status.json` as the dynamic operational data source.
+- Converted `/admin/project-status` from static cards to runtime-driven status rendering.
+- Added `/admin/bug-reports` for the local triage queue.
+- Added operational docs for Telegram setup and local 24/7 operation.
+
+## 2026-06-01 - RouteTrust operational ignition
+
+- Added project status page at `/admin/project-status`.
+- Added navigation entry for project status in the admin shell.
+- Added `beta-check` and `telegram:test` npm scripts.
+- Added dev server status documentation.
+- Added agent runtime status documentation.
+- Kept Telegram in test-only mode; no bot workflow was added.
+
+## 2026-05-31 - Beta SaaS Controlada v0.1 stabilization cycle
+
+- Created stabilization branch `stabilization/beta-saas-v0.1`.
+- Verified dependency install with the local Codex Node/npm wrapper.
+- Verified typecheck, tests, lint and production build.
+- Confirmed production audit blocker: critical Next.js advisory and moderate PostCSS advisory.
+- Updated CI to run `npm test`.
+- Added local traceability docs for issues, roadmap, architecture, QA and security.
+- Updated README with RoutePulse SaaS Beta positioning, local wrapper commands and verified baseline status.
+
+## 2026-05-31 - FASE 5 Beta core implementation
+
+- Added Node test script with `tsx --test`.
+- Added pure beta contracts for route simulation, project intelligence and bug reporting.
+- Added basic CEO beta overview to admin dashboard.
+- Added local operational incidents to app state and driver incident reporting.
+- Added basic bug intake API at `/api/bugs`.
+- Added Telegram project intelligence endpoint at `/api/cms/telegram/project-intelligence`.
+- Connected CMS Telegram panel to project intelligence send action.
+- Hardened map provider selection so Google only activates in `google_maps_ready`; fallback/mock remains available.
+- Fixed local `next start` auth cookies so localhost HTTP sessions work while production remains secure.
+- Updated visible app version to `v0.14`.
+- Verified `npm run test`, `npm run lint`, `npm run typecheck`, `npm run build` and HTTP smoke routes.
+
+## 2026-05-31 - FASE 3 GitHub formal repository setup
+
+- Reviewed `.git`, branch, remote and working tree status.
+- Hardened `.gitignore` for local env, build and test artifacts.
+- Updated `.env.example` to avoid secret-like placeholder values.
+- Updated README positioning for AI-built, human-orchestrated logistics operations.
+- Added suggested GitHub topics.
+- Updated CONTRIBUTING, SECURITY, ROADMAP and AI_BUILT_PROJECT.
+- Updated issue templates, PR template and CI workflow.
+- Verified no secret patterns were detected after updates.
+
 ## v0.13 - New PC restore and audit
 
 - Restored the project ZIP into a clean `routepulse-ai-tester` folder.

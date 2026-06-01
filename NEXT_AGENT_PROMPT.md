@@ -1,5 +1,125 @@
 # Next Agent Prompt
 
+## 2026-05-31 GitHub publication handoff
+
+Completed in this pass:
+
+- Confirmed the real repository path is `C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester`.
+- Verified local Git state, current branch, missing remote and dirty worktree.
+- Ran `npm test`, `npm run qa:security`, `npm run typecheck`, `npm run lint` and `npm run build`.
+- Added `docs/GITHUB_PUBLICATION_REPORT.md`.
+- Reworked `README.md`, `SECURITY.md`, `ROADMAP.md`, `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/config.yml`, `.github/labels.yml` and `.gitignore`.
+- Added `docs/GITHUB_LABELS_APPLY.md` and `docs/GITHUB_BRANCH_PROTECTION_MANUAL_STEPS.md`.
+
+Hard blockers:
+
+- `gh` is not installed on this machine.
+- No `origin` remote exists.
+- Remote CI, topics, labels and branch protection cannot be verified until the GitHub repository is created.
+
+What is ready:
+
+- Public-facing repo docs are substantially cleaner.
+- Security disclosure now has a real email contact.
+- Roadmap is milestone-based instead of sprint-only.
+- Manual commands exist for preferred repo `tobiaspampinella/routetrust` and alternate `tobiaspampinella/routetrust-operational-intelligence`.
+
+Next allowed move:
+
+- Install/authenticate GitHub CLI or create the private GitHub repo manually, then push `main`, `develop`, `staging` and `stabilization/beta-saas-v0.1`.
+
+## 2026-06-01 Runtime stabilization handoff
+
+Completed in this pass:
+
+- `.next` cleanup executed successfully
+- `npm test` passing
+- `npm run typecheck` passing
+- `npm run build` passing
+- `/`, `/login`, `/track/demo` returning `200` in dev
+- `/admin` returning `307` unauthenticated
+- `/api/bugs` returning `401` unauthenticated
+- `/api/cms/telegram/status` returning controlled `200`
+- `/api/cms/telegram/test` returning controlled `400`
+
+Root cause addressed:
+
+- base `tsconfig.json` was still coupled to generated Next artifacts
+- Telegram missing-env behavior was not explicit enough for stabilization
+
+Do not expand scope yet:
+
+- no feature work
+- no CMS expansion
+- no Telegram real integration
+- no map/provider work
+- no GitHub remote work
+
+Next allowed move:
+
+- resolve `beta-check` governance/watchdog failures and static status-page debt
+
+## 2026-06-01 Supervised Runtime Handoff
+
+Immediate operating state:
+
+- Runtime source of truth: `runtime/project-status.json`.
+- Dynamic dashboard: `/admin/project-status`.
+- Local bug queue: `/admin/bug-reports`.
+- Commands:
+  - `npm run agent:scheduler`
+  - `npm run agent:runner`
+  - `npm run agents:status`
+  - `npm run watchdog:once`
+  - `npm run locks:sync`
+  - `npm run locks:check`
+  - `npm run ux:audit`
+  - `npm run debug:scan`
+  - `npm run qa:security`
+  - `npm run bugs:triage`
+  - `npm run telegram:status`
+  - `npm run telegram:test`
+
+Current blocker:
+
+- Telegram remains blocked until `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` exist in `.env.local`.
+
+What is real:
+
+- Supervised Node processes, heartbeats, reports, lock checks and runtime JSON.
+- No autonomous LLM workers.
+- No fake active processes.
+
+What still requires manual supervision:
+
+- `npm run dev`
+- `npm run agent:scheduler`
+- browser verification
+- code changes
+
+Do not claim agents are working unless `agents:status` shows active processes or recent supervised evidence.
+
+## 2026-06-01 RouteTrust Recovery Operator Handoff
+
+Immediate operating state:
+
+- Package manager: npm.
+- Dev command: `npm run dev`.
+- Local URL: `http://127.0.0.1:3000`.
+- Project status page: `/admin/project-status`.
+- Operational commands:
+  - `npm run agents:status`
+  - `npm run beta-check`
+  - `npm run telegram:test`
+- Dev server status doc: `docs/DEV_SERVER_STATUS.md`.
+- Agent runtime status doc: `docs/AGENT_RUNTIME_STATUS.md`.
+
+Current blocker:
+
+- Telegram test cannot deliver externally until `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are configured.
+
+Do not proceed to CMS, maps or Telegram bot work until the dev server remains visible and operational checks pass.
+
 ## 2026-05-30 New PC Restore Handoff
 
 Project restored at `C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester` from ZIP.

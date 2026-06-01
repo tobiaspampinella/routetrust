@@ -70,3 +70,12 @@
 - name: area: security
   color: "0e8a16"
   description: Security controls, auth and secret-handling scope.
+- name: area: github
+  color: "0e8a16"
+  description: Repository metadata, templates and collaboration settings.
+- name: area: qa
+  color: "0e8a16"
+  description: Validation, testing and audit workstreams.
+- name: area: runtime
+  color: "0e8a16"
+  description: Local runtime, watchdog and operational status tooling.

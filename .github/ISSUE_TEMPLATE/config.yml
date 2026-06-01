@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security disclosure
-    url: https://github.com/OWNER/REPO/security/policy
+    url: mailto:tobiaspampinella@gmail.com
     about: Report vulnerabilities privately. Do not open public issues for security reports.
   - name: Contribution guide
-    url: https://github.com/OWNER/REPO/blob/main/CONTRIBUTING.md
+    url: https://github.com/tobiaspampinella/routetrust/blob/main/CONTRIBUTING.md
     about: Review contribution rules, branch workflow and validation checks before opening issues.
   - name: Repository security policy
-    url: https://github.com/OWNER/REPO/blob/main/SECURITY.md
+    url: https://github.com/tobiaspampinella/routetrust/blob/main/SECURITY.md
     about: Review the security policy before reporting sensitive behavior.

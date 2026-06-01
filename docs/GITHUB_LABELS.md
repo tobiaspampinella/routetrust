@@ -37,6 +37,9 @@ This repository uses a minimal, explicit label set defined in [`.github/labels.y
 - `area: telegram`
 - `area: bug-assistant`
 - `area: security`
+- `area: github`
+- `area: qa`
+- `area: runtime`
 
 ## Usage Rules
 

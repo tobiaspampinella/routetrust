@@ -1,5 +1,7 @@
 node_modules/
 .next/
+.next-build/
+.next-dev/
 out/
 dist/
 build/
@@ -19,6 +21,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 tsconfig.tsbuildinfo
+tsconfig.typecheck.tsbuildinfo
 .eslintcache
 .DS_Store
 *.zip

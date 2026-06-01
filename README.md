@@ -8,6 +8,14 @@ This repository currently contains the RoutePulse AI beta application: a control
 
 It is not a full TMS, ERP or autonomous dispatch system.
 
+## Current Status
+
+- Local demo functional.
+- Beta stabilization in progress.
+- GitHub remote setup in progress.
+- Telegram integration requires environment configuration.
+- Not production-ready yet.
+
 ## Product Scope
 
 - Control tower lite for last-mile logistics operations.
@@ -68,6 +76,18 @@ npm run lint
 npm run build
 ```
 
+## Scripts
+
+- `npm run dev`: local development server.
+- `npm run build`: production build validation.
+- `npm run lint`: static lint checks.
+- `npm run typecheck`: TypeScript validation.
+- `npm test`: local unit and contract tests.
+- `npm run qa:security`: repository secret and auth-surface audit.
+- `npm run beta-check`: beta readiness summary.
+- `npm run agents:status`: supervised runtime status.
+- `npm run telegram:status`: Telegram configuration status.
+
 ## Environment Setup
 
 Copy the example environment file:
@@ -116,6 +136,28 @@ Relevant endpoints and docs:
 
 - `/api/cms/telegram/status`
 - `/api/cms/telegram/test`
+- `/api/cms/telegram/project-intelligence`
+- `docs/TELEGRAM_SETUP_REQUIRED.md`
+
+## Bug Assistant
+
+The repository includes a supervised local bug intake and triage surface for beta operations.
+
+Relevant areas:
+
+- `/admin/bug-reports`
+- `/api/bugs`
+- `docs/BUG_REPORTING_ASSISTANT.md`
+
+## Agent Runtime
+
+The current runtime is supervised and local-first. It provides status reporting, lock checks, QA scripts and operational traceability. It is not an autonomous production agent platform.
+
+Relevant docs:
+
+- `AGENT_RUNTIME.md`
+- `docs/AGENT_RUNTIME_STATUS.md`
+- `docs/LOCAL_24_7_OPERATION.md`
 
 ## Demo Sandbox
 
@@ -155,7 +197,7 @@ Branch model:
 
 ## Roadmap
 
-See [`ROADMAP.md`](ROADMAP.md) for the staged beta roadmap and [`docs/PROJECT_OPERATING_SYSTEM.md`](docs/PROJECT_OPERATING_SYSTEM.md) for operational governance.
+See [`ROADMAP.md`](ROADMAP.md) for the public milestone roadmap and [`docs/BETA_BUILD_PLAN.md`](docs/BETA_BUILD_PLAN.md) for the internal short-horizon stabilization plan.
 
 ## AI-Built / Human-Orchestrated
 
