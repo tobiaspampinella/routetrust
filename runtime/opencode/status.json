@@ -1,0 +1,88 @@
+{
+  "version": "1.0",
+  "project": "RouteTrust",
+  "mode": "opencode-fallback-while-codex-cools",
+  "generatedAt": "2026-06-01T21:00:00.000Z",
+  "nodeOrchestratorRunId": "opencode-orch-20260601-001",
+  "branch": "codex/P1-autonomous-ops",
+  "git": {
+    "remote": "https://github.com/tobiaspampinella/routetrust.git",
+    "upstream": "none",
+    "pushPending": true,
+    "worktreeClean": false,
+    "dirtyEntries": 167
+  },
+  "classifications": {
+    "localDemoReady": false,
+    "dbLocalReady": false,
+    "betaStableReady": false,
+    "stagingReady": false,
+    "serverReady": "partial",
+    "saasImplementable": false
+  },
+  "runtime": {
+    "status": "RUNTIME_DRIFT",
+    "activePort": 3000,
+    "managedProcess": false,
+    "officialUrl": "http://127.0.0.1:3000"
+  },
+  "buildSignals": {
+    "typecheck": "pass",
+    "lint": "pass",
+    "unit_tests": "pass",
+    "build": "pass",
+    "qa_smoke": "pass"
+  },
+  "failSignals": {
+    "prisma_validate": "DATABASE_URL not configured",
+    "prisma_migration_exists": "no migrations",
+    "health_200": "down",
+    "admin_no_500": "fail",
+    "admin_cms_no_500": "fail",
+    "driver_no_500": "fail",
+    "driver_route_no_500": "fail",
+    "admin_project_status_no_500": "fail",
+    "bug_reports_db_backed": "false",
+    "github_push_synced": "false",
+    "git_worktree_clean": "false",
+    "runtime_aligned": "false"
+  },
+  "agents247": [
+    "runtime-watchdog",
+    "bug-triage",
+    "local-model-documentation"
+  ],
+  "agentsRecurrent": [
+    "node-orchestrator",
+    "qa-analyst",
+    "github-repository",
+    "ux-ui-designer",
+    "cybersecurity"
+  ],
+  "agentsTaskOnly": [
+    "database-prisma",
+    "backend-real",
+    "frontend-product",
+    "devops-staging",
+    "maps-tracking"
+  ],
+  "lastExecuted": {
+    "node-orchestrator": "2026-06-01T21:00:00.000Z",
+    "runtime-watchdog": "pending",
+    "bug-triage": "pending",
+    "qa-analyst": "SKIPPED_COOLDOWN",
+    "github-repository": "SKIPPED_COOLDOWN"
+  },
+  "budget": {
+    "executedRuns": 128,
+    "skippedRuns": 2124,
+    "tokensSpentEstimate": 103400,
+    "tokensSavedEstimate": 1946100
+  },
+  "notes": [
+    "Node orchestrator ejecuto esta primera pasada solo sobre docs/runtime; no toco src/ ni prisma/.",
+    "Smoke y build verdes, pero health 200 falla: servidor no esta sirviendo en 3000 en este momento.",
+    "Worktree sucio (167 entradas) bloquea claim de BETA_STABLE_READY hasta limpieza disciplinada.",
+    "Codex GPT-5.5 sigue reservado; OpenCode/minimax-m3 cubre coordinacion, watchdog, triage, docs, UX, QA, security audit, GitHub docs."
+  ]
+}

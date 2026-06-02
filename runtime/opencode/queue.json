@@ -1,0 +1,113 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-06-01T21:00:00.000Z",
+  "mode": "opencode-fallback-while-codex-cools",
+  "queue": [
+    {
+      "id": "OPENCODE-001",
+      "title": "Verificar /api/health y limpiar runtime drift en puerto 3000",
+      "owner": "devops-staging-agent",
+      "severity": "P0",
+      "canOpencodeDo": false,
+      "reason": "Requiere decision humana sobre managed process y port ownership; ademas codex deberia validar el reinicio seguro.",
+      "blockedBy": ["server-process-ownership-unclear", "no-upstream", "codex-availability"],
+      "nextStep": "Esperar Codex GPT-5.5 para validar restart oficial del proceso."
+    },
+    {
+      "id": "OPENCODE-002",
+      "title": "Auditar diferencias de git worktree (167 entries) y proponer bundle commit",
+      "owner": "github-repository-agent",
+      "severity": "P0",
+      "canOpencodeDo": true,
+      "reason": "Tarea de solo lectura + propuesta. OpenCode puede clasificar entradas y proponer commit message; push requiere codex o humano.",
+      "blockedBy": ["codex-availability-for-push-decision"],
+      "nextStep": "Clasificar modificaciones en docs/, scripts/, src/, prisma/. Marcar runtime/ y heartbeats/ como ignorados. Proponer commit bundle."
+    },
+    {
+      "id": "OPENCODE-003",
+      "title": "Mantener runtime/opencode/ actualizado en cada pasada del orchestrator",
+      "owner": "node-orchestrator",
+      "severity": "P1",
+      "canOpencodeDo": true,
+      "reason": "OpenCode es el orchestrator durante la ventana sin tokens de Codex.",
+      "blockedBy": [],
+      "nextStep": "Cada 2h refrescar runtime/opencode/status.json, queue.json, y los docs OPEN_CODE_*.md."
+    },
+    {
+      "id": "OPENCODE-004",
+      "title": "Refrescar docs/OPEN_CODE_RUNTIME_STATUS.md con ultima salida de project-status",
+      "owner": "local-model-documentation",
+      "severity": "P1",
+      "canOpencodeDo": true,
+      "reason": "Documentacion operativa pura. Sin riesgo.",
+      "blockedBy": [],
+      "nextStep": "Sincronizar con project-status.json mas reciente."
+    },
+    {
+      "id": "OPENCODE-005",
+      "title": "Clasificar bugs no enrutados en data/runtime/bug-reports.json",
+      "owner": "bug-triage",
+      "severity": "P1",
+      "canOpencodeDo": true,
+      "reason": "Triage sin cambios de codigo fuente.",
+      "blockedBy": [],
+      "nextStep": "Correr triage y dejar evidencia en runtime/opencode/bug-triage.json."
+    },
+    {
+      "id": "OPENCODE-006",
+      "title": "Auditoria diaria de seguridad (.env.example, secrets, auth fallback)",
+      "owner": "cybersecurity",
+      "severity": "P1",
+      "canOpencodeDo": true,
+      "reason": "Auditoria sin cambios destructivos. Puede tocar .gitignore y docs/SECURITY_AUDIT.md.",
+      "blockedBy": [],
+      "nextStep": "Programar 1x/dia. Detectar AUTH-001 (demo secret fallback)."
+    },
+    {
+      "id": "OPENCODE-007",
+      "title": "Revisar y completar tareas UXR-004, UXR-005, UXR-006, UXR-007, UXR-008",
+      "owner": "frontend-product-agent",
+      "severity": "P1",
+      "canOpencodeDo": true,
+      "reason": "Tareas UX con alcance acotado. Mojibake fix y missing routes son scope claro.",
+      "blockedBy": ["UXR-009 ya done", "no-upstream"],
+      "nextStep": "Tomar UXR-005 (mojibake cleanup) primero. Empujar en branch codex/P1-autonomous-ops con codex o humano."
+    },
+    {
+      "id": "OPENCODE-008",
+      "title": "Implementar Prisma + DATABASE_URL + primera migracion",
+      "owner": "database-prisma-agent",
+      "severity": "P0",
+      "canOpencodeDo": false,
+      "reason": "Requiere Codex GPT-5.5 o humano: configuracion de DATABASE_URL, primera migracion y endurecimiento de schema son decisiones criticas.",
+      "blockedBy": ["DATABASE_URL-missing", "codex-required-for-migration"],
+      "nextStep": "Esperar Codex. OpenCode solo documenta el gap."
+    },
+    {
+      "id": "OPENCODE-009",
+      "title": "QA smoke y QA security repetibles (sin falsos positivos)",
+      "owner": "qa-analyst",
+      "severity": "P1",
+      "canOpencodeDo": true,
+      "reason": "Ejecuta qa:smoke (ya pasa) y qa:security. Sin codigo nuevo.",
+      "blockedBy": [],
+      "nextStep": "Confirmar evidencia reproducible. Reportar fallo de health 200 en runtime drift."
+    },
+    {
+      "id": "OPENCODE-010",
+      "title": "Sincronizar README/CHANGELOG bilingues con realidad BETA_STABLE",
+      "owner": "github-repository-agent",
+      "severity": "P2",
+      "canOpencodeDo": true,
+      "reason": "Documentacion publica. No requiere Codex.",
+      "blockedBy": ["OPENCODE-002 (clasificacion de cambios)"],
+      "nextStep": "Una vez clasificadas las 167 entradas, redactar bloque bilingue."
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "opencodeExecutable": 7,
+    "codexRequired": 3,
+    "humanRequired": 0
+  }
+}
