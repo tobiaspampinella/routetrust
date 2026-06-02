@@ -12,7 +12,6 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "Starting RouteTrust dev server..."
 Start-Process powershell -ArgumentList "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "Set-Location '$root'; npm run dev" -WindowStyle Hidden
 
-Write-Host "Starting RouteTrust supervised scheduler..."
-Start-Process powershell -ArgumentList "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "Set-Location '$root'; npm run agent:scheduler" -WindowStyle Hidden
+Write-Host "Autonomous watchdog is managed separately via scripts/start-autonomous-ops.ps1 or Windows Task Scheduler."
 
 Write-Host "Optional: run 'npm run telegram:status' once credentials are configured."
