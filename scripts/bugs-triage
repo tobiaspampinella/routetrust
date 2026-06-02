@@ -3,6 +3,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { DATA_RUNTIME_DIR, getBugReports, getRuntimeSnapshot, nowIso, writeProjectStatus, writeText } = require("./agent-runtime-lib.js");
 
+const runtimeOnly = process.argv.includes("--runtime-only") || process.env.ROUTETRUST_RUNTIME_ONLY === "1";
+
 function routeBug(report) {
   const category = String(report.category || "").toLowerCase();
   const moduleName = String(report.module || "").toLowerCase();
@@ -29,17 +31,18 @@ fs.mkdirSync(DATA_RUNTIME_DIR, { recursive: true });
 fs.writeFileSync(path.join(DATA_RUNTIME_DIR, "bug-reports.json"), `${JSON.stringify({ reports: triaged }, null, 2)}\n`, "utf8");
 
 const critical = triaged.filter((report) => ["P0", "P1"].includes(report.severity));
-writeText(
-  "docs/BUG_TRIAGE_REPORT.md",
-  `# Bug Triage Report
+const reportBody = `# Bug Triage Report
 
 Generated: ${nowIso()}
 
 ## Reports
 
 ${triaged.length === 0 ? "- none" : triaged.map((report) => `- ${report.id}: ${report.severity} ${report.category} -> ${report.assignedAgents.join(", ")}`).join("\n")}
-`,
-);
+`;
+writeText("runtime/reports/bug-triage-latest.md", reportBody);
+if (!runtimeOnly) {
+  writeText("docs/BUG_TRIAGE_REPORT.md", reportBody);
+}
 writeProjectStatus(getRuntimeSnapshot(), {
   bugs: triaged,
 });

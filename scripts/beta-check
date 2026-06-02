@@ -209,7 +209,7 @@ async function runCheapMode() {
   const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://127.0.0.1:3000";
   const timestamp = nowIso();
   const snapshot = getRuntimeSnapshot();
-  writeRuntimeStatusReport(snapshot);
+  writeRuntimeStatusReport(snapshot, {}, { runtimeOnly: true });
   recordStatusLog(snapshot);
 
   const missing = requiredFiles.filter((file) => !fileExists(file));
@@ -379,7 +379,7 @@ async function main() {
   const currentValidation = reuseCurrentValidation ? readCurrentPostcheckValidation() : null;
   const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://127.0.0.1:3000";
   const snapshot = getRuntimeSnapshot();
-  writeRuntimeStatusReport(snapshot);
+  writeRuntimeStatusReport(snapshot, {}, { runtimeOnly: true });
   recordStatusLog(snapshot);
 
   const missing = requiredFiles.filter((file) => !fileExists(file));
@@ -398,7 +398,7 @@ async function main() {
       };
   const locksResult = runPackageScript("locks:check");
   const watchdogResult = runPackageScript("watchdog:once");
-  const bugTriageResult = runPackageScript("bugs:triage");
+  const bugTriageResult = runPackageScript("bugs:triage", ["--runtime-only"]);
 
   const [healthCheck, loginCheck, adminCheck, adminCmsCheck, trackCheck, driverCheck, driverRouteCheck, projectStatusCheck, telegramStatusCheck] = await Promise.all([
     httpCheck(`${baseUrl}/api/health`),

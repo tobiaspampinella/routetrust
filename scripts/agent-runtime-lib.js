@@ -691,7 +691,7 @@ function getRuntimeSnapshot() {
   };
 }
 
-function writeRuntimeStatusReport(snapshot, extraSections = {}) {
+function writeRuntimeStatusReport(snapshot, extraSections = {}, options = {}) {
   const missing = snapshot.validation.missing.length > 0 ? snapshot.validation.missing.map((file) => `- ${file}`).join("\n") : "- none";
   const invalidStatuses =
     snapshot.validation.invalidStatuses.length > 0
@@ -767,8 +767,12 @@ ${invalidStatuses}
     .map(([title, body]) => `\n## ${title}\n\n${body}\n`)
     .join("");
 
-  writeText("docs/AGENT_RUNTIME_STATUS.md", `${report}${extras}`);
-  return `${report}${extras}`;
+  const content = `${report}${extras}`;
+  writeText("runtime/reports/agent-runtime-status-latest.md", content);
+  if (!options.runtimeOnly && process.env.ROUTETRUST_RUNTIME_ONLY !== "1") {
+    writeText("docs/AGENT_RUNTIME_STATUS.md", content);
+  }
+  return content;
 }
 
 function recordStatusLog(snapshot) {

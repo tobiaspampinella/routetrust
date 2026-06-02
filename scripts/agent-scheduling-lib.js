@@ -830,7 +830,7 @@ function summarizeScheduleState() {
   return { generatedAt: nowIso(), agents, budget };
 }
 
-function writeRuntimeStatusDocs() {
+function writeRuntimeStatusDocs(options = {}) {
   const summary = summarizeScheduleState();
   const projectStatus = readProjectStatus();
   const lines = [
@@ -873,7 +873,11 @@ function writeRuntimeStatusDocs() {
     "- Manual-only: paid maps activation, feature implementation without assignment, any human approval boundary.",
     "",
   ];
-  writeText("docs/AGENT_RUNTIME_STATUS.md", `${lines.join("\n")}\n`);
+  const body = `${lines.join("\n")}\n`;
+  writeText("runtime/reports/agent-schedule-status-latest.md", body);
+  if (options.writeDocs || process.env.ROUTETRUST_WRITE_DOC_REPORTS === "1") {
+    writeText("docs/AGENT_RUNTIME_STATUS.md", body);
+  }
   return summary;
 }
 

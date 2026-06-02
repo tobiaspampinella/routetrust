@@ -2,7 +2,7 @@
 const { summarizeScheduleState, writeRuntimeStatusDocs } = require("./agent-scheduling-lib.js");
 
 const summary = summarizeScheduleState();
-writeRuntimeStatusDocs();
+writeRuntimeStatusDocs({ writeDocs: process.argv.includes("--write-docs") });
 
 for (const agent of summary.agents) {
   console.log(`${agent.agentId}: last=${agent.lastStatus}; next=${agent.nextDecision}; priority=${agent.priority}; executed=${agent.executedRuns}; skipped=${agent.skippedRuns}`);
