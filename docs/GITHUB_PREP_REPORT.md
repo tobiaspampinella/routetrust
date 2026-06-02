@@ -1,7 +1,7 @@
 # GitHub Prep Report
 
 Date: 2026-05-31
-Repository path: `C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester`
+Repository path: `<local-project-path>`
 
 ## Security Review
 
@@ -27,7 +27,7 @@ Secret scan result:
 - No committed real secrets detected in the reviewed public-facing files and source surface.
 - `.env.example` contains empty placeholders only.
 - `public/` does not exist in this checkout.
-- Demo credentials remain isolated to `docs/DEMO_LOCAL_ONLY.md` with an explicit local-only warning.
+- Sensitive local-only access details are intentionally excluded from public publication notes.
 
 ## Validation Executed
 
@@ -57,7 +57,7 @@ Secret scan result:
 - `gh` is not installed on this machine, so repo creation could not be automated.
 - No authenticated GitHub owner was confirmed through CLI.
 - Repository URLs in issue template config assume the preferred slug `tobiaspampinella/routetrust`.
-- Demo credentials remain embedded in local-only seed and mock flows, so public visibility still requires an explicit security decision.
+- Public visibility still requires an explicit private security decision.
 - Remote labels, topics, branch protection and Actions execution remain unapplied and unverifiable.
 - Existing worktree contains many broader local modifications outside the publication-doc scope.
 

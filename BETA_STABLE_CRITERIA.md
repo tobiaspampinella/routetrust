@@ -1,23 +1,49 @@
 # Beta Stable Criteria
 
-This file is the public-facing summary of the formal beta checklist.
+English | [Espanol](BETA_STABLE_CRITERIA.es.md)
 
-Canonical source:
+RouteTrust must separate local demo usefulness from stable beta readiness.
 
-- [`docs/BETA_STABLE_CRITERIA.md`](docs/BETA_STABLE_CRITERIA.md)
+Current cycle:
 
-Current interpretation:
+- `LOCAL_DEMO_READY`: yes when the local app server is running
+- `BETA_STABLE_READY`: no while the Git worktree is dirty, even if local checks pass
+- `STAGING_READY`: no
 
-- Core admin, driver and customer demo flows must work locally.
-- Human approval remains mandatory for critical operational decisions.
-- CI must validate install, lint, typecheck, test and build gates.
-- Demo behavior must be clearly separated from production claims.
-- Secrets, provider tokens and deployment credentials must stay out of version control.
+## Local Demo Ready
 
-Current blockers still tracked in the canonical document:
+Required:
 
-- no production database persistence for the main flows
-- no Playwright smoke/regression suite
-- no `/health` route
-- no durable bug report store
-- no production-grade map provider abstraction
+- `/login` loads
+- `/track/demo` loads
+- `/admin` is reachable after demo auth
+- `npm run lint` passes
+- `npm run typecheck` passes
+- `npm test` passes
+
+## Beta Stable Ready
+
+Required:
+
+- `npm run build` passes
+- Git worktree is clean enough to validate the exact candidate being called stable
+- `npm run ux:audit` generates current English and Spanish reports
+- browser smoke evidence exists for the critical routes
+- `/admin`, `/admin/cms`, `/driver`, `/driver/route`, `/track/demo`, `/login`, `/api/health` and `/admin/project-status` do not return `500`
+- no visible mojibake on key product surfaces
+- customer tracking is understandable within seconds
+- business manager KPIs are readable without guesswork
+- bug and project status surfaces do not misstate system readiness
+- public docs are bilingual and consistent
+- public security docs stay redacted
+
+## Not Enough
+
+- generated reports without verification
+- scheduler activity
+- agent docs alone
+- local demo data alone
+
+## Stable Truth Rule
+
+Do not label the product stable when QA, UX, docs, and runtime evidence disagree.

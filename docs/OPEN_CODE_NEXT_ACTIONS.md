@@ -1,10 +1,19 @@
 # RouteTrust OpenCode Next Actions
 
-Generated: 2026-06-01T21:00:00.000Z
+Last refreshed: 2026-06-01T21:30:00.000Z (after Database/Prisma pass)
 Owner: RouteTrust Node Orchestrator (OpenCode/minimax-m3, fallback window)
 Branch: `codex/P1-autonomous-ops`
 
 Esta lista prioriza acciones que OpenCode SI puede ejecutar mientras Codex GPT-5.5 recupera tokens. Las que requieren Codex o humano estan marcadas explicitamente.
+
+## DB/Prisma pass summary (2026-06-01)
+
+- Docker not available in this environment. Honored `DB_LOCAL_BLOCKED_NO_DOCKER`.
+- `docker-compose.yml` updated to add `container_name: routetrust-postgres` and rename volume to `routetrust_postgres_data`.
+- `docs/LOCAL_POSTGRES_SETUP.md` added: manual install path for Windows installer, Homebrew, apt, plus psql user/db creation.
+- `docs/DB_LOCAL_STATUS.md` added: honest snapshot, decision log, and what was NOT modified and why.
+- `bugStore.ts`, `health/route.ts`, `beta-check` and `schema.prisma` already implement the spec — no changes needed.
+- See `runtime/opencode/queue.json` items `OPENCODE-008` (codex-required migration) and `OPENCODE-011` (developer picks up local setup).
 
 ## Inmediato (proxima hora)
 

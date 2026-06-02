@@ -8,12 +8,12 @@ datasource db {
 }
 
 model Tenant {
-  id         String     @id @default(uuid())
+  id         String      @id @default(uuid())
   name       String
-  slug       String     @unique
-  status     String     @default("active")
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  slug       String      @unique
+  status     String      @default("active")
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
   auditLogs  AuditLog[]
   bugReports BugReport[]
   users      User[]
@@ -86,7 +86,7 @@ model RouteStop {
 }
 
 model AuditLog {
-  id         String    @id @default(uuid())
+  id         String   @id @default(uuid())
   tenantId   String?
   actorId    String?
   actorName  String?
@@ -95,17 +95,17 @@ model AuditLog {
   module     String
   entityId   String?
   entityType String?
-  result     String    @default("success")
+  result     String   @default("success")
   metadata   Json?
-  createdAt  DateTime  @default(now())
-  tenant     Tenant?   @relation(fields: [tenantId], references: [id])
+  createdAt  DateTime @default(now())
+  tenant     Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
   @@index([createdAt])
 }
 
 model BugReport {
-  id                String    @id
+  id                String   @id
   tenantId          String?
   source            String
   module            String
@@ -128,9 +128,9 @@ model BugReport {
   tags              Json
   triageNotes       Json?
   confidence        Float?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  tenant            Tenant?   @relation(fields: [tenantId], references: [id])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  tenant            Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
   @@index([status])

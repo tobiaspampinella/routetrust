@@ -1,0 +1,52 @@
+#!/usr/bin/env node
+const { getBudget, getLastRunState, getSchedule, runPackageScript } = require("./agent-scheduling-lib.js");
+const { nowIso, readProjectStatus, writeText } = require("./agent-runtime-lib.js");
+
+const schedule = getSchedule();
+const budget = getBudget();
+const lastRun = getLastRunState();
+const projectStatus = readProjectStatus();
+
+const executed = [];
+const skipped = [];
+for (const agentId of Object.keys(schedule.agents)) {
+  const state = lastRun.agents[agentId];
+  if (!state) continue;
+  if (String(state.lastStatus || "").startsWith("SKIPPED_")) skipped.push(`${agentId}: ${state.lastStatus}`);
+  else executed.push(`${agentId}: ${state.lastStatus}`);
+}
+
+const criticalBugs = (projectStatus.bugs || []).filter((bug) => ["P0", "P1"].includes(String(bug.severity || "").toUpperCase()));
+const lines = [
+  "# Daily Control Report",
+  "",
+  `Generated: ${nowIso()}`,
+  "",
+  "## Summary",
+  "",
+  `- Beta status: ${projectStatus.beta?.status || "unknown"}`,
+  `- Bugs P0/P1: ${criticalBugs.length}`,
+  `- Agents executed: ${executed.length}`,
+  `- Agents skipped: ${skipped.length}`,
+  `- Tokens saved estimate: ${budget.totals.tokensSavedEstimate}`,
+  `- Next action: ${projectStatus.watchdog?.issues?.[0] || "Keep the next scheduler cycle supervised."}`,
+  "",
+  "## Executed",
+  "",
+  ...(executed.length > 0 ? executed.map((item) => `- ${item}`) : ["- none"]),
+  "",
+  "## Skipped",
+  "",
+  ...(skipped.length > 0 ? skipped.map((item) => `- ${item}`) : ["- none"]),
+];
+
+writeText("docs/DAILY_CONTROL_REPORT.md", `${lines.join("\n")}\n`);
+runPackageScript("telegram:notify", [`--message="${[
+  "RouteTrust daily summary",
+  `beta=${projectStatus.beta?.status || "unknown"}`,
+  `bugs_p0_p1=${criticalBugs.length}`,
+  `executed=${executed.length}`,
+  `skipped=${skipped.length}`,
+  `tokens_saved=${budget.totals.tokensSavedEstimate}`,
+].join(" | ").replace(/"/g, "'")}"`]);
+console.log(lines.join("\n"));

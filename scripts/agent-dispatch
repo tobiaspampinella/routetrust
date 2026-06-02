@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+const { dispatchAgent } = require("./agent-scheduling-lib.js");
+
+const agentId = process.argv[2];
+const force = process.argv.includes("--force");
+
+if (!agentId) {
+  console.error("Usage: node scripts/agent-dispatch <agent-id> [--force]");
+  process.exit(1);
+}
+
+const report = dispatchAgent(agentId, { force });
+console.log(JSON.stringify(report, null, 2));
+process.exit(report.status === "FAILED" ? 1 : 0);

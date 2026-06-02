@@ -197,3 +197,75 @@ EXPECTED_FINISH: 2026-06-01
 RISKS: Bug queue is still local-state only and not yet durable.
 DEPENDENCIES: `data/runtime/bug-reports.json` and runtime routing scripts.
 NEXT_STEP: Run `npm run bugs:triage`.
+
+[TASK]
+ID: UXR-004
+AGENT: fullstack-developer-agent
+SOURCE: ux-ui-product-designer-agent
+MODULE: public product marketing routes
+PAGE: /contact, /demo, /product, /use-cases, /customers, /pricing or /plans
+SEVERITY: P1
+OBJECTIVE: Implement the missing public SaaS routes or remove them from product claims and README scope.
+FILES_SUGGESTED: src/app/contact/page.tsx, src/app/demo/page.tsx, src/app/product/page.tsx, src/app/use-cases/page.tsx, src/app/customers/page.tsx, src/app/pricing/page.tsx
+ACCEPTANCE_CRITERIA: Public pages exist, read clearly in English-first product language, and match RouteTrust positioning without copied branding.
+STATUS: pending
+
+[TASK]
+ID: UXR-005
+AGENT: fullstack-developer-agent
+SOURCE: ux-ui-product-designer-agent
+MODULE: shared copy and state system
+PAGE: /, /admin, /track/demo, /driver/route
+SEVERITY: P1
+OBJECTIVE: Remove mojibake and replace corrupted UI strings with verified enterprise copy.
+FILES_SUGGESTED: src/components/shared/LandingPage.tsx, src/components/admin/AdminDashboard.tsx, src/components/customer/CustomerTrackingDemo.tsx, src/components/driver/DriverRoute.tsx
+ACCEPTANCE_CRITERIA: No visible mojibake remains in audited core surfaces.
+STATUS: pending
+
+[TASK]
+ID: UXR-006
+AGENT: fullstack-developer-agent
+SOURCE: ux-ui-product-designer-agent
+MODULE: reusable operational states
+PAGE: /admin/project-status, /admin/cms, /driver/route, shared widget
+SEVERITY: P2
+OBJECTIVE: Add reusable empty, loading and error state components to audited operational surfaces.
+FILES_SUGGESTED: src/components/shared, src/app/admin/project-status/page.tsx, src/app/admin/cms/page.tsx, src/components/driver/DriverRoute.tsx, src/components/shared/CxAssistantWidget.tsx
+ACCEPTANCE_CRITERIA: Each audited operational screen exposes explicit empty/loading/error guidance.
+STATUS: pending
+
+[TASK]
+ID: UXR-007
+AGENT: github-repository-agent
+SOURCE: ux-ui-product-designer-agent
+MODULE: bilingual repo presentation
+PAGE: repository root
+SEVERITY: P2
+OBJECTIVE: Keep README/docs bilingual navigation, enterprise positioning and public repo structure aligned with implementation reality.
+FILES_SUGGESTED: README.md, README.es.md, docs/GITHUB_REPO_PRESENTATION.md, docs/GITHUB_REPO_PRESENTATION.es.md
+ACCEPTANCE_CRITERIA: Public repo docs are bilingual, internally consistent and free of fake production claims.
+STATUS: pending
+
+[TASK]
+ID: UXR-008
+AGENT: qa-web-tester-agent
+SOURCE: ux-ui-product-designer-agent
+MODULE: visual smoke evidence
+PAGE: /login, /, /track/demo, /admin, /admin/project-status, /admin/cms, /driver, /driver/route
+SEVERITY: P1
+OBJECTIVE: Run visual smoke after mojibake cleanup and attach evidence to docs/design/VISUAL_QA_REPORT.md.
+FILES_SUGGESTED: tests/e2e/smoke.spec.ts, docs/design/VISUAL_QA_REPORT.md, docs/design/VISUAL_QA_REPORT.es.md
+ACCEPTANCE_CRITERIA: Pages load without broken layout, invisible buttons, mojibake or basic responsive failure.
+STATUS: pending
+
+[TASK]
+ID: UXR-009
+AGENT: fullstack-developer-agent
+SOURCE: ux-ui-product-designer-agent
+MODULE: business manager navigation completeness
+PAGE: /admin/drivers
+SEVERITY: P1
+OBJECTIVE: Implement the missing drivers management surface or remove references to it from the admin navigation and docs.
+FILES_SUGGESTED: src/app/admin/drivers/page.tsx, src/components/admin/AdminShell.tsx, README.md, docs/design/BUSINESS_MANAGER_EXPERIENCE.md
+ACCEPTANCE_CRITERIA: `/admin/drivers` exists with a readable operational baseline, or the route is fully de-scoped from visible navigation and public docs.
+STATUS: done

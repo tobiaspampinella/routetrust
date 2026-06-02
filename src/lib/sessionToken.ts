@@ -6,10 +6,23 @@ interface SessionPayload extends SessionUser {
   exp: number;
 }
 
-const DEFAULT_SECRET = "routepulse-local-demo-secret-v002";
-
 function getSecret() {
-  return process.env.ROUTEPULSE_DEMO_SECRET || DEFAULT_SECRET;
+  const configuredSecret = process.env.ROUTEPULSE_DEMO_SECRET?.trim() || process.env.AUTH_SECRET?.trim();
+  if (configuredSecret) {
+    return configuredSecret;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("ROUTEPULSE_DEMO_SECRET or AUTH_SECRET is required in production.");
+  }
+
+  return [
+    "routetrust-supervised-demo",
+    process.env.APP_URL || "",
+    process.env.NEXT_PUBLIC_APP_URL || "",
+    process.env.NODE_ENV || "development",
+    SESSION_COOKIE_NAME,
+  ].join("|");
 }
 
 function base64UrlEncode(value: string) {

@@ -2,36 +2,33 @@
 
 ## Automated Checks
 
-Use the local Node/npm wrapper from `docs/ENVIRONMENT_SETUP.md` on this Windows machine.
+Run the standard project commands from the repository root:
 
-```powershell
-$nodeDir='C:\Users\tobii\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin'
-$node=Join-Path $nodeDir 'node.exe'
-$npmCli='C:\Users\tobii\.codex\tmp\npm-cli\package\bin\npm-cli.js'
-$env:PATH="$nodeDir;$env:PATH"
-& $node $npmCli run typecheck
-& $node $npmCli test
-& $node $npmCli run lint
-& $node $npmCli run build
-& $node $npmCli audit --omit=dev
+```bash
+npm run typecheck
+npm test
+npm run lint
+npm run build
+npm audit --omit=dev
 ```
 
-Latest Phase 0 evidence:
+Latest QA runtime evidence:
 
 - Typecheck: passing.
-- Unit tests: passing, 6 tests.
+- Unit tests: passing, 10 tests.
 - Lint: passing.
 - Build: passing.
 - Audit: `npm audit --omit=dev --audit-level=critical` passing after Next.js/PostCSS dependency refresh.
-- Dev server: running at `http://127.0.0.1:3000`.
-- HTTP smoke: `/login` 200, `/track/demo` 200, `/admin` 307 redirect to login.
+- Browser smoke: passing in real Chromium through `npm run qa:smoke`.
+- Health: `/api/health` 200.
+- Runtime report: `docs/PLAYWRIGHT_RUNTIME_REPORT.md`.
 
 ## Manual Smoke Checklist
 
 Run:
 
-```powershell
-& $node $npmCli run dev
+```bash
+npm run dev
 ```
 
 Expected URL:
@@ -51,12 +48,11 @@ Smoke routes:
 - Login with a local demo driver account documented in `docs/DEMO_LOCAL_ONLY.md`, then `/driver` loads driver home.
 - `/track/demo` loads public tracking demo without exposing admin controls.
 
-## Missing QA Coverage
+## Remaining QA Gaps
 
-- No Playwright suite yet.
-- No API integration test for auth routes.
-- No persistence tests because production persistence is not wired.
-- No route-level smoke automation in CI yet.
+- No CI evidence is attached here for remote or staging browser smoke.
+- No dedicated auth-route integration suite exists beyond the current smoke coverage.
+- No persistence migration test exists for a future non-file-store backend.
 
 ## QA Rule
 

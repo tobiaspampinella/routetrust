@@ -1,0 +1,37 @@
+{
+  "enabled": true,
+  "provider": "ollama",
+  "endpoint": "http://127.0.0.1:11434",
+  "selectedModel": "qwen2.5-coder:7b",
+  "preferredModels": [
+    "qwen2.5-coder:14b",
+    "qwen2.5-coder:7b",
+    "qwen3-coder:480b-cloud",
+    "qwen3.6",
+    "deepseek-coder",
+    "llama3.1"
+  ],
+  "autoDownload": false,
+  "allowedTasks": [
+    "summarize logs",
+    "classify bugs",
+    "generate checklist",
+    "translate docs EN/ES",
+    "detect documentation drift",
+    "draft issues",
+    "group errors",
+    "suggest microcopy",
+    "superficial UX audit"
+  ],
+  "forbiddenDecisions": [
+    "security final approval",
+    "DB migrations",
+    "architecture",
+    "deploy",
+    "auth",
+    "RBAC",
+    "tenant isolation",
+    "beta stable",
+    "production readiness"
+  ]
+}

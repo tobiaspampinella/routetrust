@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+const {
+  checkLocks,
+  getRuntimeSnapshot,
+  readProjectStatus,
+  writeProjectStatus,
+} = require("./agent-runtime-lib.js");
+
+const snapshot = getRuntimeSnapshot();
+const lockState = checkLocks(snapshot.activeTasks);
+const next = writeProjectStatus(snapshot, {
+  locks: {
+    status: lockState.ok ? "healthy" : "warning",
+    active: lockState.activeLocks,
+    inconsistencies: lockState.inconsistencies,
+    lastUpdated: snapshot.generatedAt,
+  },
+});
+
+console.log(JSON.stringify(readProjectStatus() || next, null, 2));
+
+if (!lockState.ok) {
+  process.exit(1);
+}

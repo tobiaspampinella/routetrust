@@ -1,6 +1,20 @@
 # Real Implementation Plan
 
 Status date: 2026-06-01
+Last pass: 2026-06-01T21:30:00.000Z (Database/Prisma Agent, OpenCode fallback)
+
+## DB local pass (2026-06-01)
+
+- Docker not available in this environment. Marked `DB_LOCAL_BLOCKED_NO_DOCKER`.
+- `docker-compose.yml` updated to add `container_name: routetrust-postgres` and rename volume to `routetrust_postgres_data`.
+- `docs/LOCAL_POSTGRES_SETUP.md` published with the manual install path.
+- `prisma/schema.prisma` already covers Tenant, User, Driver, Route, RouteStop, AuditLog, BugReport. No change needed.
+- `prisma/seed.ts` already present; not run because migration requires a reachable Postgres.
+- `bugStore.ts` already routes to DB when `getDatabaseHealth().status === "ok"`, with file fallback otherwise.
+- `/api/health` already returns 200 with `database`, `storageMode`, `bugStore`, `demoMode`, `serverReady`, `betaBlockers`.
+- `scripts/beta-check` already classifies `DB_LOCAL_READY` (Postgres + Prisma validate + migration + bugStore on DB).
+
+The blocker is purely environmental: a developer with Docker or native Postgres must run the migration. No code change required for `DB_LOCAL_READY: YES`.
 
 ## Current classification
 

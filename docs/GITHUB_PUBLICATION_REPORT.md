@@ -1,12 +1,12 @@
 # GitHub Publication Report
 
 Date: 2026-05-31
-Repository path: `C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester`
+Repository path: `<local-project-path>`
 
 ## Repository Location Validation
 
-- Working path used: `C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester`
-- Root folder `C:\Users\tobii\OneDrive\Documents\RouteTrust` was not used for Git initialization or publication.
+- Working path used: `<local-project-path>`
+- Parent local workspace path was not used for Git initialization or publication.
 - Local Git repository detected: YES
 - Required paths present: `README.md`, `package.json`, `.git`, `.github`, `docs`, `src`
 
@@ -29,9 +29,8 @@ Repository path: `C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tes
 
 - No committed real tokens, private keys, database URLs or provider secrets were detected in the reviewed public-facing files and source surface.
 - `.env.example` contains empty placeholders only.
-- Demo credentials remain documented in `docs/DEMO_LOCAL_ONLY.md` with an explicit local-only warning.
-- Demo seed identities and passwords still exist in local-only implementation paths such as `prisma/seed.ts` and mock/test-user sources. That is acceptable for a private beta repository, but public visibility should stay blocked until the demo-credential posture is explicitly approved.
-- Current public-release blocker is not secret leakage; it is demo-credential posture, remote metadata still unapplied and remote CI still unverified.
+- Sensitive local-only access details are tracked privately and must not be used as deployment guidance.
+- Public release remains blocked pending private review of demo-access posture, remote metadata and CI verification.
 
 ## Documentation And Metadata Work Completed
 

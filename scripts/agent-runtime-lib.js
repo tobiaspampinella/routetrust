@@ -6,6 +6,7 @@ const AGENTS = require("../config/routeTrustAgents.json");
 const ROOT = path.resolve(__dirname, "..");
 const RUNTIME_DIR = path.join(ROOT, "runtime");
 const HEARTBEAT_DIR = path.join(RUNTIME_DIR, "heartbeats");
+const RUNTIME_LOG_DIR = path.join(RUNTIME_DIR, "logs");
 const DATA_RUNTIME_DIR = path.join(ROOT, "data", "runtime");
 const VALID_STATUSES = ["pending", "running", "blocked", "completed", "failed"];
 const VALID_MODES = ["documented", "executable", "scheduled", "running"];
@@ -15,7 +16,13 @@ const REQUIRED_SCRIPTS = [
   "agent-runner",
   "agent-scheduler",
   "agent-heartbeat",
+  "agent-budget",
+  "agent-dispatch",
   "agent-report",
+  "project-status",
+  "ops-doctor",
+  "ops-daily",
+  "ops-daily-summary",
   "dev-dashboard",
   "telegram-test",
   "telegram-status",
@@ -29,6 +36,10 @@ const REQUIRED_SCRIPTS = [
   "debug-report",
   "qa-security",
   "security-audit",
+  "frontend-audit",
+  "backend-audit",
+  "devops-doctor",
+  "tester-browser",
   "locks-sync",
   "locks-check",
   "bugs-list",
@@ -76,6 +87,21 @@ function appendText(relativeFile, content) {
   fs.appendFileSync(absolutePath(relativeFile), content, "utf8");
 }
 
+function readAbsoluteText(filePath) {
+  if (!fs.existsSync(filePath)) return "";
+  return fs.readFileSync(filePath, "utf8");
+}
+
+function writeAbsoluteText(filePath, content) {
+  ensureAbsoluteDir(path.dirname(filePath));
+  fs.writeFileSync(filePath, content, "utf8");
+}
+
+function appendAbsoluteText(filePath, content) {
+  ensureAbsoluteDir(path.dirname(filePath));
+  fs.appendFileSync(filePath, content, "utf8");
+}
+
 function readJson(relativeFile, fallback) {
   try {
     return JSON.parse(readText(relativeFile) || "null") ?? fallback;
@@ -92,11 +118,30 @@ function fileExists(relativeFile) {
   return fs.existsSync(absolutePath(relativeFile));
 }
 
+function readLocalEnvFiles() {
+  const values = {};
+  for (const file of [".env", ".env.local", ".env.development.local"]) {
+    const content = readText(file);
+    if (!content) continue;
+    for (const line of content.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const index = trimmed.indexOf("=");
+      if (index <= 0) continue;
+      const key = trimmed.slice(0, index).trim();
+      const value = trimmed.slice(index + 1).trim().replace(/^['"]|['"]$/g, "");
+      if (key && values[key] === undefined && process.env[key] === undefined) values[key] = value;
+    }
+  }
+  return values;
+}
+
 function executionEnv() {
   const nodeDir = path.dirname(process.execPath);
   const localBin = absolutePath("node_modules", ".bin");
   const currentPath = process.env.PATH || process.env.Path || "";
   return {
+    ...readLocalEnvFiles(),
     ...process.env,
     PATH: [nodeDir, localBin, currentPath].filter(Boolean).join(path.delimiter),
   };
@@ -245,36 +290,41 @@ function isPidActive(pid) {
 }
 
 function readProcessMarkers() {
-  const logDir = absolutePath("docs/agent-logs");
-  if (!fs.existsSync(logDir)) return [];
+  const logDirs = [path.join(RUNTIME_LOG_DIR, "agent-logs"), absolutePath("docs/agent-logs")].filter((dir, index, list) => list.indexOf(dir) === index);
+  const seen = new Set();
+  const markers = [];
 
-  return fs
-    .readdirSync(logDir)
-    .filter((file) => file.endsWith(".running.json"))
-    .map((file) => {
+  for (const logDir of logDirs) {
+    if (!fs.existsSync(logDir)) continue;
+    for (const file of fs.readdirSync(logDir).filter((entry) => entry.endsWith(".running.json"))) {
       const markerPath = path.join(logDir, file);
+      if (seen.has(markerPath)) continue;
+      seen.add(markerPath);
       try {
         const marker = JSON.parse(fs.readFileSync(markerPath, "utf8"));
-        return {
+        markers.push({
           ...marker,
-          markerFile: relativePath("docs", "agent-logs", file),
+          markerFile: path.relative(ROOT, markerPath).replace(/\\/g, "/"),
           active: isPidActive(marker.pid),
-        };
+        });
       } catch (error) {
-        return {
+        markers.push({
           agentId: file.replace(".running.json", ""),
           pid: null,
-          markerFile: relativePath("docs", "agent-logs", file),
+          markerFile: path.relative(ROOT, markerPath).replace(/\\/g, "/"),
           active: false,
           error: error.message,
-        };
+        });
       }
-    });
+    }
+  }
+
+  return markers;
 }
 
 function appendAgentLog(agentId, message) {
   const safeAgentId = agentId.replace(/[^a-z0-9-]/gi, "-").toLowerCase();
-  appendText(`docs/agent-logs/${todayKey()}-${safeAgentId}.log`, `[${nowIso()}] ${message}\n`);
+  appendAbsoluteText(path.join(RUNTIME_LOG_DIR, "agent-logs", `${todayKey()}-${safeAgentId}.log`), `[${nowIso()}] ${message}\n`);
 }
 
 function createProcessMarker(nameOrAgent, metadata = {}) {
@@ -289,14 +339,14 @@ function createProcessMarker(nameOrAgent, metadata = {}) {
     command: process.argv.join(" "),
     ...metadata,
   };
-  writeText(`docs/agent-logs/${id}.running.json`, `${JSON.stringify(marker, null, 2)}\n`);
+  writeAbsoluteText(path.join(RUNTIME_LOG_DIR, "agent-logs", `${id}.running.json`), `${JSON.stringify(marker, null, 2)}\n`);
   return marker;
 }
 
 function closeProcessMarker(nameOrAgent, status, metadata = {}) {
   const id = typeof nameOrAgent === "string" ? nameOrAgent : nameOrAgent.id;
   const name = typeof nameOrAgent === "string" ? nameOrAgent : nameOrAgent.name;
-  const runningFile = absolutePath("docs/agent-logs", `${id}.running.json`);
+  const runningFile = path.join(RUNTIME_LOG_DIR, "agent-logs", `${id}.running.json`);
   const marker = {
     agentId: id,
     agentName: name,
@@ -306,7 +356,7 @@ function closeProcessMarker(nameOrAgent, status, metadata = {}) {
     command: process.argv.join(" "),
     ...metadata,
   };
-  writeText(`docs/agent-logs/${id}.last-run.json`, `${JSON.stringify(marker, null, 2)}\n`);
+  writeAbsoluteText(path.join(RUNTIME_LOG_DIR, "agent-logs", `${id}.last-run.json`), `${JSON.stringify(marker, null, 2)}\n`);
   if (fs.existsSync(runningFile)) fs.unlinkSync(runningFile);
 }
 
@@ -345,20 +395,23 @@ function setAgentStatus(agent, status, note, extras = {}) {
     mode: extras.mode || "executable",
   });
 
-  writeText(
-    `agents/${agent.id}/status.md`,
-    `# ${agent.name} Status
+  const statusDoc = `# ${agent.name} Status
 
 STATUS: ${status}
 MODE: ${heartbeat.mode}
 ACTIVE_PROCESS: ${status === "running" ? `pid ${process.pid}` : "none"}
-LAST_RUN: ${nowIso()}
+LAST_RUN: ${extras.lastRun || heartbeat.lastSeen || nowIso()}
 COMMAND: node scripts/agent-runner ${agent.id}
 CURRENT_TASK: ${heartbeat.currentTask || "none"}
 
 ${note || "Runtime status is controlled by scripts. Documentation alone does not mark this agent active."}
-`,
-  );
+`;
+  const relativeStatusFile = `agents/${agent.id}/status.md`;
+  const currentStatusDoc = readText(relativeStatusFile);
+
+  if (currentStatusDoc !== statusDoc) {
+    writeText(relativeStatusFile, statusDoc);
+  }
 }
 
 function writeAgentOutput(agent, content) {
@@ -569,6 +622,22 @@ function writeProjectStatus(snapshot, overrides = {}) {
     beta: existing.beta || { status: "unknown" },
     watchdog: existing.watchdog || { status: "unknown" },
     scheduler: existing.scheduler || { status: "stopped" },
+    autonomy: existing.autonomy || {
+      llmWorkers: "none",
+      autonomousAgents: "none",
+      localScripts: "available",
+      coordinator: snapshot.schedulerActive ? "running" : "available",
+    },
+    smokeBrowser: existing.smokeBrowser || { status: "not_configured" },
+    storage: existing.storage || { status: "unknown" },
+    github: existing.github || { status: "missing" },
+    staging: existing.staging || { status: "missing" },
+    classifications: existing.classifications || {
+      localDemoReady: false,
+      betaStableReady: false,
+      stagingReady: false,
+    },
+    criticalBlockers: existing.criticalBlockers || [],
     lastUpdated: nowIso(),
     ...overrides,
   };
@@ -595,7 +664,8 @@ function createTaskSummary(tasks) {
 function getRuntimeSnapshot() {
   ensureAbsoluteDir(RUNTIME_DIR);
   ensureAbsoluteDir(HEARTBEAT_DIR);
-  ensureAbsoluteDir(path.join(ROOT, "docs", "agent-logs"));
+  ensureAbsoluteDir(path.join(RUNTIME_LOG_DIR, "agent-logs"));
+  ensureAbsoluteDir(path.join(RUNTIME_LOG_DIR, "agent-reports"));
   ensureAbsoluteDir(path.join(ROOT, "docs", "agent-reports"));
   const activeTasks = parseActiveTasks();
   const processMarkers = readProcessMarkers();
@@ -712,7 +782,7 @@ function recordStatusLog(snapshot) {
 
 function writeAgentReport(snapshot) {
   const stamp = snapshot.generatedAt.replace(/[:.]/g, "-");
-  const reportPath = `docs/agent-reports/${stamp}-agent-report.md`;
+  const reportPath = `runtime/logs/agent-reports/${stamp}-agent-report.md`;
   const pendingTasks = snapshot.activeTasks.filter((task) => task.NORMALIZED_STATUS !== "completed");
   const report = `# Agent Runtime Report
 

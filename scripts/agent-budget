@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+const { getBudget, getSchedule } = require("./agent-scheduling-lib.js");
+
+const schedule = getSchedule();
+const budget = getBudget();
+
+console.log("AGENT_BUDGET_STATUS");
+console.log(`generatedAt=${budget.generatedAt}`);
+console.log(`objective=${budget.policy.objective}`);
+console.log(`executedRuns=${budget.totals.executedRuns}`);
+console.log(`skippedRuns=${budget.totals.skippedRuns}`);
+console.log(`tokensSpentEstimate=${budget.totals.tokensSpentEstimate}`);
+console.log(`tokensSavedEstimate=${budget.totals.tokensSavedEstimate}`);
+
+for (const agentId of Object.keys(schedule.agents)) {
+  const config = schedule.agents[agentId];
+  const entry = budget.agents[agentId];
+  console.log(
+    `${agentId}: intervalMinutes=${config.intervalMinutes}; cooldownMinutes=${config.cooldownMinutes}; estimatedTokensPerRun=${entry.estimatedTokensPerRun}; executedRuns=${entry.executedRuns}; skippedRuns=${entry.skippedRuns}; tokensSpentEstimate=${entry.tokensSpentEstimate}; tokensSavedEstimate=${entry.tokensSavedEstimate}`,
+  );
+}

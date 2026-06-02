@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+const { nowIso, readText, writeText } = require("./agent-runtime-lib.js");
+
+const readme = readText("README.md");
+const landing = readText("src/components/shared/LandingPage.tsx");
+const lines = [
+  "# GTM Brief",
+  "",
+  `Generated: ${nowIso()}`,
+  "",
+  `- README positioning length: ${readme.length} chars`,
+  `- Landing copy length: ${landing.length} chars`,
+  "- Scope: ICP, messaging and demo narrative review only.",
+];
+writeText("docs/agent-reports/product-gtm-agent-latest.md", `${lines.join("\n")}\n`);
+console.log(lines.join("\n"));

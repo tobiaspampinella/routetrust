@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+const { nowIso, runPackageScript, writeText } = require("./agent-runtime-lib.js");
+
+const scripts = ["agents:status", "project:status", "beta-check"];
+const sections = ["# Daily Ops Report", "", `Generated: ${nowIso()}`, ""];
+let failed = false;
+
+for (const script of scripts) {
+  const result = runPackageScript(script);
+  sections.push(`## ${script}`, "", `Exit code: ${result.status}`, "", "```text", `${result.stdout}${result.stderr}`.trim(), "```", "");
+  if (result.status !== 0) failed = true;
+}
+
+writeText("docs/DAILY_CONTROL_REPORT.md", `${sections.join("\n")}\n`);
+console.log("Report: docs/DAILY_CONTROL_REPORT.md");
+process.exit(failed ? 1 : 0);

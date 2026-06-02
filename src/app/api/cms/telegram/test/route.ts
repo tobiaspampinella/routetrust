@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireCmsPermission } from "@/services/cms/serverGuards";
+import { recordAuditEvent } from "@/services/audit/runtimeAuditStore";
 
 export async function POST(request: NextRequest) {
   const guard = await requireCmsPermission(request, "configure");
@@ -10,6 +11,19 @@ export async function POST(request: NextRequest) {
   const missing = [...(!token ? ["TELEGRAM_BOT_TOKEN"] : []), ...(!chatId ? ["TELEGRAM_CHAT_ID"] : [])];
 
   if (missing.length > 0) {
+    await recordAuditEvent({
+      action: "telegram_test_blocked",
+      actor: {
+        id: guard.user.id,
+        name: guard.user.name,
+        role: guard.user.role,
+      },
+      module: "telegram",
+      result: "warning",
+      details: {
+        missing,
+      },
+    });
     return NextResponse.json({
       sent: false,
       status: "missing_configuration",
@@ -25,6 +39,19 @@ export async function POST(request: NextRequest) {
   }).catch((error: Error) => error);
 
   if (response instanceof Error) {
+    await recordAuditEvent({
+      action: "telegram_test_failed",
+      actor: {
+        id: guard.user.id,
+        name: guard.user.name,
+        role: guard.user.role,
+      },
+      module: "telegram",
+      result: "failure",
+      details: {
+        error: response.message,
+      },
+    });
     return NextResponse.json({
       sent: false,
       status: "failed",
@@ -34,6 +61,19 @@ export async function POST(request: NextRequest) {
   }
 
   if (!response.ok) {
+    await recordAuditEvent({
+      action: "telegram_test_failed",
+      actor: {
+        id: guard.user.id,
+        name: guard.user.name,
+        role: guard.user.role,
+      },
+      module: "telegram",
+      result: "failure",
+      details: {
+        httpStatus: response.status,
+      },
+    });
     return NextResponse.json({
       sent: false,
       status: "failed",
@@ -41,6 +81,20 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     }, { status: 502 });
   }
+
+  await recordAuditEvent({
+    action: "telegram_test_sent",
+    actor: {
+      id: guard.user.id,
+      name: guard.user.name,
+      role: guard.user.role,
+    },
+    module: "telegram",
+    result: "success",
+    details: {
+      chatId,
+    },
+  });
 
   return NextResponse.json({
     sent: true,

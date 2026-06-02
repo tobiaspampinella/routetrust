@@ -1,40 +1,11 @@
 #!/usr/bin/env node
-const {
-  checkLocks,
-  getRuntimeSnapshot,
-  printStatus,
-  recordStatusLog,
-  syncLockedFilesDoc,
-  writeProjectStatus,
-  writeRuntimeStatusReport,
-} = require("./agent-runtime-lib.js");
+const { summarizeScheduleState, writeRuntimeStatusDocs } = require("./agent-scheduling-lib.js");
 
-syncLockedFilesDoc();
-const snapshot = getRuntimeSnapshot();
-const lockState = checkLocks(snapshot.activeTasks);
-writeRuntimeStatusReport(snapshot, {
-  "Lock Validation": lockState.ok
-    ? "No lock inconsistencies detected."
-    : lockState.inconsistencies.map((item) => `- ${item}`).join("\n"),
-});
-writeProjectStatus(snapshot, {
-  locks: {
-    status: lockState.ok ? "healthy" : "warning",
-    active: lockState.activeLocks,
-    inconsistencies: lockState.inconsistencies,
-    lastUpdated: snapshot.generatedAt,
-  },
-});
-recordStatusLog(snapshot);
-printStatus(snapshot);
+const summary = summarizeScheduleState();
+writeRuntimeStatusDocs();
 
-console.log("");
-console.log(`Lock inconsistencies: ${lockState.inconsistencies.length}`);
-
-if (
-  snapshot.validation.missing.length > 0 ||
-  snapshot.validation.invalidStatuses.length > 0 ||
-  lockState.inconsistencies.length > 0
-) {
-  process.exit(1);
+for (const agent of summary.agents) {
+  console.log(`${agent.agentId}: last=${agent.lastStatus}; next=${agent.nextDecision}; priority=${agent.priority}; executed=${agent.executedRuns}; skipped=${agent.skippedRuns}`);
 }
+
+console.log(`tokensSavedEstimate=${summary.budget.totals.tokensSavedEstimate}`);

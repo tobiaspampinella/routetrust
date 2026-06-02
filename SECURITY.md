@@ -1,41 +1,45 @@
 # Security
 
-## Status
+## Disclosure Status
 
-This project is in beta recovery and stabilization. Security-sensitive changes require human review before release.
+This project is in beta. Public security documentation is intentionally redacted.
 
-## Security Contact
+## Private Reporting
 
-Report vulnerabilities privately to `tobiaspampinella@gmail.com`.
+Do not open a public issue for vulnerabilities that include:
 
-Do not open a public issue when the report contains sensitive details, exploit paths, credentials, customer data or infrastructure information.
+- credentials
+- exploit paths
+- customer or tenant data
+- infrastructure details
+- tokens
+- local machine details
 
-## Secrets Policy
+Use a private disclosure channel controlled by the repository owner or designated security maintainer.
 
-- Do not commit `.env`, `.env.local`, provider keys, Telegram tokens, database passwords or JWT secrets.
-- Use `.env.example` only for variable names and empty placeholders.
-- Frontend code must never display full tokens or secrets.
-- Critical credentials belong in deployment secrets or local environment files.
-- Do not include tokens, secrets or private keys in screenshots, logs or bug reports.
-- Do not commit destructive proof-of-concept artifacts or exploit payloads.
+## Repository Rules
 
-## Required Controls
+- Do not commit `.env` files or secrets.
+- Do not publish tokens, API keys, chat IDs, passwords, or session material.
+- Do not include exploit payloads, attack walkthroughs, or destructive proof-of-concept artifacts.
+- Do not expose unnecessary personal contact data in public docs.
 
-- RBAC for CMS/Admin actions.
-- Tenant isolation for persisted data.
-- Audit logs for route, driver, permission, tenant and release actions.
-- Human approval for critical operational decisions.
+## Minimum Controls
+
+- protected admin and CMS routes
+- explicit auth state
+- durable auditability for sensitive actions
+- tenant boundary preservation
+- human approval for critical operational actions
 
 ## Security Scope
 
 - auth and session handling
-- tenant isolation
-- Telegram bot and operational messaging flows
-- API keys and provider integrations
-- bug report intake and storage
-- GitHub Actions and repository automation
-- demo credentials and local-only access paths
+- admin and CMS access control
+- bug intake storage
+- runtime and agent supervision
+- optional Telegram and map-provider integrations
 
-## Reporting
+## Out of Scope Claims
 
-Report security issues by private email only. Do not publish public issues containing credentials, exploit details or customer data.
+This document does not claim certification, penetration-test completion, or production security readiness.

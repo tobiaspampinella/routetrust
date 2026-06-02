@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-06-01 - Database/Prisma baseline (OpenCode fallback)
+
+- Aligned `docker-compose.yml` with the spec: `container_name: routetrust-postgres`, named volume `routetrust_postgres_data`.
+- Added `docs/LOCAL_POSTGRES_SETUP.md` with the manual install path (Windows installer, Homebrew, apt, psql) for environments without Docker.
+- Added `docs/DB_LOCAL_STATUS.md` reporting the honest state: `DB_LOCAL_BLOCKED_NO_DOCKER` in this environment; `prisma/schema.prisma`, `bugStore.ts`, `/api/health` and `beta-check` already implement the spec.
+- Refreshed `docs/OPEN_CODE_NEXT_ACTIONS.md`, `docs/REAL_IMPLEMENTATION_PLAN.md` and `docs/SAAS_CONVERSION_BACKLOG.md` to reflect the DB/Prisma pass.
+
+## 2026-06-01 - Scheduler execution truth pass
+
+- Fixed the scheduler state model so skipped evaluations no longer reset cooldown or overwrite the last real execution snapshot for each agent.
+- Added per-agent `watchPaths` in `scripts/agent-scheduling-lib.js` so change gating is filtered by relevant files instead of broad repo noise.
+- Switched daily summary guarding in `scripts/agent-scheduler` to local calendar dates instead of UTC date slicing.
+- Updated the ten scheduled base-agent prompts plus `docs/AGENT_SCHEDULE.md`, `docs/TOKEN_BUDGET_POLICY.md`, `docs/AGENT_EXECUTION_MATRIX.md`, `NEXT_AGENT_PROMPT.md` and `docs/NEXT_AGENT_PROMPT.md`.
+- Extended `scripts/ops-daily-summary` to emit the daily summary notification path without spamming micro-events.
+
 ## 2026-06-01 - UX coordination and drivers surface pass
 
 - Rewrote `README.md` and `README.es.md` to remove visible mojibake from the bilingual repo entry and align listed surfaces with current reality.

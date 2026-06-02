@@ -1,54 +1,43 @@
 # Roadmap
 
-RouteTrust is moving through a staged beta program toward a stable logistics operations release.
+## v0.1 Local Beta Hardening
 
-## v0.1 - Local Demo Stabilization
+- keep admin, driver, and customer demo routes working
+- stabilize lint, typecheck, tests, build, and UX audit
+- eliminate visible encoding defects
+- keep product claims aligned with reality
 
-- Build recovery and clean local installs.
-- Typecheck, lint, tests and production build validation.
-- Local operational scripts for QA, locks and watchdog checks.
-- Demo route and tracking baseline kept functional.
+## v0.2 Bilingual Product Presentation
 
-## v0.2 - GitHub And Collaboration
+- bilingual README and core public docs
+- product value proposition docs
+- repository presentation docs
+- design-system baseline and UX audit workflow
 
-- Remote repository creation and metadata setup.
-- CI workflow in repository root.
-- Labels, issue templates and pull request template.
-- Branch strategy and branch protection setup.
+## v0.3 Business Manager Experience
 
-## v0.3 - CMS/Admin Beta
+- KPI clarity
+- route and incident visibility
+- project status truthfulness
+- better CMS and bug-report triage flows
 
-- CEO/Admin panel stabilization.
-- Project status dashboard.
-- Bug report review surface.
-- Tenant and approval demo workflows.
+## v0.4 Customer Experience
 
-## v0.4 - Driver And Customer Views
+- clearer demo tracking
+- ETA and delay visibility
+- stronger mobile fallback
+- incident and delivery messaging
 
-- Driver portal hardening.
-- Customer tracking demo refinement.
-- Route simulation behavior and operational visibility.
+## v0.5 Repository and QA Maturity
 
-## v0.5 - Project Intelligence
+- stronger issue and contribution templates
+- reproducible browser smoke evidence
+- clearer release gating
+- honest beta readiness communication
 
-- Telegram project bot and status flows.
-- Supervised agent runtime reporting.
-- Operational status dashboard and automation summaries.
+## v1.0 Beta Stable Candidate
 
-## v0.6 - Security And QA Hardening
-
-- Auth hardening and secret handling review.
-- Tenant isolation validation.
-- Smoke and end-to-end coverage expansion.
-- Security audit and operational controls review.
-
-## v1.0 - Beta Stable
-
-- Stable build candidate.
-- Staging deployment path.
-- GitHub CI passing on remote pull requests.
-- Demo-ready SaaS presentation baseline.
-
-## Internal Sprint Plan
-
-The short-horizon seven-day stabilization plan is maintained in `docs/BETA_BUILD_PLAN.md`.
+- stable local build with browser smoke evidence
+- durable storage for key operational data
+- consistent design system adoption
+- repo presentation ready for public review

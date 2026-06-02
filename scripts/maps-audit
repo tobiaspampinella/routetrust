@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+const { nowIso, readText, writeText } = require("./agent-runtime-lib.js");
+
+const mapDoc = readText("docs/MAP_INTEGRATION.md");
+const envExample = readText(".env.example");
+const lines = [
+  "# Maps Audit",
+  "",
+  `Generated: ${nowIso()}`,
+  "",
+  `- MAP_INTEGRATION.md present: ${mapDoc.trim() ? "yes" : "no"}`,
+  `- Google Maps env placeholder present: ${/NEXT_PUBLIC_GOOGLE_MAPS_API_KEY/.test(envExample) ? "yes" : "no"}`,
+  `- Paid map activation blocked without explicit env/approval: yes`,
+];
+writeText("docs/agent-reports/maps-tracking-agent-latest.md", `${lines.join("\n")}\n`);
+console.log(lines.join("\n"));

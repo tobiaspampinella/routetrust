@@ -1,29 +1,25 @@
 # Next Agent Prompt
 
-## 2026-06-01 RouteTrust UX orchestration handoff
+## 2026-06-01 RouteTrust scheduler hardening handoff
 
 Completed in this pass:
 
-- confirmed the active repository scope and working tree boundaries
-- verified the required bilingual docs and design-system files exist
-- upgraded the UX/UI agent prompts so they now enforce gating, ownership, route coverage, deliverables, and beta honesty
-- implemented the missing `/admin/drivers` business-manager surface and connected it into admin navigation
-- fixed the bilingual README switch so public entry no longer shows mojibake
-- hardened `npm run ux:audit` coverage to reflect real missing routes, missing state components, missing language toggle, and missing visual QA evidence
-- kept UX findings connected to `docs/ACTIVE_TASKS.md` owners across full stack, GitHub repo, and QA/web tester flows
+- aligned the local scheduler with the non-autonomous RouteTrust model
+- tightened change detection so each agent watches only relevant paths plus shared operational files
+- stopped skipped evaluations from resetting cooldown and last real execution timestamps
+- synchronized agent prompts, schedule docs and token budget policy with the actual runtime model
+- kept watchdog cheap and daily summary local-day aware
 
 Current blockers:
 
-- required public SaaS routes are still missing: `/contact`, `/demo`, `/pricing` or `/plans`, `/product`, `/use-cases`, `/customers`
-- shared `EmptyState`, `LoadingState`, and `ErrorState` components are still missing
-- the product still lacks a visible `LanguageToggle` surface
-- browser QA evidence for the required route set is still blocked or absent
+- `docs/ACTIVE_TASKS.md` still contains legacy agent names outside the ten scheduled base agents
+- the worktree is already dirty, so broad repo drift still exists even with per-agent filtering
+- beta stability still depends on product and QA blockers unrelated to scheduler control
 
-Do not claim beta stable.
+Do not claim autonomous agents.
 
 Next priority order:
 
-1. full stack: implement or explicitly de-scope missing public SaaS pages
-2. full stack: add reusable empty/loading/error states and a visible language toggle on public surfaces
-3. QA/web tester: capture browser evidence for `/login`, `/`, `/track/demo`, `/admin`, `/admin/project-status`, `/admin/cms`, `/driver`, `/driver/route`
-4. GitHub repo agent: tighten bilingual README/docs presentation only after implementation and QA reality are aligned
+1. normalize legacy task ownership aliases in `docs/ACTIVE_TASKS.md` and `config/routeTrustAgents.json`
+2. verify `watchdog`, `agent:runner`, `agent:priority`, `agent:cooldown` and `ops:daily-summary` outputs after state regeneration
+3. keep only cheap scheduled audits unless a P0 or P1 signal justifies escalation

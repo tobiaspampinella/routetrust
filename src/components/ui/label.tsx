@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 const Label = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>, React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>>(
   ({ className, ...props }, ref) => (
-    <LabelPrimitive.Root ref={ref} className={cn("text-sm font-semibold leading-none text-[#1d1d1f]", className)} {...props} />
+    <LabelPrimitive.Root ref={ref} className={cn("text-sm font-semibold leading-none text-white/72", className)} {...props} />
   ),
 );
 Label.displayName = LabelPrimitive.Root.displayName;

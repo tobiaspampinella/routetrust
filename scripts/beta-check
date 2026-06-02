@@ -47,16 +47,20 @@ function readText(relativeFile) {
   return fs.readFileSync(file, "utf8");
 }
 
-async function httpCheck(url) {
+async function httpCheck(url, timeoutMs = 5000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(url, { redirect: "manual" });
+    const response = await fetch(url, { redirect: "manual", signal: controller.signal });
     const body = await response.text().catch(() => "");
+    clearTimeout(timeout);
     return {
       ok: response.status < 500,
       status: response.status,
       body,
     };
   } catch (error) {
+    clearTimeout(timeout);
     return {
       ok: false,
       status: 0,
@@ -163,6 +167,169 @@ function runtimeChurnPolicyStatus() {
   };
 }
 
+function hasDatabaseUrlConfigured() {
+  if (process.env.DATABASE_URL) return true;
+  const envFiles = [".env.local", ".env", ".env.development.local", ".env.staging"];
+  return envFiles.some((file) => readText(file).split(/\r?\n/).some((line) => /^DATABASE_URL\s*=/.test(line.trim()) && !line.trim().startsWith("#")));
+}
+
+function safeJsonParse(value) {
+  try {
+    return JSON.parse(value || "{}");
+  } catch {
+    return null;
+  }
+}
+
+function readCurrentPostcheckValidation() {
+  const data = safeJsonParse(readText("runtime/reports/post-change-current-validation.json"));
+  if (!data || data.source !== "post-change-check" || !Array.isArray(data.results)) return null;
+
+  const generatedAt = Date.parse(data.generatedAt || "");
+  if (!Number.isFinite(generatedAt) || Date.now() - generatedAt > 30 * 60 * 1000) return null;
+
+  const results = new Map();
+  for (const entry of data.results) {
+    if (entry?.script && entry?.result) results.set(entry.script, entry.result);
+  }
+  return results;
+}
+
+function reusedValidationResult(scriptName, currentValidation) {
+  const result = currentValidation?.get(scriptName);
+  if (!result) return null;
+  return {
+    ...result,
+    command: `reused post-change-check result for ${scriptName}: ${result.command}`,
+    stdout: result.stdout || "Reused from post-change-check current validation cycle.\n",
+  };
+}
+
+async function runCheapMode() {
+  const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://127.0.0.1:3000";
+  const timestamp = nowIso();
+  const snapshot = getRuntimeSnapshot();
+  writeRuntimeStatusReport(snapshot);
+  recordStatusLog(snapshot);
+
+  const missing = requiredFiles.filter((file) => !fileExists(file));
+  const [healthCheck, loginCheck, adminCheck, trackCheck] = await Promise.all([
+    httpCheck(`${baseUrl}/api/health`),
+    httpCheck(`${baseUrl}/login`),
+    httpCheck(`${baseUrl}/admin`),
+    httpCheck(`${baseUrl}/track/demo`),
+  ]);
+
+  const healthPayload = healthCheck.ok ? safeJsonParse(healthCheck.body) : null;
+  const databaseUrlConfigured = hasDatabaseUrlConfigured();
+  const databaseReady = healthPayload?.checks?.db === "ok";
+  const bugReportsDbBacked = healthPayload?.storageMode === "db" || healthPayload?.checks?.persistence === "db";
+  const prismaMigration = getPrismaMigrationStatus();
+  const gitRemote = hasConfiguredGitRemote();
+  const branchName = getCurrentBranch();
+  const gitWorktree = getGitWorktreeStatus();
+  const gitPushSync = getGitPushSyncStatus();
+  const churnPolicy = runtimeChurnPolicyStatus();
+
+  const localDemoReady =
+    missing.length === 0 &&
+    snapshot.validation.invalidStatuses.length === 0 &&
+    healthCheck.status === 200 &&
+    loginCheck.ok &&
+    adminCheck.ok &&
+    trackCheck.ok;
+
+  const dbLocalReady = databaseUrlConfigured && databaseReady && prismaMigration.exists;
+  const blockers = [];
+
+  if (missing.length > 0) blockers.push(`Required files missing: ${missing.join(", ")}.`);
+  if (snapshot.validation.invalidStatuses.length > 0) blockers.push(`Invalid runtime statuses: ${snapshot.validation.invalidStatuses.length}.`);
+  if (healthCheck.status !== 200) blockers.push(`/api/health is not returning HTTP 200.`);
+  if (!loginCheck.ok) blockers.push(`/login is returning a server error or is unreachable.`);
+  if (!adminCheck.ok) blockers.push(`/admin is returning a server error or is unreachable.`);
+  if (!trackCheck.ok) blockers.push(`/track/demo is returning a server error or is unreachable.`);
+  if (!databaseUrlConfigured) blockers.push("DATABASE_URL is not configured.");
+  if (databaseUrlConfigured && !databaseReady) blockers.push("Database health is not ok while DATABASE_URL is configured.");
+  if (!prismaMigration.exists) blockers.push("Prisma migration has not been created yet.");
+  if (!bugReportsDbBacked) blockers.push("Bug reports are not DB-backed yet.");
+  if (!gitRemote.configured) blockers.push("GitHub remote origin is missing or unreadable.");
+  if (!gitPushSync.synced) blockers.push(`GitHub push is pending for branch ${branchName}: ${gitPushSync.detail}`);
+  if (!gitWorktree.clean) blockers.push(`Git worktree is dirty (${gitWorktree.entries.length} entries).`);
+  if (!churnPolicy.ok) blockers.push(`Runtime churn ignore policy missing: ${churnPolicy.missing.join(", ")}.`);
+
+  const reportStatus = localDemoReady ? "LOCAL_DEMO_SIGNAL" : "BLOCKED";
+  const body = `# Beta Check Cheap Report
+
+Generated: ${timestamp}
+
+STATUS: ${reportStatus}
+
+Cheap mode does not run typecheck, lint, unit tests, build, smoke, Prisma validation or migrations. It cannot certify beta stable.
+
+## Classification
+
+- LOCAL_DEMO_SIGNAL: ${localDemoReady ? "YES" : "NO"}
+- DB_LOCAL_READY_SIGNAL: ${dbLocalReady ? "YES" : "NO"}
+- BETA_STABLE_READY: NO
+- STAGING_READY: NO
+
+## HTTP Checks
+
+- /api/health -> ${healthCheck.status}
+- /login -> ${loginCheck.status}
+- /admin -> ${adminCheck.status}
+- /track/demo -> ${trackCheck.status}
+
+## Environment Reality
+
+- Git remote origin: ${gitRemote.configured ? gitRemote.value : "missing"}
+- Current branch: ${branchName}
+- Git push sync: ${gitPushSync.synced ? "synced" : "pending"}
+- Git worktree clean: ${gitWorktree.clean ? "yes" : "no"}
+- DATABASE_URL configured: ${databaseUrlConfigured ? "yes" : "no"}
+- Database health: ${healthPayload?.checks?.db || "unknown"}
+- Persistence mode: ${healthPayload?.storageMode || healthPayload?.checks?.persistence || "unknown"}
+- Prisma migrations: ${prismaMigration.exists ? prismaMigration.entries.join(", ") : "missing"}
+
+## Blockers
+
+${blockers.length === 0 ? "- none" : blockers.map((item) => `- ${item}`).join("\n")}
+`;
+
+  const result = {
+    generatedAt: timestamp,
+    mode: "cheap",
+    status: reportStatus,
+    cheapModeCannotCertifyBetaStable: true,
+    checks: {
+      health: healthCheck.status,
+      login: loginCheck.status,
+      admin: adminCheck.status,
+      trackDemo: trackCheck.status,
+      databaseUrlConfigured,
+      databaseReady,
+      prismaMigrationExists: prismaMigration.exists,
+      gitRemoteConfigured: gitRemote.configured,
+      gitWorktreeClean: gitWorktree.clean,
+      gitPushSynced: gitPushSync.synced,
+      runtimeChurnPolicyOk: churnPolicy.ok,
+    },
+    blockers,
+    classifications: {
+      localDemoSignal: localDemoReady,
+      dbLocalReadySignal: dbLocalReady,
+      betaStableReady: false,
+      stagingReady: false,
+    },
+  };
+
+  writeText("runtime/reports/beta-check-cheap-latest.md", body);
+  writeText("runtime/reports/beta-check-cheap-latest.json", `${JSON.stringify(result, null, 2)}\n`);
+  console.log(reportStatus);
+  console.log("Cheap beta check report: runtime/reports/beta-check-cheap-latest.md");
+  if (!localDemoReady || !dbLocalReady || !gitWorktree.clean || !gitPushSync.synced) process.exit(1);
+}
+
 function uniquePids(entries) {
   return [...new Set(entries.map((entry) => entry.pid).filter(Boolean))];
 }
@@ -203,18 +370,25 @@ function processCommandLine(pid) {
 }
 
 async function main() {
+  if (process.argv.includes("--cheap") || process.env.BETA_CHECK_CHEAP === "1") {
+    await runCheapMode();
+    return;
+  }
+
+  const reuseCurrentValidation = process.argv.includes("--reuse-current-validation") || process.env.BETA_CHECK_REUSE_CURRENT_VALIDATION === "1";
+  const currentValidation = reuseCurrentValidation ? readCurrentPostcheckValidation() : null;
   const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://127.0.0.1:3000";
   const snapshot = getRuntimeSnapshot();
   writeRuntimeStatusReport(snapshot);
   recordStatusLog(snapshot);
 
   const missing = requiredFiles.filter((file) => !fileExists(file));
-  const typecheckResult = runPackageScript("typecheck");
-  const lintResult = runPackageScript("lint");
-  const testsResult = runPackageScript("test");
-  const buildResult = runPackageScript("build");
-  const smokeResult = runPackageScript("qa:smoke");
-  const prismaValidateResult = process.env.DATABASE_URL
+  const typecheckResult = reusedValidationResult("typecheck", currentValidation) || runPackageScript("typecheck");
+  const lintResult = reusedValidationResult("lint", currentValidation) || runPackageScript("lint");
+  const testsResult = reusedValidationResult("test", currentValidation) || runPackageScript("test");
+  const buildResult = reusedValidationResult("build", currentValidation) || runPackageScript("build");
+  const smokeResult = reusedValidationResult("qa:smoke", currentValidation) || runPackageScript("qa:smoke");
+  const prismaValidateResult = hasDatabaseUrlConfigured()
     ? runShellCommand("npx prisma validate", "npx prisma validate")
     : {
         command: "npx prisma validate",
@@ -377,9 +551,11 @@ async function main() {
   const reportStatus = stagingReady ? "STAGING_READY" : betaStableReady ? "BETA_STABLE_READY" : localDemoReady ? "LOCAL_DEMO_READY" : "BLOCKED";
   const timestamp = nowIso();
 
-  const body = `# Beta Check Report
+const body = `# Beta Check Report
 
 Generated: ${timestamp}
+
+Validation reuse: ${currentValidation ? "post-change-check current cycle" : "none"}
 
 STATUS: ${reportStatus}
 

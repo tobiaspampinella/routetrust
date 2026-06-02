@@ -1,117 +1,89 @@
 #!/usr/bin/env node
-const {
-  appendAgentLog,
-  closeProcessMarker,
-  createProcessMarker,
-  getRuntimeSnapshot,
-  nowIso,
-  parseCliArgs,
-  runPackageScript,
-  sleep,
-  writeHeartbeat,
-  writeProjectStatus,
-  writeRuntimeStatusReport,
-} = require("./agent-runtime-lib.js");
+const fs = require("node:fs");
+const { nowIso, writeHeartbeat } = require("./agent-runtime-lib.js");
+const { LAST_RUN_FILE, getLastRunState, getSchedule, runPackageScript, writeRuntimeStatusDocs, updateProjectStatusFromSchedule } = require("./agent-scheduling-lib.js");
 
-function runCycle(intervalMs) {
-  const steps = [
-    ["agent:runner", []],
-    ["beta-check", []],
-    ["watchdog:once", []],
-    ["agents:status", []],
-  ];
+function sleep(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
 
-  const results = [];
-  for (const [scriptName, extraArgs] of steps) {
-    const result = runPackageScript(scriptName, extraArgs);
-    results.push({ scriptName, result });
+function readLastRunState() {
+  try {
+    return JSON.parse(fs.readFileSync(LAST_RUN_FILE, "utf8"));
+  } catch {
+    return getLastRunState();
+  }
+}
+
+function saveLastRunState(lastRunState) {
+  lastRunState.generatedAt = nowIso();
+  fs.writeFileSync(LAST_RUN_FILE, `${JSON.stringify(lastRunState, null, 2)}\n`, "utf8");
+}
+
+function localDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function shouldRunDailySummary(schedule, now) {
+  const targetHour = Number(schedule.scheduler.dailySummaryHourLocal || 7);
+  if (now.getHours() !== targetHour) return false;
+  const lastRunState = readLastRunState();
+  const lastDailySummaryDate = String(lastRunState.scheduler?.lastDailySummaryDate || "");
+  const today = localDateKey(now);
+  if (lastDailySummaryDate === today) return false;
+  lastRunState.scheduler = {
+    ...(lastRunState.scheduler || {}),
+    lastDailySummaryDate: today,
+  };
+  saveLastRunState(lastRunState);
+  return true;
+}
+
+function runCycle() {
+  const watchdog = runPackageScript("watchdog:once");
+  const runner = runPackageScript("agent:runner");
+  const schedule = getSchedule();
+  const now = new Date();
+  let daily = { status: 0 };
+
+  if (shouldRunDailySummary(schedule, now)) {
+    daily = runPackageScript("ops:daily-summary");
   }
 
-  if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
-    results.push({ scriptName: "telegram:notify", result: runPackageScript("telegram:notify") });
-  }
-
-  const snapshot = getRuntimeSnapshot();
-  writeRuntimeStatusReport(snapshot, {
-    "Scheduler Cycle": results.map((entry) => `- ${entry.scriptName}: exit ${entry.result.status}`).join("\n"),
-  });
-  writeProjectStatus(snapshot, {
-    scheduler: {
-      status: results.every((entry) => entry.result.status === 0) ? "running" : "warning",
-      intervalMs,
+  const summary = writeRuntimeStatusDocs();
+  updateProjectStatusFromSchedule(summary, {
+    watchdog: {
+      status: watchdog.status === 0 ? "healthy" : "warning",
       lastRun: nowIso(),
-      steps: results.map((entry) => ({
-        script: entry.scriptName,
-        status: entry.result.status,
-      })),
     },
   });
 
-  return results;
-}
-
-function main() {
-  const args = parseCliArgs(process.argv.slice(2));
-  const watch = Boolean(args.watch);
-  const intervalMs = Number(args["interval-ms"] || 60000);
-
-  createProcessMarker("scheduler", { kind: "agent-scheduler", mode: "running" });
   writeHeartbeat("scheduler", {
-    status: "running",
+    status: runner.status === 0 ? "running" : "warning",
     currentTask: "scheduler-cycle",
-    lastOutput: "Scheduler started.",
-    errors: [],
+    lastOutput: `watchdog=${watchdog.status}; runner=${runner.status}; daily=${daily.status}`,
+    errors: [watchdog, runner, daily].filter((item) => item.status !== 0).map((item) => `exit ${item.status}`),
     pid: process.pid,
     mode: "running",
   });
-  appendAgentLog("codex-node", `scheduler started pid=${process.pid} intervalMs=${intervalMs}`);
 
-  try {
-    do {
-      writeHeartbeat("scheduler", {
-        status: "running",
-        currentTask: "scheduler-cycle",
-        lastOutput: `Cycle started at ${nowIso()}`,
-        errors: [],
-        pid: process.pid,
-        mode: "running",
-      });
-      const results = runCycle(intervalMs);
-      const failures = results.filter((entry) => entry.result.status !== 0);
-      writeHeartbeat("scheduler", {
-        status: failures.length > 0 ? "blocked" : "running",
-        currentTask: watch ? "sleeping" : "completed",
-        lastOutput: `Cycle finished with ${failures.length} failures.`,
-        errors: failures.map((entry) => `${entry.scriptName} exit ${entry.result.status}`),
-        pid: process.pid,
-        mode: "running",
-      });
-      if (!watch) break;
-      sleep(intervalMs);
-    } while (watch);
+  console.log(`cycle ${nowIso()} watchdog=${watchdog.status} runner=${runner.status} daily=${daily.status}`);
+  return watchdog.status !== 0 || runner.status !== 0 || daily.status !== 0 ? 1 : 0;
+}
 
-    closeProcessMarker("scheduler", "completed", { kind: "agent-scheduler", mode: "scheduled" });
-    writeHeartbeat("scheduler", {
-      status: "completed",
-      currentTask: null,
-      lastOutput: "Scheduler stopped cleanly.",
-      errors: [],
-      pid: null,
-      mode: "scheduled",
-    });
-  } catch (error) {
-    closeProcessMarker("scheduler", "failed", { kind: "agent-scheduler", mode: "scheduled", error: error.message });
-    writeHeartbeat("scheduler", {
-      status: "failed",
-      currentTask: null,
-      lastOutput: error.message,
-      errors: [error.message],
-      pid: null,
-      mode: "scheduled",
-    });
-    console.error(error.stack || error.message);
-    process.exit(1);
-  }
+function main() {
+  const watch = process.argv.includes("--watch");
+  const schedule = getSchedule();
+  const tickMs = Number(schedule.scheduler.tickMinutes || 30) * 60 * 1000;
+
+  do {
+    runCycle();
+    if (!watch) break;
+    sleep(tickMs);
+  } while (watch);
 }
 
 main();

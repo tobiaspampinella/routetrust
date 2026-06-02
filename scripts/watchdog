@@ -1,155 +1,187 @@
 #!/usr/bin/env node
-const {
-  appendAgentLog,
-  checkLocks,
-  getRuntimeSnapshot,
-  nowIso,
-  parseCliArgs,
-  readText,
-  sleep,
-  writeProjectStatus,
-  writeText,
-} = require("./agent-runtime-lib.js");
+const { nowIso, readJson, readProjectStatus, runPackageScript, writeJson, writeProjectStatus, writeText } = require("./agent-runtime-lib.js");
+const { getLastRunState, getSchedule, gitState, summarizeScheduleState } = require("./agent-scheduling-lib.js");
+
+const WATCHDOG_STATE_FILE = "runtime/watchdog-state.json";
+
+function sleep(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
 
 async function checkServer() {
   const candidates = [
-    process.env.APP_URL,
-    process.env.NEXT_PUBLIC_APP_URL,
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
+    process.env.APP_URL ? { appUrl: process.env.APP_URL, healthUrl: `${process.env.APP_URL.replace(/\/$/, "")}/api/health` } : null,
+    process.env.NEXT_PUBLIC_APP_URL
+      ? {
+          appUrl: process.env.NEXT_PUBLIC_APP_URL,
+          healthUrl: `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")}/api/health`,
+        }
+      : null,
+    { appUrl: "http://127.0.0.1:3000", healthUrl: "http://127.0.0.1:3000/api/health" },
+    { appUrl: "http://127.0.0.1:3001", healthUrl: "http://127.0.0.1:3001/api/health" },
   ].filter(Boolean);
 
-  let lastFailure = null;
-  for (const url of candidates) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
+  let lastFailure = { status: "off", url: "none", detail: "No health endpoint candidate available." };
+  for (const candidate of candidates) {
     try {
-      const response = await fetch(url, { signal: controller.signal });
-      if (response.ok) {
-        return {
-          status: "on",
-          url,
-          detail: `HTTP ${response.status}`,
-        };
-      }
-      lastFailure = {
-        status: "warning",
-        url,
-        detail: `HTTP ${response.status}`,
-      };
-    } catch (error) {
-      lastFailure = {
-        status: "off",
-        url,
-        detail: error.message,
-      };
-    } finally {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 2500);
+      const response = await fetch(candidate.healthUrl, { signal: controller.signal });
       clearTimeout(timeout);
+      if (response.ok) return { status: "on", url: candidate.appUrl, detail: `HTTP ${response.status}` };
+      lastFailure = { status: "warning", url: candidate.appUrl, detail: `HTTP ${response.status}` };
+    } catch (error) {
+      lastFailure = { status: "off", url: candidate.appUrl, detail: error.message };
     }
   }
-  return lastFailure || {
-    status: "off",
-    url: "unknown",
-    detail: "No server candidates were available.",
+
+  return lastFailure;
+}
+
+function failedStatus(value) {
+  return /\bfailed|broken|blocked\b/.test(String(value || "").toLowerCase());
+}
+
+function p0Blockers(projectStatus) {
+  const blockers = [];
+  const buildStatus = String(projectStatus.build?.status || "").toLowerCase();
+  const smokeStatus = String(projectStatus.smokeBrowser?.status || "").toLowerCase();
+  const betaStatus = String(projectStatus.beta?.status || "").toLowerCase();
+
+  if (failedStatus(buildStatus)) blockers.push("build failed");
+  if (failedStatus(smokeStatus)) blockers.push("smoke failed");
+  if (failedStatus(betaStatus)) blockers.push("beta-check failed");
+  for (const bug of projectStatus.bugs || []) {
+    if (String(bug.severity || "").toUpperCase() === "P0") blockers.push(`P0 bug: ${bug.title || bug.id || "unknown"}`);
+  }
+  return blockers;
+}
+
+function notificationForState(projectStatus, blockers, priorState) {
+  const priorStable = Boolean(priorState?.lastStableReady);
+  const stableNow = Boolean(projectStatus.classifications?.betaStableReady);
+
+  if (blockers.length > 0) {
+    return {
+      key: `p0:${blockers.join("|")}`,
+      message: `RouteTrust watchdog alert ${nowIso()}\n${blockers.join("\n")}`,
+    };
+  }
+
+  if (stableNow && !priorStable) {
+    return {
+      key: `stable:${projectStatus.beta?.lastRun || nowIso()}`,
+      message: `RouteTrust stable build achieved ${projectStatus.beta?.lastRun || nowIso()}`,
+    };
+  }
+
+  return null;
+}
+
+function maybeNotifyTelegram(notification, priorState) {
+  if (!notification) return { sent: false, reason: "no_event" };
+  if (priorState?.lastNotificationKey === notification.key) return { sent: false, reason: "duplicate" };
+  const result = runPackageScript("telegram:notify", [`--message="${notification.message.replace(/"/g, "'")}"`]);
+  return {
+    sent: result.status === 0,
+    reason: result.status === 0 ? "sent" : "failed",
+    status: result.status,
+    stderr: result.stderr,
   };
 }
 
 async function runOnce() {
-  const snapshot = getRuntimeSnapshot();
-  const fatalIssues = [];
-  const warnings = [];
-  const lockState = checkLocks(snapshot.activeTasks);
+  const summary = summarizeScheduleState();
+  const projectStatus = readProjectStatus();
+  const priorState = readJson(WATCHDOG_STATE_FILE, {});
   const server = await checkServer();
-  for (const agent of snapshot.agents) {
-    if (agent.lastRun === "never") {
-      fatalIssues.push(`${agent.id} has LAST_RUN never.`);
-    }
-    if (agent.status === "pending" && agent.pendingTasks.length === 0 && agent.tasks.length > 0) {
-      fatalIssues.push(`${agent.id} is pending while task evidence is already completed.`);
-    }
-  }
+  const repo = gitState();
+  const lastRun = getLastRunState();
+  const blockers = p0Blockers(projectStatus);
+  const issues = [
+    server.status === "off" ? "server off" : null,
+    projectStatus.scheduler?.status === "stopped" ? "scheduler off" : null,
+    !repo.remoteConfigured ? "github remote missing" : null,
+    ...(blockers.length > 0 ? blockers : []),
+  ].filter(Boolean);
 
-  for (const task of snapshot.activeTasks) {
-    if (task.NORMALIZED_STATUS === "completed") {
-      const agent = snapshot.agents.find((item) => item.name === task.AGENT || item.role === task.ROLE || item.id === task.AGENT);
-      if (agent && agent.lastRun === "never") {
-        fatalIssues.push(`Task ${task.ID || "unknown"} is completed but ${agent.id} has no execution evidence.`);
-      }
-    }
-  }
+  const schedule = getSchedule();
+  const eligibleAgents = blockers.length > 0
+    ? Object.keys(schedule.agents).filter((agentId) => {
+        const priorityOverride = schedule.agents[agentId].priorityOverride || [];
+        return priorityOverride.includes("P0");
+      })
+    : [];
 
-  if (lockState.inconsistencies.length > 0) {
-    fatalIssues.push(...lockState.inconsistencies);
-  }
-  if (/const operationalChecks = \[/.test(readText("src/app/admin/project-status/page.tsx"))) {
-    fatalIssues.push("Project status page is still static.");
-  }
-  if (!/locks:check/.test(readText("scripts/beta-check"))) {
-    fatalIssues.push("beta-check does not include locks:check.");
-  }
-  if (server.status === "off") {
-    warnings.push(`Server appears off at ${server.url}.`);
-  }
-  const issues = [...fatalIssues, ...warnings];
+  const notification = notificationForState(projectStatus, blockers, priorState);
+  const telegram = maybeNotifyTelegram(notification, priorState);
 
-  const report = `# Watchdog Report
+  const lines = [
+    "# Watchdog Report",
+    "",
+    `Generated: ${nowIso()}`,
+    "",
+    `- Server: ${server.status} (${server.url})`,
+    `- Scheduler: ${projectStatus.scheduler?.status || "unknown"}`,
+    `- Last beta-check: ${projectStatus.beta?.lastRun || "never"}`,
+    `- Last agent run file: ${lastRun.generatedAt || "never"}`,
+    `- Telegram status: ${projectStatus.telegram?.status || "unknown"}`,
+    `- GitHub remote configured: ${repo.remoteConfigured ? "yes" : "no"}`,
+    `- Smoke status: ${projectStatus.smokeBrowser?.status || "unknown"}`,
+    "",
+    "## P0 Blockers",
+    "",
+    ...(blockers.length > 0 ? blockers.map((item) => `- ${item}`) : ["- none"]),
+    "",
+    "## Eligible Agents",
+    "",
+    ...(eligibleAgents.length > 0 ? eligibleAgents.map((item) => `- ${item}`) : ["- none"]),
+    "",
+    "## Notification",
+    "",
+    `- Event: ${notification ? notification.key : "none"}`,
+    `- Telegram: ${telegram.reason}`,
+  ];
 
-Generated: ${nowIso()}
-
-STATUS: ${fatalIssues.length === 0 ? (warnings.length === 0 ? "completed" : "warning") : "blocked"}
-
-## Issues
-
-${issues.length === 0 ? "- none" : issues.map((item) => `- ${item}`).join("\n")}
-`;
-
-  writeText("docs/agent-reports/watchdog.md", report);
-  writeProjectStatus(snapshot, {
+  writeText("docs/agent-reports/watchdog.md", `${lines.join("\n")}\n`);
+  writeJson(WATCHDOG_STATE_FILE, {
+    lastRun: nowIso(),
+    lastNotificationKey: telegram.sent && notification ? notification.key : priorState.lastNotificationKey || null,
+    lastStableReady: Boolean(projectStatus.classifications?.betaStableReady),
+  });
+  writeProjectStatus({ agents: [], activeTasks: [] }, {
+    ...projectStatus,
     server: {
       status: server.status,
       url: server.url,
       detail: server.detail,
       checkedAt: nowIso(),
     },
-    locks: {
-      status: lockState.ok ? "healthy" : "warning",
-      active: lockState.activeLocks,
-      inconsistencies: lockState.inconsistencies,
-      lastUpdated: nowIso(),
-    },
-    telegram: {
-      status: "out_of_scope",
-      configured: false,
-      missingEnv: [],
-      lastRun: nowIso(),
-      report: "docs/TELEGRAM_SETUP_REQUIRED.md",
-    },
     watchdog: {
-      status: fatalIssues.length === 0 ? (warnings.length === 0 ? "healthy" : "warning") : "blocked",
+      status: blockers.length > 0 ? "blocked" : issues.length > 0 ? "warning" : "healthy",
       issues,
+      eligibleForRun: eligibleAgents,
       lastRun: nowIso(),
+      lastNotificationKey: telegram.sent && notification ? notification.key : priorState.lastNotificationKey || null,
       report: "docs/agent-reports/watchdog.md",
     },
+    tokenBudget: {
+      ...projectStatus.tokenBudget,
+      updatedAt: summary.generatedAt,
+    },
   });
-  appendAgentLog(
-    "operational-auditor",
-    `watchdog status=${fatalIssues.length === 0 ? (warnings.length === 0 ? "completed" : "warning") : "blocked"} fatal=${fatalIssues.length} warnings=${warnings.length}`,
-  );
-  console.log(`Watchdog issues: ${issues.length}`);
-  if (issues.length > 0) {
-    for (const issue of issues) console.log(`- ${issue}`);
-    if (fatalIssues.length > 0) process.exit(1);
-  }
+
+  console.log(lines.join("\n"));
+  if (blockers.length > 0) process.exit(1);
 }
 
 async function main() {
-  const args = parseCliArgs(process.argv.slice(2));
-  const watch = Boolean(args.watch);
-  const intervalMs = Number(args["interval-ms"] || 60000);
+  const watch = process.argv.includes("--watch");
+  const tickMs = Number(getSchedule().scheduler.watchdogMinutes || 30) * 60 * 1000;
   do {
     await runOnce();
     if (!watch) break;
-    sleep(intervalMs);
+    sleep(tickMs);
   } while (watch);
 }
 

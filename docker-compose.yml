@@ -1,14 +1,15 @@
 services:
   postgres:
     image: postgres:16
+    container_name: routetrust-postgres
     environment:
       POSTGRES_DB: routetrust_local
       POSTGRES_USER: routetrust
       POSTGRES_PASSWORD: routetrust_local_password
     ports:
-      - "5432:5432"
+      - "55432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - routetrust_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U routetrust -d routetrust_local"]
       interval: 10s
@@ -21,4 +22,4 @@ services:
       - "6379:6379"
 
 volumes:
-  postgres_data:
+  routetrust_postgres_data:

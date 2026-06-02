@@ -1,10 +1,12 @@
 # SaaS Conversion Backlog
 
+Last refreshed: 2026-06-01T21:30:00.000Z
+
 ## P0
 
 - Fix reproducible build, smoke and beta gates.
-- Provision local Postgres and set `DATABASE_URL`.
-- Run `prisma validate`, `prisma generate`, first migration and seed.
+- Provision local Postgres and set `DATABASE_URL`. **Partially done**: `docker-compose.yml` aligned, manual setup documented, but `prisma migrate dev` not run in this environment (no Docker/Postgres). See `docs/DB_LOCAL_STATUS.md`.
+- Run `prisma validate`, `prisma generate`, first migration and seed. **Blocked** behind a reachable Postgres.
 - Replace demo auth flow with DB-backed login and session lifecycle.
 - Add tenant-scoped CRUD for users, bug reports and audit logs.
 

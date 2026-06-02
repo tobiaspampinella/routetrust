@@ -1,20 +1,26 @@
 # AI-Built Project
 
-RoutePulse AI is AI-built with human strategic oversight.
+English | [Espanol](AI_BUILT_PROJECT.es.md)
 
-The product is a human-orchestrated operational intelligence platform for logistics teams. AI agents can help audit, plan, implement, test and document the system, but humans approve product direction, releases and critical operational decisions.
+RouteTrust is AI-built and human-orchestrated.
 
-## Positioning
+## Approved Positioning
 
-- Say: AI-built, human-orchestrated Operational Intelligence Platform for logistics operations.
-- Say: AI-built with human strategic oversight.
-- Avoid claims of unsupervised autonomy.
-- Do not imply that AI replaces dispatchers, drivers, support teams or operators.
+Use:
 
-## Agent Principles
+- AI-built, human-orchestrated Operational Intelligence Platform for logistics operations
+- AI-assisted implementation, testing, analysis, and documentation
+- human approval for strategic, operational, and release decisions
 
-- Recommend, do not silently decide.
-- Preserve tenant, role and approval boundaries.
-- Keep audit trails for critical actions.
-- Prefer stable beta value over enterprise scope expansion.
-- Keep maps and provider APIs optional unless configured.
+Avoid:
+
+- claims of unsupervised autonomy
+- claims that AI replaces dispatchers, managers, drivers, or support teams
+- claims of enterprise maturity without evidence
+
+## Operating Rules
+
+- humans decide releases and critical changes
+- agents document work and limits
+- UX and QA findings must create actionable follow-up
+- security-sensitive information stays out of public docs

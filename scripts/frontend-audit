@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+const fs = require("node:fs");
+const path = require("node:path");
+const { nowIso, writeText } = require("./agent-runtime-lib.js");
+
+const checks = [
+  "src/app/page.tsx",
+  "src/app/admin/project-status/page.tsx",
+  "src/app/driver/page.tsx",
+  "src/app/track/demo/page.tsx",
+  "src/components/shared/LandingPage.tsx",
+];
+
+const lines = [
+  "# Frontend Audit",
+  "",
+  `Generated: ${nowIso()}`,
+  "",
+  ...checks.map((file) => `- ${file}: ${fs.existsSync(path.join(process.cwd(), file)) ? "present" : "missing"}`),
+];
+
+writeText("docs/agent-reports/frontend-developer-agent-latest.md", `${lines.join("\n")}\n`);
+console.log(lines.join("\n"));

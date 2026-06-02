@@ -1,0 +1,193 @@
+#!/usr/bin/env node
+const { spawnSync } = require("node:child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const { readProjectStatus, writeProjectStatus, getRuntimeSnapshot, nowIso, writeText } = require("./agent-runtime-lib.js");
+
+const ROOT = path.resolve(__dirname, "..");
+const OFFICIAL_PORT = 3000;
+const SECONDARY_PORT = 3001;
+const OFFICIAL_URL = `http://127.0.0.1:${OFFICIAL_PORT}`;
+
+function run(command) {
+  const result = spawnSync(command, {
+    cwd: ROOT,
+    shell: true,
+    encoding: "utf8",
+    maxBuffer: 1024 * 1024 * 10,
+  });
+
+  return {
+    status: result.status ?? 1,
+    stdout: result.stdout || "",
+    stderr: result.stderr || "",
+  };
+}
+
+function parseListeners(port) {
+  const result = run(`netstat -ano | findstr LISTENING | findstr :${port}`);
+  if (result.status !== 0) return [];
+
+  return result.stdout
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const parts = line.split(/\s+/);
+      return {
+        protocol: parts[0] || "",
+        localAddress: parts[1] || "",
+        pid: Number(parts[parts.length - 1]) || null,
+      };
+    })
+    .filter((entry) => entry.pid);
+}
+
+function uniquePids(entries) {
+  return [...new Set(entries.map((entry) => entry.pid).filter(Boolean))];
+}
+
+function processDetails(pid) {
+  if (!pid) return null;
+  const result = run(`tasklist /FI "PID eq ${pid}" /V`);
+  if (result.status !== 0) return { pid, processName: "unknown", raw: result.stderr.trim() };
+  const lines = result.stdout.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const row = lines[lines.length - 1] || "";
+  const processName = row.split(/\s+/)[0] || "unknown";
+  const commandResult = run(`powershell -NoProfile -Command "(Get-CimInstance Win32_Process -Filter \\\"ProcessId = ${pid}\\\").CommandLine"`);
+  const commandLine = commandResult.status === 0 ? commandResult.stdout.trim() : "";
+  return { pid, processName, raw: row, commandLine };
+}
+
+function readExpectedVersion() {
+  const file = path.join(ROOT, "src", "lib", "version.ts");
+  const source = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
+  const match = source.match(/export const APP_VERSION = "([^"]+)"/);
+  return match ? match[1] : "unknown";
+}
+
+async function fetchText(url) {
+  try {
+    const response = await fetch(url, { redirect: "manual" });
+    return {
+      ok: response.ok,
+      status: response.status,
+      text: await response.text(),
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      text: error.message,
+    };
+  }
+}
+
+async function main() {
+  const generatedAt = nowIso();
+  const expectedVersion = readExpectedVersion();
+  const listeners3000 = parseListeners(OFFICIAL_PORT);
+  const listeners3001 = parseListeners(SECONDARY_PORT);
+  const listenerPids3000 = uniquePids(listeners3000);
+  const listenerPids3001 = uniquePids(listeners3001);
+  const allPids = [...new Set([...listenerPids3000, ...listenerPids3001])];
+  const processes = allPids.map((pid) => processDetails(pid));
+  const officialProcess = processes.find((entry) => entry?.pid === listenerPids3000[0]) || null;
+  const officialProcessManaged = Boolean(officialProcess?.commandLine) && /routepulse|routetrust|next/i.test(officialProcess.commandLine);
+  const home = await fetchText(OFFICIAL_URL);
+  const health = await fetchText(`${OFFICIAL_URL}/api/health`);
+  const visibleVersion = home.text.includes(`RoutePulse AI <!-- -->${expectedVersion}`) || home.text.includes(`RoutePulse AI ${expectedVersion}`)
+    ? expectedVersion
+    : "unknown";
+  const hasVersionButton = home.text.includes("Version del sitio");
+  const hasChangeHistory = home.text.includes("APLICACIONES REALIZADAS");
+  const driftDetected = listenerPids3000.length !== 1 || listenerPids3001.length > 0 || !officialProcessManaged;
+  const snapshot = getRuntimeSnapshot();
+
+  writeProjectStatus(snapshot, {
+    server: {
+      status: health.status === 200 ? "on" : "degraded",
+      url: OFFICIAL_URL,
+      detail: `HTTP ${health.status || 0}`,
+      checkedAt: generatedAt,
+    },
+    runtime: {
+      status: driftDetected ? "RUNTIME_DRIFT" : "ALIGNED",
+      activePort: OFFICIAL_PORT,
+      secondaryPorts: listenerPids3001.length > 0 ? [SECONDARY_PORT] : [],
+      listeners: {
+        3000: listenerPids3000,
+        3001: listenerPids3001,
+      },
+      managedProcess: officialProcessManaged,
+      officialUrl: OFFICIAL_URL,
+      checkedAt: generatedAt,
+    },
+    version: {
+      expected: expectedVersion,
+      visible: visibleVersion,
+      footerButtonVisible: hasVersionButton,
+      historyVisibleInHtml: hasChangeHistory,
+      checkedAt: generatedAt,
+    },
+  });
+
+  const statusDoc = [
+    "# Runtime Status",
+    "",
+    `Generated: ${generatedAt}`,
+    "",
+    "## Official Local Runtime",
+    "",
+    `- Official local URL: \`${OFFICIAL_URL}\``,
+    `- Runtime aligned: ${!driftDetected ? "YES" : "NO"}`,
+    `- Version expected: \`${expectedVersion}\``,
+    `- Version visible: \`${visibleVersion}\``,
+    `- Secondary stale runtime killed: ${listenerPids3001.length === 0 ? "YES" : "NO"}`,
+    `- Official process restart completed: NO`,
+    `- Official process ownership clear: ${officialProcessManaged ? "YES" : "NO"}`,
+    "",
+    "## Listeners",
+    "",
+    listenerPids3000.length === 0
+      ? "- Port 3000: none"
+      : listenerPids3000.map((pid) => `- Port 3000: PID ${pid} (${processDetails(pid)?.processName || "unknown"})`).join("\n"),
+    listenerPids3001.length === 0
+      ? "- Port 3001: none"
+      : listenerPids3001.map((pid) => `- Port 3001: PID ${pid} (${processDetails(pid)?.processName || "unknown"})`).join("\n"),
+    "",
+    "## HTTP",
+    "",
+    `- / -> ${home.status}`,
+    `- /api/health -> ${health.status}`,
+    `- Version button visible in HTML: ${hasVersionButton ? "YES" : "NO"}`,
+    `- Change history visible in HTML: ${hasChangeHistory ? "YES" : "NO"}`,
+    "",
+    "## Drift Rule",
+    "",
+    "- Only port 3000 counts as the official local runtime.",
+    "- Port 3001 is temporary and must be empty after validation.",
+  ].join("\n");
+
+  writeText("docs/RUNTIME_STATUS.md", `${statusDoc}\n`);
+
+  console.log(JSON.stringify({
+    officialUrl: OFFICIAL_URL,
+    runtimeAligned: !driftDetected,
+    expectedVersion,
+    visibleVersion,
+    listeners3000: listenerPids3000,
+    listeners3001: listenerPids3001,
+    officialProcessManaged,
+    healthStatus: health.status,
+  }, null, 2));
+
+  if (driftDetected) {
+    process.exitCode = 1;
+  }
+}
+
+main().catch((error) => {
+  console.error(error.stack || error.message);
+  process.exit(1);
+});

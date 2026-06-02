@@ -1,65 +1,119 @@
 # RouteTrust
 
+[English](README.md) | [Español](README.es.md)
+
 RouteTrust is an AI-built, human-orchestrated Operational Intelligence Platform for logistics operations.
 
-AI agents assist with implementation, testing, documentation and analysis. Human oversight remains mandatory for strategic product decisions, critical approvals, releases and business direction.
+This repository contains the current RouteTrust beta foundation for:
 
-This repository currently contains the RoutePulse AI beta application: a controlled SaaS B2B logistics foundation focused on route simulation, tracking, driver coordination, operational visibility, CMS workflows and demo validation.
+- customer tracking
+- business manager visibility
+- driver route execution
+- operational KPIs
+- CMS-led demo control
+- supervised bug intake
 
-It is not a full TMS, ERP or autonomous dispatch system.
+It is a controlled local beta. It is not a production TMS, ERP, or autonomous dispatch platform.
+
+## Product Position
+
+RouteTrust is designed for two operational audiences:
+
+- Customers who need clear tracking, ETA, status, delay visibility, and confidence.
+- Business managers who need operational KPIs, route status, driver status, incidents, bugs, and system truth.
+
+Core positioning:
+
+- AI-built
+- human-orchestrated
+- operationally clear
+- enterprise-ready in presentation
+- honest about beta limits
 
 ## Current Status
 
-- Local demo functional.
-- Beta stabilization in progress.
-- GitHub remote setup in progress.
-- Telegram integration requires environment configuration.
-- Not production-ready yet.
+- Local beta app is available.
+- Admin, driver, customer tracking, and driver visibility surfaces exist.
+- UX and repository documentation are being hardened.
+- Browser-based QA evidence is still partial.
+- Production readiness is not claimed.
 
-## Product Scope
+## Public Documentation
 
-- Control tower lite for last-mile logistics operations.
-- Human-approved operational intelligence, not operator replacement.
-- Admin, operations, driver, customer tracking and CMS beta workflows.
-- Demo sandbox for route simulation, ETA changes, traffic scenarios and operational approvals.
-- Optional map-provider integration with a local fallback.
+- [README.es.md](README.es.md)
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [CONTRIBUTING.es.md](CONTRIBUTING.es.md)
+- [SECURITY.md](SECURITY.md)
+- [SECURITY.es.md](SECURITY.es.md)
+- [ROADMAP.md](ROADMAP.md)
+- [ROADMAP.es.md](ROADMAP.es.md)
+- [BETA_STABLE_CRITERIA.md](BETA_STABLE_CRITERIA.md)
+- [BETA_STABLE_CRITERIA.es.md](BETA_STABLE_CRITERIA.es.md)
+- [AI_BUILT_PROJECT.md](AI_BUILT_PROJECT.md)
+- [AI_BUILT_PROJECT.es.md](AI_BUILT_PROJECT.es.md)
+- [docs/product/VALUE_PROPOSITION.md](docs/product/VALUE_PROPOSITION.md)
+- [docs/design/DESIGN_SYSTEM.md](docs/design/DESIGN_SYSTEM.md)
+- [docs/design/UX_AUDIT_REPORT.md](docs/design/UX_AUDIT_REPORT.md)
+- [docs/GITHUB_REPO_PRESENTATION.md](docs/GITHUB_REPO_PRESENTATION.md)
 
-## Core Modules
+## Product Surfaces
 
-- Admin dashboard and operational KPIs.
-- Driver portal and route execution views.
-- Customer tracking demo.
-- CMS beta modules for tenants, approvals, incidents, audit logs and demo controls.
-- QA and bug-report intake flows.
-- Telegram status/test integrations.
+Public:
 
-## Repository Status
+- `/`
+- `/login`
+- `/track/demo`
 
-- Stage: beta stabilization.
-- Primary stack: Next.js, TypeScript, Tailwind CSS, Prisma.
-- Package manager: npm.
-- CI: GitHub Actions workflow included in `.github/workflows/ci.yml`.
-- Secrets policy: `.env` files, provider tokens and deployment credentials must never be committed.
+Business manager:
 
-## Suggested GitHub Topics
+- `/admin`
+- `/admin/routes`
+- `/admin/drivers`
+- `/admin/kpis`
+- `/admin/cms`
+- `/admin/project-status`
+- `/admin/bug-reports`
+- `/admin/settings`
 
-`logistics`, `saas`, `b2b`, `operational-intelligence`, `route-simulation`, `route-optimization`, `tracking`, `fleet-management`, `human-in-the-loop`, `ai-built`, `typescript`, `nextjs`, `nestjs`, `postgresql`, `telegram-bot`, `maplibre`, `google-maps`, `playwright`
+Driver:
 
-## Installation
+- `/driver`
+- `/driver/route`
+
+Current public marketing routes such as `/contact`, `/product`, `/use-cases`, `/customers`, and `/demo` are not implemented yet and remain tracked as product gaps.
+
+## Design System
+
+RouteTrust is moving to an operational design system centered on:
+
+- graphite and dark neutral surfaces
+- operational blue as the primary accent
+- green for success
+- amber for warnings
+- red for incidents
+- low-noise layouts and dense but readable dashboards
+
+Source files:
+
+- `src/design-system/tokens.ts`
+- `src/design-system/colors.ts`
+- `src/design-system/typography.ts`
+- `src/design-system/spacing.ts`
+- `src/design-system/components.md`
+
+## Quickstart
 
 Prerequisites:
 
-- Node.js 22 or newer.
-- npm.
-
-From the repository root:
+- Node.js 22+
+- npm
 
 ```bash
 npm install
 npm run dev
 ```
 
-Then open:
+Open:
 
 ```txt
 http://localhost:3000/login
@@ -67,153 +121,35 @@ http://localhost:3000/login
 
 ## Validation
 
-Run the baseline checks before opening a pull request:
-
 ```bash
+npm run lint
 npm run typecheck
 npm test
-npm run lint
 npm run build
+npm run ux:audit
 ```
 
-## Scripts
-
-- `npm run dev`: local development server.
-- `npm run build`: production build validation.
-- `npm run lint`: static lint checks.
-- `npm run typecheck`: TypeScript validation.
-- `npm test`: local unit and contract tests.
-- `npm run qa:security`: repository secret and auth-surface audit.
-- `npm run beta-check`: beta readiness summary.
-- `npm run agents:status`: supervised runtime status.
-- `npm run telegram:status`: Telegram configuration status.
-
-## Environment Setup
-
-Copy the example environment file:
+Optional browser validation:
 
 ```bash
-cp .env.example .env.local
+npm run qa:smoke
 ```
 
-Populate only the variables you need locally. Keep real credentials out of version control.
+## Beta Boundaries
 
-Optional map-related variables:
+- Local runtime and local persistence still exist in parts of the product.
+- Browser QA is still required before calling a build stable.
+- Telegram and external map providers remain optional or blocked by configuration.
+- Human approval remains mandatory for releases, critical product decisions, and sensitive operational changes.
 
-```txt
-NEXT_PUBLIC_MAP_PROVIDER=maplibre
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
-NEXT_PUBLIC_GOOGLE_MAP_ID=
-NEXT_PUBLIC_OPENROUTE_API_KEY=
-NEXT_PUBLIC_APPLE_MAPKIT_TOKEN=
-```
+## Contribution Model
 
-If no external map key is configured, the demo uses a local fallback visualization.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Meaningful changes must update:
 
-## Demo Credentials
-
-Demo credentials are generated locally through seed/demo scripts and must not be used in production.
-
-If local QA access is required, see [`docs/DEMO_LOCAL_ONLY.md`](docs/DEMO_LOCAL_ONLY.md). That document is explicitly local-only and must not be used as deployment guidance.
-
-## Available Routes
-
-- `/login`
-- `/admin`
-- `/admin/routes`
-- `/admin/kpis`
-- `/admin/cms`
-- `/admin/settings`
-- `/driver`
-- `/driver/route`
-- `/track/demo`
-
-## Telegram Bot
-
-The repository includes Telegram-oriented status and test flows for operational notifications. Bot tokens and chat identifiers must stay in local or deployment secrets only.
-
-Relevant endpoints and docs:
-
-- `/api/cms/telegram/status`
-- `/api/cms/telegram/test`
-- `/api/cms/telegram/project-intelligence`
-- `docs/TELEGRAM_SETUP_REQUIRED.md`
-
-## Bug Assistant
-
-The repository includes a supervised local bug intake and triage surface for beta operations.
-
-Relevant areas:
-
-- `/admin/bug-reports`
-- `/api/bugs`
-- `docs/BUG_REPORTING_ASSISTANT.md`
-
-## Agent Runtime
-
-The current runtime is supervised and local-first. It provides status reporting, lock checks, QA scripts and operational traceability. It is not an autonomous production agent platform.
-
-Relevant docs:
-
-- `AGENT_RUNTIME.md`
-- `docs/AGENT_RUNTIME_STATUS.md`
-- `docs/LOCAL_24_7_OPERATION.md`
-
-## Demo Sandbox
-
-The demo sandbox allows controlled simulation of:
-
-- route starts and pauses
-- traffic changes
-- blocked streets and delays
-- completed and failed deliveries
-- approval and audit-log flows
-
-This is for beta validation and product discovery. It is not a production event engine.
+- `CHANGELOG.md`
+- `docs/NEXT_AGENT_PROMPT.md`
+- `docs/ACTIVE_TASKS.md` when ownership or follow-up work changes
 
 ## Security
 
-Security reporting and repository policy are documented in [`SECURITY.md`](SECURITY.md).
-
-Key constraints:
-
-- no committed `.env` files
-- no provider tokens in source
-- no production claims for demo-grade auth or mock persistence
-- human approval required for critical operational decisions
-
-## Contributing
-
-Contribution guidelines and branch workflow are documented in [`CONTRIBUTING.md`](CONTRIBUTING.md).
-
-Branch model:
-
-- `main`: stable releases only
-- `develop`: integration branch
-- `staging`: pre-release validation
-- `feature/*`: feature work
-- `fix/*`: bug fixes
-- `agent/*`: isolated agent work
-
-## Roadmap
-
-See [`ROADMAP.md`](ROADMAP.md) for the public milestone roadmap and [`docs/BETA_BUILD_PLAN.md`](docs/BETA_BUILD_PLAN.md) for the internal short-horizon stabilization plan.
-
-## AI-Built / Human-Orchestrated
-
-See [`AI_BUILT_PROJECT.md`](AI_BUILT_PROJECT.md) for communication rules, approval boundaries and positioning constraints.
-
-## Beta Stable Criteria
-
-The formal beta checklist and blockers are tracked in [`docs/BETA_STABLE_CRITERIA.md`](docs/BETA_STABLE_CRITERIA.md).
-
-A top-level summary copy is available in [`BETA_STABLE_CRITERIA.md`](BETA_STABLE_CRITERIA.md).
-
-## Current Limits
-
-- No production-grade backend persistence for the main product flows.
-- No realtime multi-user sync or WebSockets.
-- No production tenant isolation proof against a real database.
-- No production identity system.
-- Optional external maps are not mandatory and may remain disabled.
-- Several product areas still depend on local state and mock data.
+See [SECURITY.md](SECURITY.md). Public docs are intentionally redacted and must not contain secrets, exploit details, personal credentials, or unnecessary personal contact data.

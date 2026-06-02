@@ -62,7 +62,7 @@ Result:
 
 File changed:
 
-- [`C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester\tsconfig.json`](C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester\tsconfig.json)
+- `tsconfig.json`
 
 Change made:
 
@@ -90,11 +90,11 @@ Result:
 
 Files reviewed:
 
-- [`C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester\src\app\page.tsx`](C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester\src\app\page.tsx)
-- [`C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester\src\app\login\page.tsx`](C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester\src\app\login\page.tsx)
-- [`C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester\src\app\track\demo\page.tsx`](C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester\src\app\track\demo\page.tsx)
-- [`C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester\src\app\api\cms\telegram\status\route.ts`](C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester\src\app\api\cms\telegram\status\route.ts)
-- [`C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester\src\app\api\cms\telegram\test\route.ts`](C:\Users\tobii\OneDrive\Documents\RouteTrust\routepulse-ai-tester\src\app\api\cms\telegram\test\route.ts)
+- `src/app/page.tsx`
+- `src/app/login/page.tsx`
+- `src/app/track/demo/page.tsx`
+- `src/app/api/cms/telegram/status/route.ts`
+- `src/app/api/cms/telegram/test/route.ts`
 
 Telegram fixes applied:
 
@@ -132,3 +132,11 @@ Reason:
 - Project status page is still static, not live telemetry.
 - Mojibake remains in some UI strings and docs.
 - The repo is still a dirty worktree with broad pre-existing modifications.
+Current stabilization delta:
+
+- added `/api/health`
+- added durable runtime file store for bug reports, audit log and project events
+- added Playwright smoke baseline
+- moved runtime process markers and logs under `runtime/logs`
+- updated project status to show no autonomous LLM workers
+- updated beta-check to classify `LOCAL_DEMO_READY`, `BETA_STABLE_READY` and `STAGING_READY`

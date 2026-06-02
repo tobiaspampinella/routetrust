@@ -1,16 +1,12 @@
-# Technical Issues - Beta SaaS Controlada v0.1
+# Issues
 
-This file is the local issue tracker until a GitHub remote exists. Status values: `open`, `in_progress`, `blocked`, `done`.
+Status values: `open`, `in_progress`, `blocked`, `done`.
 
-| ID | Title | Priority | Area | Description | Acceptance Criteria | Related Files | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| SEC-001 | Upgrade Next/PostCSS audit | High | Security | `npm audit --omit=dev` reported critical Next.js advisories and a moderate PostCSS advisory. | Production critical audit has no vulnerabilities; typecheck, lint, tests and build pass after upgrade. | `package.json`, `package-lock.json` | done |
-| AUTH-001 | Harden auth demo | High | Auth/Security | Auth uses local users and custom session token. Demo secret fallback must not be silent in production. Password hashing must be reviewed and kept off SHA-256-only if possible. | Production fails when required secret is missing; `.env.example` documents auth secrets; auth tests cover valid/invalid login and token verification. | `src/lib/serverAuth.ts`, `src/lib/sessionToken.ts`, `src/data/testUsersDb.ts`, `.env.example` | open |
-| CI-001 | Add tests to CI | High | DevOps/QA | CI existed but did not run `npm test`. | GitHub Actions runs `npm ci`, typecheck, lint, test and build. | `.github/workflows/ci.yml`, `package.json` | done |
-| DATA-001 | Persist bug reports and audit logs | High | Backend/Data | Bug reports live in process memory; audit logs are local seeds. | At least bug reports or audit logs persist through Prisma and are covered by tests. | `src/app/api/bugs/route.ts`, `src/lib/bugReporting.ts`, `prisma/schema.prisma` | open |
-| TENANT-001 | Reduce tenant-demo-latam hardcode | High | Multi-tenant | Tenant guard and CMS seed flow use hardcoded tenant IDs. | Tenant resolution is centralized through a helper; critical APIs use consistent tenant context. | `src/services/cms/serverGuards.ts`, `src/services/tenant/tenantService.ts` | open |
-| RBAC-001 | Connect real roles to API/login | Medium | RBAC | Login only exposes `admin` and `driver`; CMS has richer roles not connected to auth. | Role mapping is explicit, tested and documented; API guards can distinguish operations, CX, CS, finance and viewer roles when persisted auth exists. | `src/modules/cms/types.ts`, `src/services/permissions/rbac.ts`, `src/lib/types.ts` | open |
-| UX-001 | Align B2B navigation by role | Medium | UX/Product | The app still mixes tester/demo copy with commercial SaaS beta positioning. | Visible navigation shows role/module structure without claiming unfinished backend functionality. Placeholders say `Beta module - pending backend integration`. | `src/components/admin/AdminShell.tsx`, `src/components/shared/LandingPage.tsx` | open |
-| OBS-001 | Healthcheck, logging and error boundary | Medium | Observability | There is no healthcheck endpoint or structured runtime logging policy. | `/api/health` returns app/version/status; error boundaries and logging policy are documented. | `src/app/api`, `docs/ARCHITECTURE.md` | open |
-| BOT-001 | Telegram webhook future | Low | Automation | Telegram status/test exists, but webhook and commands must wait until server, CI, auth and bug module are stable. | `docs/BOT.md` is created in a later phase with `/status`, `/bugs`, `/deploy`, `/roadmap`; no token is hardcoded. | `src/app/api/cms/telegram/*` | open |
-| QA-001 | Smoke tests login/admin/driver/tracking | High | QA | Unit tests exist, but critical route smoke coverage is missing. | Either Playwright smoke tests exist or `docs/QA.md` has executable manual smoke checklist with latest verification evidence. | `docs/QA.md`, future `tests/e2e/*` | open |
+| ID | Severity | Area | Description | Evidence | Status |
+| --- | --- | --- | --- | --- | --- |
+| AUTH-001 | P1 | Auth | Security hardening in progress. Sensitive implementation details are tracked privately. | private security tracking | open |
+| STORE-001 | P0 | Backend | Minimum durable storage now exists, but it is still file-based local persistence only. | `src/lib/storage/fileStore.ts` | in_progress |
+| HEALTH-001 | P0 | Observability | `/api/health` now exists and must remain honest. | `src/app/api/health/route.ts` | in_progress |
+| SMOKE-001 | P0 | QA | Browser smoke now exists and gates stable local beta. | `tests/e2e/smoke.spec.ts` | in_progress |
+| STATUS-001 | P1 | Ops | Project status previously overstated automation; honesty must be preserved. | `src/app/admin/project-status/page.tsx` | in_progress |
+| STAGING-001 | P2 | DevOps | No deployment URL or remote staging baseline exists. | runtime/project status and docs | open |

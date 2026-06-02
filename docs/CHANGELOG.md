@@ -1,5 +1,18 @@
 # Docs Changelog
 
+## 2026-06-01 - README bilingual encoding repair
+
+- Rewrote `README.md` and `README.es.md` to remove visible mojibake from the bilingual switch and Spanish product copy.
+- Reconfirmed that the repo still cannot claim beta stable because public SaaS routes, shared state components, and browser QA evidence remain open.
+- Kept UX, GitHub repo, and QA follow-up work anchored in the existing active-task flow instead of inventing fake completion.
+
+## 2026-06-01 - Bilingual UX documentation baseline
+
+- Added bilingual product, design, repository presentation, and beta-stability docs.
+- Added visual QA placeholder reports with explicit blocked status until browser evidence exists.
+- Updated public security docs to remove unnecessary personal contact data.
+- Replaced the lightweight UX audit with a structured bilingual audit output under `docs/design/`.
+
 ## 2026-06-01 - Runtime stabilization pass
 
 - Removed generated Next artifact folders before validation.

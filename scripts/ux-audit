@@ -1,49 +1,312 @@
 #!/usr/bin/env node
-const { getRuntimeSnapshot, nowIso, readText, writeProjectStatus, writeText } = require("./agent-runtime-lib.js");
+const { getRuntimeSnapshot, nowIso, readText, writeProjectStatus, writeText, fileExists } = require("./agent-runtime-lib.js");
 
-const targets = [
-  { label: "CMS/Admin CEO", file: "src/components/admin/AdminDashboard.tsx" },
-  { label: "Project Status Dashboard", file: "src/app/admin/project-status/page.tsx" },
-  { label: "Demo Sandbox", file: "src/components/admin/CmsEnterpriseOverview.tsx" },
-  { label: "Driver Portal", file: "src/components/driver/DriverRoute.tsx" },
-  { label: "Customer Tracking", file: "src/components/customer/FleetTrackingMap.tsx" },
-  { label: "Local Agent Widget", file: "src/components/shared/CxAssistantWidget.tsx" },
+const auditedRoutes = [
+  { page: "/", file: "src/app/page.tsx", user: "customer" },
+  { page: "/contact", file: "src/app/contact/page.tsx", user: "customer" },
+  { page: "/demo", file: "src/app/demo/page.tsx", user: "customer" },
+  { page: "/pricing", file: "src/app/pricing/page.tsx", user: "customer" },
+  { page: "/plans", file: "src/app/plans/page.tsx", user: "customer" },
+  { page: "/product", file: "src/app/product/page.tsx", user: "customer" },
+  { page: "/use-cases", file: "src/app/use-cases/page.tsx", user: "customer" },
+  { page: "/customers", file: "src/app/customers/page.tsx", user: "customer" },
+  { page: "/track/demo", file: "src/app/track/demo/page.tsx", user: "customer" },
+  { page: "/admin", file: "src/app/admin/page.tsx", user: "business manager" },
+  { page: "/admin/cms", file: "src/app/admin/cms/page.tsx", user: "admin" },
+  { page: "/admin/project-status", file: "src/app/admin/project-status/page.tsx", user: "business manager" },
+  { page: "/admin/bug-reports", file: "src/app/admin/bug-reports/page.tsx", user: "admin" },
+  { page: "/admin/settings", file: "src/app/admin/settings/page.tsx", user: "admin" },
+  { page: "/admin/routes", file: "src/app/admin/routes/page.tsx", user: "business manager" },
+  { page: "/admin/drivers", file: "src/app/admin/drivers/page.tsx", user: "business manager" },
+  { page: "/admin/kpis", file: "src/app/admin/kpis/page.tsx", user: "business manager" },
+  { page: "/driver", file: "src/app/driver/page.tsx", user: "driver" },
+  { page: "/driver/route", file: "src/app/driver/route/page.tsx", user: "driver" },
 ];
 
-const findings = [];
-for (const target of targets) {
-  const content = readText(target.file);
-  if (!content.trim()) {
-    findings.push(`${target.label}: missing source file ${target.file}.`);
-    continue;
-  }
-  if (/Â|Ã|�/.test(content)) findings.push(`${target.label}: mojibake detected in ${target.file}.`);
-  if (/TODO|placeholder|lorem ipsum/i.test(content)) findings.push(`${target.label}: generic placeholder copy detected in ${target.file}.`);
-  if (!/empty|loading|error|fallback/i.test(content)) findings.push(`${target.label}: no obvious empty/loading/error guidance detected in ${target.file}.`);
+const inspectedFiles = [
+  "src/components/shared/LandingPage.tsx",
+  "src/components/admin/AdminDashboard.tsx",
+  "src/app/admin/project-status/page.tsx",
+  "src/components/customer/CustomerTrackingDemo.tsx",
+  "src/components/driver/DriverRoute.tsx",
+  "src/components/shared/CxAssistantWidget.tsx",
+  "src/components/admin/AdminShell.tsx",
+  "README.md",
+  "README.es.md",
+];
+
+const requiredStateComponents = [
+  { file: "src/components/shared/EmptyState.tsx" },
+  { file: "src/components/shared/LoadingState.tsx" },
+  { file: "src/components/shared/ErrorState.tsx" },
+];
+
+const requiredVisibilityComponents = [{ file: "src/components/shared/LanguageToggle.tsx" }];
+
+function hasMojibake(value) {
+  return /Ã|Â|ï¿½|EspaÃ±ol|logÃ­stica|documentaciÃ³n|ejecuciÃ³n/.test(value);
 }
 
-const report = `# UX Audit Report
+function nextId(count) {
+  return `UX-${String(count + 1).padStart(3, "0")}`;
+}
+
+function addFinding(findings, value) {
+  findings.push({ owner: "codex-node", status: "open", ...value });
+}
+
+function severityForMissingRoute(route) {
+  if (route.page === "/admin/drivers") return "P1";
+  if (["/contact", "/demo", "/pricing", "/plans", "/product", "/use-cases", "/customers"].includes(route.page)) return "P1";
+  if (route.page.startsWith("/admin")) return "P2";
+  return "P3";
+}
+
+function pageForFile(file) {
+  if (file.includes("LandingPage")) return "/";
+  if (file.includes("CustomerTrackingDemo")) return "/track/demo";
+  if (file.includes("DriverRoute")) return "/driver/route";
+  if (file.includes("AdminDashboard")) return "/admin";
+  if (file.includes("project-status")) return "/admin/project-status";
+  return "shared source";
+}
+
+function userForFile(file) {
+  if (file.includes("CustomerTrackingDemo") || file.includes("LandingPage")) return "customer";
+  if (file.includes("DriverRoute")) return "driver";
+  if (file.includes("Admin")) return "business manager";
+  return "customer/business manager";
+}
+
+function detectFindings() {
+  const findings = [];
+
+  for (const route of auditedRoutes) {
+    if (!fileExists(route.file) || !readText(route.file).trim()) {
+      addFinding(findings, {
+        id: nextId(findings.length),
+        page: route.page,
+        severity: severityForMissingRoute(route),
+        userAffected: route.user,
+        problem: "Expected route is missing from the current app.",
+        impact: "The product story is incomplete and navigation expectations break.",
+        recommendation: "Implement the page or stop referencing it publicly until it exists.",
+        owner: "fullstack-developer-agent",
+        suggestedFix: `Create ${route.file} or remove ${route.page} from public navigation.`,
+      });
+    }
+  }
+
+  for (const file of inspectedFiles) {
+    const content = readText(file);
+    if (!content.trim()) continue;
+    if (hasMojibake(content)) {
+      addFinding(findings, {
+        id: nextId(findings.length),
+        page: pageForFile(file),
+        severity: "P1",
+        userAffected: userForFile(file),
+        problem: `Mojibake detected in ${file}.`,
+        impact: "Trust drops immediately because the interface looks broken.",
+        recommendation: "Normalize source encoding and replace corrupted strings with clean product copy.",
+        owner: "fullstack-developer-agent",
+        suggestedFix: `Fix corrupted copy in ${file}.`,
+      });
+    }
+  }
+
+  const bilingualNavPattern = /^\[English\]\(README\.md\)\s+\|\s+\[[^\]]+\]\(README\.es\.md\)/m;
+  if (!bilingualNavPattern.test(readText("README.md"))) {
+    addFinding(findings, {
+      id: nextId(findings.length),
+      page: "README.md",
+      severity: "P2",
+      userAffected: "admin",
+      problem: "README lacks a clear bilingual switch at the top.",
+      impact: "Public repository presentation looks unfinished.",
+      recommendation: "Expose English and Spanish entry points immediately.",
+      owner: "github-repository-agent",
+      suggestedFix: "Add top bilingual navigation in README.md and README.es.md.",
+    });
+  }
+
+  if (!bilingualNavPattern.test(readText("README.es.md"))) {
+    addFinding(findings, {
+      id: nextId(findings.length),
+      page: "README.es.md",
+      severity: "P2",
+      userAffected: "admin",
+      problem: "Spanish README lacks a clear bilingual switch at the top.",
+      impact: "Spanish-speaking visitors do not get a clean repo entry point.",
+      recommendation: "Expose English and Spanish entry points immediately.",
+      owner: "github-repository-agent",
+      suggestedFix: "Add top bilingual navigation in README.md and README.es.md.",
+    });
+  }
+
+  if (!/Contact|Product|Use cases|Customers/.test(readText("src/components/shared/LandingPage.tsx"))) {
+    addFinding(findings, {
+      id: nextId(findings.length),
+      page: "/",
+      severity: "P2",
+      userAffected: "customer",
+      problem: "The public landing does not connect to a broader product navigation model.",
+      impact: "The product feels like a demo entry point instead of a sellable SaaS homepage.",
+      recommendation: "Add or plan the marketing route set and tighten top-level navigation.",
+      owner: "fullstack-developer-agent",
+      suggestedFix: "Implement `/contact`, `/product`, `/use-cases`, `/customers`, and `/demo`, or stop promising them publicly.",
+    });
+  }
+
+  const missingStateComponents = requiredStateComponents.filter((component) => !fileExists(component.file));
+  if (missingStateComponents.length > 0) {
+    addFinding(findings, {
+      id: nextId(findings.length),
+      page: "shared UI states",
+      severity: "P2",
+      userAffected: "customer/business manager/driver/admin",
+      problem: "Reusable empty, loading, and error state components are missing from the shared component layer.",
+      impact: "Audited screens cannot present absent, loading, and failure states consistently.",
+      recommendation: "Create shared state components before expanding more UI surfaces.",
+      owner: "fullstack-developer-agent",
+      suggestedFix: `Implement ${missingStateComponents.map((component) => component.file).join(", ")}.`,
+    });
+  }
+
+  const missingVisibilityComponents = requiredVisibilityComponents.filter((component) => !fileExists(component.file));
+  if (missingVisibilityComponents.length > 0) {
+    addFinding(findings, {
+      id: nextId(findings.length),
+      page: "shared bilingual UI",
+      severity: "P2",
+      userAffected: "customer/business manager",
+      problem: "Language toggle is defined in the design system but not implemented in the product UI.",
+      impact: "Bilingual positioning exists in docs but not in the product surface.",
+      recommendation: "Introduce a visible language toggle for public pages first, then admin surfaces.",
+      owner: "fullstack-developer-agent",
+      suggestedFix: `Implement ${missingVisibilityComponents.map((component) => component.file).join(", ")} and mount it on landing and customer tracking surfaces.`,
+    });
+  }
+
+  addFinding(findings, {
+    id: nextId(findings.length),
+    page: "critical routes",
+    severity: "P2",
+    userAffected: "customer/business manager/driver/admin",
+    problem: "Visual QA evidence is missing for the required browser smoke route set.",
+    impact: "The repo cannot honestly claim stable UX without browser verification.",
+    recommendation: "Run browser smoke and capture evidence for desktop and mobile basics.",
+    owner: "qa-web-tester-agent",
+    suggestedFix: "Validate `/login`, `/`, `/track/demo`, `/admin`, `/admin/project-status`, `/admin/cms`, `/driver`, and `/driver/route`.",
+  });
+
+  return findings;
+}
+
+function formatReport(title, findings, renderFinding) {
+  return `# ${title}
 
 Generated: ${nowIso()}
 
-STATUS: ${findings.length === 0 ? "completed" : "warning"}
+STATUS: ${findings.some((finding) => finding.severity === "P0" || finding.severity === "P1") ? "warning" : "completed"}
 
 ## Scope
 
-${targets.map((target) => `- ${target.label}: ${target.file}`).join("\n")}
+- navigation
+- visual clarity
+- responsive readiness
+- microcopy
+- consistency
+- empty states
+- loading states
+- error states
+- CTA clarity
+- customer clarity
+- business manager clarity
+- visible product gaps
 
 ## Findings
 
-${findings.length === 0 ? "- No critical UX text issues detected in the audited files." : findings.map((item) => `- ${item}`).join("\n")}
+${findings.map(renderFinding).join("\n\n")}
 `;
+}
 
-writeText("docs/UX_AUDIT_REPORT.md", report);
+function renderFindingEn(finding) {
+  return `### ${finding.id}
+
+ID: ${finding.id}
+Page: ${finding.page}
+Severity: ${finding.severity}
+User affected: ${finding.userAffected}
+Problem: ${finding.problem}
+Impact: ${finding.impact}
+Recommendation: ${finding.recommendation}
+Owner: ${finding.owner}
+Suggested fix: ${finding.suggestedFix}
+Status: ${finding.status}`;
+}
+
+function t(value) {
+  return value
+    .replace("Expected route is missing from the current app.", "La ruta esperada no existe en la app actual.")
+    .replace("The product story is incomplete and navigation expectations break.", "La historia del producto queda incompleta y se rompen expectativas de navegacion.")
+    .replace("Implement the page or stop referencing it publicly until it exists.", "Implementar la pagina o dejar de referenciarla publicamente hasta que exista.")
+    .replace("Mojibake detected in ", "Se detecto mojibake en ")
+    .replace("Trust drops immediately because the interface looks broken.", "La confianza cae de inmediato porque la interfaz parece rota.")
+    .replace("Normalize source encoding and replace corrupted strings with clean product copy.", "Normalizar el encoding fuente y reemplazar strings corruptos por copy limpio.")
+    .replace("Fix corrupted copy in ", "Corregir el copy corrupto en ")
+    .replace("README lacks a clear bilingual switch at the top.", "El README no tiene un switch bilingue claro arriba.")
+    .replace("Public repository presentation looks unfinished.", "La presentacion publica del repositorio se ve incompleta.")
+    .replace("Expose English and Spanish entry points immediately.", "Exponer de inmediato los puntos de entrada en ingles y espanol.")
+    .replace("Add top bilingual navigation in README.md and README.es.md.", "Agregar navegacion bilingue arriba en README.md y README.es.md.")
+    .replace("Spanish README lacks a clear bilingual switch at the top.", "El README en espanol no tiene un switch bilingue claro arriba.")
+    .replace("Spanish-speaking visitors do not get a clean repo entry point.", "Los visitantes de habla hispana no reciben un punto de entrada limpio al repositorio.")
+    .replace("The public landing does not connect to a broader product navigation model.", "El landing publico no conecta con un modelo mas amplio de navegacion de producto.")
+    .replace("The product feels like a demo entry point instead of a sellable SaaS homepage.", "El producto se percibe como entrada a un demo y no como homepage SaaS vendible.")
+    .replace("Add or plan the marketing route set and tighten top-level navigation.", "Agregar o planificar el set de rutas de marketing y endurecer la navegacion superior.")
+    .replace("Implement `/contact`, `/product`, `/use-cases`, `/customers`, and `/demo`, or stop promising them publicly.", "Implementar `/contact`, `/product`, `/use-cases`, `/customers` y `/demo`, o dejar de prometerlas publicamente.")
+    .replace("Reusable empty, loading, and error state components are missing from the shared component layer.", "Faltan componentes reutilizables de empty, loading y error state en la capa compartida.")
+    .replace("Audited screens cannot present absent, loading, and failure states consistently.", "Las pantallas auditadas no pueden presentar estados vacios, de carga y de fallo con consistencia.")
+    .replace("Create shared state components before expanding more UI surfaces.", "Crear componentes compartidos de estado antes de expandir mas superficies UI.")
+    .replace("Language toggle is defined in the design system but not implemented in the product UI.", "El cambio de idioma esta definido en el design system pero no existe en la UI del producto.")
+    .replace("Bilingual positioning exists in docs but not in the product surface.", "El posicionamiento bilingue existe en docs pero no en la superficie del producto.")
+    .replace("Introduce a visible language toggle for public pages first, then admin surfaces.", "Introducir un cambio de idioma visible primero en paginas publicas y luego en admin.")
+    .replace("Visual QA evidence is missing for the required browser smoke route set.", "Falta evidencia de Visual QA para el set requerido de browser smoke.")
+    .replace("The repo cannot honestly claim stable UX without browser verification.", "El repo no puede afirmar UX estable honestamente sin verificacion en navegador.")
+    .replace("Run browser smoke and capture evidence for desktop and mobile basics.", "Ejecutar browser smoke y capturar evidencia para desktop y mobile.")
+    .replace("Validate `/login`, `/`, `/track/demo`, `/admin`, `/admin/project-status`, `/admin/cms`, `/driver`, and `/driver/route`.", "Validar `/login`, `/`, `/track/demo`, `/admin`, `/admin/project-status`, `/admin/cms`, `/driver` y `/driver/route`.")
+    .replace(" and mount it on landing and customer tracking surfaces.", " y montarlo en el landing y en tracking customer.")
+    .replace(/^Create /, "Crear ")
+    .replace(" or remove ", " o remover ")
+    .replace(" from public navigation.", " de la navegacion publica.");
+}
+
+function renderFindingEs(finding) {
+  return `### ${finding.id}
+
+ID: ${finding.id}
+Page: ${finding.page}
+Severity: ${finding.severity}
+User affected: ${finding.userAffected}
+Problem: ${t(finding.problem)}
+Impact: ${t(finding.impact)}
+Recommendation: ${t(finding.recommendation)}
+Owner: ${finding.owner}
+Suggested fix: ${t(finding.suggestedFix)}
+Status: ${finding.status === "open" ? "abierto" : finding.status}`;
+}
+
+const findings = detectFindings();
+writeText("docs/design/UX_AUDIT_REPORT.md", formatReport("UX Audit Report", findings, renderFindingEn));
+writeText("docs/design/UX_AUDIT_REPORT.es.md", formatReport("Reporte de Auditoria UX", findings, renderFindingEs));
+
 writeProjectStatus(getRuntimeSnapshot(), {
   build: {
-    status: findings.length === 0 ? "healthy" : "warning",
+    status: findings.some((finding) => finding.severity === "P0" || finding.severity === "P1") ? "warning" : "healthy",
     lastRun: nowIso(),
-    detail: "UX audit completed.",
+    detail: `UX audit generated ${findings.length} findings.`,
   },
 });
-console.log("UX audit report written to docs/UX_AUDIT_REPORT.md");
-if (findings.length > 0) process.exit(1);
+
+console.log("UX audit reports written to docs/design/UX_AUDIT_REPORT.md and docs/design/UX_AUDIT_REPORT.es.md");
+process.exit(findings.some((finding) => finding.severity === "P0" || finding.severity === "P1") ? 1 : 0);

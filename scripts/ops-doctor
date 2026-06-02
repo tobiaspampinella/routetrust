@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+const { nowIso, readProjectStatus, writeText } = require("./agent-runtime-lib.js");
+const { gitState } = require("./agent-scheduling-lib.js");
+
+const repo = gitState();
+const projectStatus = readProjectStatus();
+const lines = [
+  "# Ops Doctor",
+  "",
+  `Generated: ${nowIso()}`,
+  "",
+  `- Branch: ${repo.branch}`,
+  `- Head: ${repo.head}`,
+  `- Dirty files: ${repo.changedFiles.length}`,
+  `- Remote configured: ${repo.remoteConfigured ? "yes" : "no"}`,
+  `- Build status: ${projectStatus.build?.status || "unknown"}`,
+  `- Test status: ${projectStatus.tests?.status || "unknown"}`,
+  `- Beta status: ${projectStatus.beta?.status || "unknown"}`,
+];
+
+writeText("docs/agent-reports/devops-automation-agent-latest.md", `${lines.join("\n")}\n`);
+console.log(lines.join("\n"));

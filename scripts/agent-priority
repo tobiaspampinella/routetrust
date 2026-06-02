@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+const { getSchedule, evaluateAgent } = require("./agent-scheduling-lib.js");
+
+const schedule = getSchedule();
+for (const agentId of Object.keys(schedule.agents)) {
+  const result = evaluateAgent(agentId);
+  console.log(`${agentId}: priority=${result.priority}; decision=${result.status}; reason=${result.reason}`);
+}
