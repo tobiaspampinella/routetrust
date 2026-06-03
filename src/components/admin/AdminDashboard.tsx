@@ -31,14 +31,24 @@ import { calculateOperationsKpis, calculateRouteStats, getPackagesForRoute } fro
 import { generateOperationalInsights } from "@/lib/operationalInsights";
 import { betaCoreModules, buildProjectIntelligenceReport } from "@/lib/projectIntelligence";
 import { APP_VERSION } from "@/lib/version";
-import { getDefaultEnterpriseCmsState } from "@/services/cms/cmsService";
-import { formatPercent } from "@/lib/utils";
+import { cn, formatPercent } from "@/lib/utils";
 import { useRoutePulseStore } from "@/store/routePulseStore";
 import { useShallow } from "zustand/react/shallow";
 import type { BugReport } from "@/lib/bugReporting";
 
+interface HealthSnapshot {
+  status?: string;
+  database?: string;
+  storageMode?: string;
+  authMode?: string;
+  demoMode?: boolean;
+  serverReady?: boolean;
+  checks?: Record<string, string>;
+}
+
 export function AdminDashboard() {
   const [recentBugs, setRecentBugs] = useState<BugReport[]>([]);
+  const [health, setHealth] = useState<HealthSnapshot | null>(null);
   const data = useRoutePulseStore(
     useShallow((state) => ({
       company: state.company,
@@ -52,13 +62,16 @@ export function AdminDashboard() {
       zones: state.zones,
       trackingCms: state.trackingCms,
       incidents: state.incidents,
+      auditLogs: state.auditLogs,
+      dismissedApprovals: state.dismissedApprovals,
     })),
   );
-  const cmsState = getDefaultEnterpriseCmsState();
+  const livePendingApprovals = data.routes.filter(
+    (route) => (route.suggestedReassignments?.length ?? 0) > 0 && !data.dismissedApprovals.includes(route.id),
+  ).length;
   const kpis = calculateOperationsKpis(data);
   const insights = generateOperationalInsights(data.routes, data.packages, data.drivers, data.settings);
   const openIncidents = data.incidents.filter((incident) => incident.status !== "resolved");
-  const pendingApprovals = cmsState.approvalRequests.filter((request) => request.status === "pending");
   const betaReport = buildProjectIntelligenceReport({
     appVersion: APP_VERSION,
     buildStatus: openIncidents.some((incident) => incident.severity === "high") ? "warning" : "ready",
@@ -87,7 +100,14 @@ export function AdminDashboard() {
       setRecentBugs(payload.reports.slice(0, 5));
     }
 
+    async function loadHealth() {
+      const response = await fetch("/api/health", { credentials: "include" }).catch(() => null);
+      const payload = response?.ok ? ((await response.json().catch(() => null)) as HealthSnapshot | null) : null;
+      if (active && payload) setHealth(payload);
+    }
+
     loadRecentBugs();
+    loadHealth();
 
     return () => {
       active = false;
@@ -97,11 +117,13 @@ export function AdminDashboard() {
   return (
     <AdminShell>
       <PageHeader
-        eyebrow="Control Tower Lite"
-        title="Última milla LatAm"
+        eyebrow="RouteTrust · Operaciones"
+        title="Centro de operaciones"
         description={`ETA predictivo, riesgo operativo y KPIs vivos para operadores logísticos. ${data.settings.operatingZone} · cierre objetivo ${data.settings.targetCloseTime}`}
       />
       <div className="space-y-6 p-5 lg:p-8">
+        <SystemStatusStrip health={health} />
+
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <StatCard label="Paquetes del día" value={kpis.totalPackages} icon={Package} tone="slate" />
           <StatCard label="Entregados" value={kpis.deliveredPackages} icon={PackageCheck} tone="green" />
@@ -143,9 +165,9 @@ export function AdminDashboard() {
               <BetaReadinessTile
                 icon={Clock3}
                 label="Human approval"
-                value={pendingApprovals.length}
+                value={livePendingApprovals}
                 detail="pending decisions"
-                tone={pendingApprovals.length ? "amber" : "green"}
+                tone={livePendingApprovals ? "amber" : "green"}
               />
               <BetaReadinessTile
                 icon={AlertTriangle}
@@ -157,21 +179,21 @@ export function AdminDashboard() {
               <BetaReadinessTile
                 icon={Radar}
                 label="Audit logs"
-                value={cmsState.auditLogs.length}
-                detail="local events"
+                value={data.auditLogs.length}
+                detail="decisiones registradas"
                 tone="blue"
               />
               <BetaReadinessTile
                 icon={Bell}
                 label="Telegram bot"
-                value="Basic"
+                value={health?.checks?.telegram === "configured" ? "Activo" : "No configurado"}
                 detail="project intelligence"
-                tone="blue"
+                tone={health?.checks?.telegram === "configured" ? "green" : "amber"}
               />
               <BetaReadinessTile
                 icon={Map}
                 label="Maps"
-                value="Fallback"
+                value={health?.checks?.maps === "live" ? "Conectado" : "Fallback"}
                 detail="mock ready"
                 tone="green"
               />
@@ -323,5 +345,75 @@ function BetaReadinessTile({
       <p className="mt-1 text-xl font-black text-slate-950">{value}</p>
       <p className="mt-1 text-xs font-semibold text-slate-500">{detail}</p>
     </div>
+  );
+}
+
+type StatusTone = "ok" | "warn" | "bad" | "neutral";
+
+function buildStatusItems(health: HealthSnapshot | null): Array<{ label: string; value: string; tone: StatusTone }> {
+  if (!health) return [{ label: "Sistema", value: "Comprobando…", tone: "neutral" }];
+
+  const statusTone: StatusTone = health.status === "healthy" ? "ok" : health.status === "degraded" ? "warn" : "bad";
+  const dbConnected = health.database === "connected";
+
+  return [
+    { label: "Salud", value: health.status ?? "—", tone: statusTone },
+    { label: "Base de datos", value: dbConnected ? "Conectada" : health.database ?? "No configurada", tone: dbConnected ? "ok" : "warn" },
+    {
+      label: "Almacenamiento",
+      value: health.storageMode === "db" ? "DB" : health.storageMode === "file" ? "Archivo" : health.storageMode ?? "—",
+      tone: health.storageMode === "db" ? "ok" : "warn",
+    },
+    {
+      label: "Auth",
+      value: health.authMode === "real" ? "Real" : health.authMode === "demo" ? "Demo" : health.authMode ?? "—",
+      tone: health.authMode === "real" ? "ok" : "warn",
+    },
+    { label: "Modo", value: health.demoMode ? "Demo mode" : "Operativo", tone: health.demoMode ? "warn" : "ok" },
+    {
+      label: "Mapas",
+      value: health.checks?.maps === "live" ? "Conectado" : "Fallback",
+      tone: health.checks?.maps === "live" ? "ok" : "warn",
+    },
+    { label: "Servidor", value: health.serverReady ? "Listo" : "No listo", tone: health.serverReady ? "ok" : "warn" },
+  ];
+}
+
+function SystemStatusStrip({ health }: { health: HealthSnapshot | null }) {
+  const items = buildStatusItems(health);
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle>Estado del sistema</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-wrap gap-2.5">
+          {items.map((item) => (
+            <StatusPill key={item.label} {...item} />
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-[#86868b]">
+          Estado en vivo desde <code>/api/health</code>. RouteTrust reporta su readiness con honestidad: sin claims de
+          producción que no existen.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function StatusPill({ label, value, tone }: { label: string; value: string; tone: StatusTone }) {
+  const toneClass = {
+    ok: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+    warn: "bg-amber-50 text-amber-700 ring-amber-200",
+    bad: "bg-red-50 text-red-700 ring-red-200",
+    neutral: "bg-slate-100 text-slate-600 ring-slate-200",
+  }[tone];
+  const dotClass = { ok: "bg-emerald-500", warn: "bg-amber-500", bad: "bg-red-500", neutral: "bg-slate-400" }[tone];
+  return (
+    <span className={cn("inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-semibold ring-1", toneClass)}>
+      <span className={cn("h-2 w-2 rounded-full", dotClass)} />
+      <span className="font-medium text-[#6e6e73]">{label}:</span>
+      <span className="capitalize">{value}</span>
+    </span>
   );
 }
