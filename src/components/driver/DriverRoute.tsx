@@ -90,18 +90,18 @@ export function DriverRoute() {
       <div className="space-y-5 p-5">
         {route && stats ? (
           <>
-            <section className="rounded-xl bg-slate-950 p-5 text-white">
+            <section className="rounded-3xl bg-[#0b0f14] p-6 text-white">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm text-slate-300">Ruta actual</p>
-                  <h1 className="mt-1 text-2xl font-bold tracking-normal">{route.id}</h1>
-                  <p className="mt-1 text-sm text-slate-300">Estado operativo: {routeStateText}</p>
+                  <p className="text-sm font-medium text-[#22d3ee]">Ruta actual</p>
+                  <h1 className="mt-1 text-2xl font-semibold tracking-tight">{route.id}</h1>
+                  <p className="mt-1 text-sm text-white/60">Estado operativo: {routeStateText}</p>
                 </div>
                 <StatusBadge type="risk" status={riskToBadgeRisk(stats.operationalRisk)} />
               </div>
               <div className="mt-5">
                 <Progress value={stats.progress} tone={stats.risk === "risk_high" ? "red" : stats.risk === "risk_medium" ? "amber" : "green"} />
-                <div className="mt-2 flex justify-between text-xs text-slate-300">
+                <div className="mt-2 flex justify-between text-xs text-white/60">
                   <span>{formatPercent(stats.progress)} avance</span>
                   <span>ETA cierre {stats.estimatedCloseTime}</span>
                 </div>
@@ -167,26 +167,26 @@ export function DriverRoute() {
                 </div>
               )}
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" size="lg" onClick={() => markArrived(route.id)} disabled={isPaused || isComplete}>
+                <Button variant="outline" size="lg" className="h-14 text-base" onClick={() => markArrived(route.id)} disabled={isPaused || isComplete}>
                   <MapPin className="h-5 w-5" />
-                  Llegue
+                  Llegué
                 </Button>
-                <Button variant="success" size="lg" onClick={handleDeliver} disabled={isPaused || isComplete}>
+                <Button variant="success" size="lg" className="h-14 text-base" onClick={handleDeliver} disabled={isPaused || isComplete}>
                   <CheckCircle2 className="h-5 w-5" />
                   Entregado
                 </Button>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="destructive" size="lg" onClick={() => setFailOpen(true)} disabled={isPaused || isComplete}>
+                <Button variant="destructive" size="lg" className="h-14 text-base" onClick={() => setFailOpen(true)} disabled={isPaused || isComplete}>
                   <XCircle className="h-5 w-5" />
                   No pude entregar
                 </Button>
-                <Button variant="warning" size="lg" onClick={() => setPauseOpen(true)} disabled={isPaused || isComplete}>
+                <Button variant="warning" size="lg" className="h-14 text-base" onClick={() => setPauseOpen(true)} disabled={isPaused || isComplete}>
                   <Pause className="h-5 w-5" />
                   Pausar
                 </Button>
               </div>
-              <Button variant="outline" size="lg" onClick={() => setIncidentOpen(true)} disabled={isComplete}>
+              <Button variant="outline" size="lg" className="h-14 text-base" onClick={() => setIncidentOpen(true)} disabled={isComplete}>
                 <AlertTriangle className="h-5 w-5" />
                 Reportar incidencia
               </Button>

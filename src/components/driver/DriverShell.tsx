@@ -67,7 +67,7 @@ export function DriverShell({ children }: { children: ReactNode }) {
                 <Truck className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#1d1d1f]">RoutePulse AI</p>
+                <p className="text-sm font-semibold text-[#1d1d1f]">RouteTrust</p>
                 <p className="text-xs font-medium text-[#86868b]">{currentUser.name}</p>
               </div>
             </Link>

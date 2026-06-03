@@ -32,13 +32,13 @@ export function DriverHome() {
   return (
     <DriverShell>
       <div className="space-y-5 p-5">
-        <section className="rounded-xl bg-slate-950 p-5 text-white">
-          <p className="text-sm text-slate-300">Driver</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-normal">{currentUser?.name}</h1>
-          <div className="mt-5 flex items-center justify-between rounded-lg bg-white/10 p-4">
+        <section className="rounded-3xl bg-[#0b0f14] p-6 text-white">
+          <p className="text-sm font-medium text-[#22d3ee]">Conductor</p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight">{currentUser?.name}</h1>
+          <div className="mt-5 flex items-center justify-between rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
             <div>
-              <p className="text-sm text-slate-300">Ruta asignada</p>
-              <p className="text-xl font-bold">{route?.id ?? "Sin ruta"}</p>
+              <p className="text-sm text-white/60">Ruta asignada</p>
+              <p className="text-xl font-semibold">{route?.id ?? "Sin ruta"}</p>
             </div>
             {route ? <StatusBadge type="route" status={route.status} /> : null}
           </div>
@@ -99,24 +99,24 @@ export function DriverHome() {
 
             <div className="grid gap-3">
               {route.status === "paused" ? (
-                <Button size="lg" variant="warning" onClick={() => resumeRoute(route.id)}>
+                <Button size="lg" variant="warning" className="h-14 text-base" onClick={() => resumeRoute(route.id)}>
                   <Play className="h-5 w-5" />
                   Reanudar ruta
                 </Button>
               ) : route.status === "scheduled" ? (
-                <Button size="lg" onClick={() => startRoute(route.id)}>
+                <Button size="lg" className="h-14 text-base" onClick={() => startRoute(route.id)}>
                   <Play className="h-5 w-5" />
                   Iniciar ruta
                 </Button>
               ) : (
-                <Button asChild size="lg">
+                <Button asChild size="lg" className="h-14 text-base">
                   <Link href="/driver/route">
                     Continuar ruta
                     <ArrowRight className="h-5 w-5" />
                   </Link>
                 </Button>
               )}
-              <Button asChild size="lg" variant="outline">
+              <Button asChild size="lg" variant="outline" className="h-14 text-base">
                 <Link href="/driver/route">
                   Ver ruta
                   <ArrowRight className="h-5 w-5" />

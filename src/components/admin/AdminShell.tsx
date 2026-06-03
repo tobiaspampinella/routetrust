@@ -74,8 +74,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <Truck className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#1d1d1f]">RoutePulse AI</p>
-            <p className="text-xs font-medium text-[#86868b]">Control Tower Lite</p>
+            <p className="text-sm font-semibold text-[#1d1d1f]">RouteTrust</p>
+            <p className="text-xs font-medium text-[#86868b]">Operations console</p>
           </div>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
@@ -120,7 +120,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-white/70 bg-white/80 px-4 backdrop-blur-2xl lg:hidden">
           <Link href="/admin" className="flex items-center gap-2 text-sm font-semibold text-[#1d1d1f]">
             <Truck className="h-5 w-5" />
-            RoutePulse AI
+            RouteTrust
           </Link>
           <div className="flex items-center gap-1">
             {navigation.map((item) => {
