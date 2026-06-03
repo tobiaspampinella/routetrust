@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { ArrowLeft, Bell, Gauge, MapPin, PackageCheck, Phone, ShieldCheck, Timer, Truck } from "lucide-react";
 import { FleetTrackingMap } from "@/components/customer/FleetTrackingMap";
+import { TrackingTimeline } from "@/components/customer/TrackingTimeline";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { etaConfidenceLabels } from "@/components/shared/status-labels";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,11 @@ export function CustomerTrackingDemo() {
   const order = projection.order;
   const routeStatus = projection.routeStatus;
   const paused = !autoPresentationMode && !trackingCms.simulationStarted && storedElapsedSeconds > 0 && routeStatus !== "completed";
+
+  const orderDelivered = order?.status === "delivered" || routeStatus === "completed";
+  const orderFailed = order?.status === "failed";
+  const orderMoving = routeStatus === "in_progress" || (projectionStarted && order?.status === "in_progress");
+  const trackingStep = orderDelivered ? 3 : orderMoving ? 2 : projectionStarted ? 1 : 0;
 
   if (!settings.customerTrackingEnabled) {
     return (
@@ -131,6 +137,13 @@ export function CustomerTrackingDemo() {
           <section className="space-y-5">
             {order ? (
               <>
+                <TrackingTimeline
+                  activeStep={trackingStep}
+                  delayed={paused}
+                  failed={orderFailed}
+                  etaWindow={projection.orderEtaWindow}
+                />
+
                 <div className="rounded-3xl border border-white/15 bg-white p-5 shadow-xl">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
