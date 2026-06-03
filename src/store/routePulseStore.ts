@@ -17,6 +17,7 @@ import type {
   DeliveryPackage,
   Driver,
   IncidentSeverity,
+  IncidentStatus,
   RiskLevel,
   RoutePulseData,
   SessionUser,
@@ -57,6 +58,7 @@ interface RoutePulseStore extends RoutePulseData {
   resumeRoute: (routeId: string) => void;
   reportIncident: (input: { routeId: string; packageId?: string; title: string; detail: string; severity?: IncidentSeverity; source?: "admin" | "driver" | "customer" | "system" }) => void;
   resolveIncident: (incidentId: string) => void;
+  setIncidentStatus: (incidentId: string, status: IncidentStatus) => void;
   recalculateRouteEta: (routeId: string) => void;
   markRouteRisk: (routeId: string, risk: RiskLevel) => void;
   mockReassignRoute: (routeId: string) => void;
@@ -549,6 +551,19 @@ export const useRoutePulseStore = create<RoutePulseStore>()(
                   ...incident,
                   status: "resolved" as const,
                   resolvedAt: new Date().toISOString(),
+                }
+              : incident,
+          ),
+        }));
+      },
+      setIncidentStatus: (incidentId, status) => {
+        set((state) => ({
+          incidents: state.incidents.map((incident) =>
+            incident.id === incidentId
+              ? {
+                  ...incident,
+                  status,
+                  resolvedAt: status === "resolved" ? new Date().toISOString() : undefined,
                 }
               : incident,
           ),
