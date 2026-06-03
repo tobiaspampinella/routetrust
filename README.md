@@ -1,219 +1,118 @@
+<div align="center">
+
 # RouteTrust
 
-RouteTrust is an AI-built, human-orchestrated Operational Intelligence Platform for logistics operations.
+### Operational intelligence for logistics teams.
 
-AI agents assist with implementation, testing, documentation and analysis. Human oversight remains mandatory for strategic product decisions, critical approvals, releases and business direction.
+**AI-built · human-orchestrated.** RouteTrust helps logistics companies coordinate routes,
+approve AI-suggested decisions, track drivers, and keep customers informed in real time.
 
-This repository currently contains the RoutePulse AI beta application: a controlled SaaS B2B logistics foundation focused on route simulation, tracking, driver coordination, operational visibility, CMS workflows and demo validation.
+`Next.js 15` · `React 19` · `TypeScript` · `Tailwind CSS` · `Prisma` · `Zustand`
 
-It is not a full TMS, ERP or autonomous dispatch system.
+**Status:** local-first beta · _not production-ready_ · honest readiness reporting built in.
 
-## Current Status
+</div>
 
-- Local demo functional.
-- Beta stabilization in progress.
-- GitHub remote setup in progress.
-- Telegram integration requires environment configuration.
-- Not production-ready yet.
+---
 
-## Product Scope
+## What it is
 
-- Control tower lite for last-mile logistics operations.
-- Human-approved operational intelligence, not operator replacement.
-- Admin, operations, driver, customer tracking and CMS beta workflows.
-- Demo sandbox for route simulation, ETA changes, traffic scenarios and operational approvals.
-- Optional map-provider integration with a local fallback.
+RouteTrust is a B2B logistics operational-intelligence platform with one connected layer across
+four surfaces: a control-tower **operations dashboard**, a **customer tracking** experience, a
+mobile-first **driver portal**, and an **AI route-approval** workflow. Its guiding principle —
+**“AI suggests, human approves”** — is also how the product itself was built.
 
-## Core Modules
+It is intentionally **not** a full TMS, ERP, or autonomous dispatch system.
 
-- Admin dashboard and operational KPIs.
-- Driver portal and route execution views.
-- Customer tracking demo.
-- CMS beta modules for tenants, approvals, incidents, audit logs and demo controls.
-- QA and bug-report intake flows.
-- Telegram status/test integrations.
+## The surfaces
 
-## Repository Status
+| Surface | Route | What it does |
+|---------|-------|--------------|
+| Operations dashboard | `/admin` | Active routes, drivers online, SLA at risk, open incidents, **live system-status** strip. |
+| Operational CMS | `/admin/drivers`, `/admin/incidents`, `/admin/approvals`, `/admin/audit-logs` | Tables, search, filters, drawer CRUD. Drivers is **full-stack** (UI → API → file store). |
+| AI route approval | `/admin/approvals` | AI suggestion vs current route, ETA/SLA impact, approve / modify / reject, with an audit log. |
+| Customer tracking | `/track/demo` | MercadoLibre-clear status timeline, live ETA, delivery states. |
+| Driver portal | `/driver`, `/driver/route` | Mobile-first route, next stop, big one-tap actions (start / arrived / delivered / report incident). |
+| Public site | `/`, `/product`, `/use-cases`, `/contact`, `/updates` | Apple-style marketing site with a live status page. |
 
-- Stage: beta stabilization.
-- Primary stack: Next.js, TypeScript, Tailwind CSS, Prisma.
-- Package manager: npm.
-- CI: GitHub Actions workflow included in `.github/workflows/ci.yml`.
-- Secrets policy: `.env` files, provider tokens and deployment credentials must never be committed.
+## Design references
 
-## Suggested GitHub Topics
+The experience draws on the clarity and operability of **MercadoLibre** (tracking), **Amazon**
+(operations control), **Uber** (movement/maps), **Andreani** (regional traceability), with the
+restraint of **Apple** and **ChatGPT**. These are quality references, not copied brands.
 
-`logistics`, `saas`, `b2b`, `operational-intelligence`, `route-simulation`, `route-optimization`, `tracking`, `fleet-management`, `human-in-the-loop`, `ai-built`, `typescript`, `nextjs`, `nestjs`, `postgresql`, `telegram-bot`, `maplibre`, `google-maps`, `playwright`
-
-## Installation
-
-Prerequisites:
-
-- Node.js 22 or newer.
-- npm.
-
-From the repository root:
+## Quick start
 
 ```bash
 npm install
-npm run dev
+cp .env.example .env.local      # optional: set AUTH_SECRET, DATABASE_URL, NEXT_PUBLIC_MAP_PROVIDER
+npm run dev                     # http://localhost:3000
 ```
 
-Then open:
+Runs fully **local-first** with zero external configuration: no map API key required (safe mock
+fallback) and a file-backed store when no database is configured.
 
-```txt
-http://localhost:3000/login
-```
+### Demo credentials (local)
 
-## Validation
+| Role   | Email               | Password    |
+|--------|---------------------|-------------|
+| Admin  | `admin@demo.com`    | `admin123`  |
+| Driver | `driver1@demo.com`  | `driver123` |
 
-Run the baseline checks before opening a pull request:
+## Honest readiness
+
+RouteTrust reports its real state via `/api/health` and the admin status strip — no inflated
+production claims.
+
+| Capability | Status |
+|------------|--------|
+| Local demo ready | **Yes** |
+| Server ready | Partial |
+| Beta stable ready | No |
+| Staging ready | No |
+| SaaS implementable | No |
+
+Blockers are surfaced live (e.g. database/migrations) rather than hidden.
+
+## Verification
 
 ```bash
-npm run typecheck
-npm test
-npm run lint
-npm run build
+npm run typecheck     # tsc
+npm run lint          # eslint
+npm test              # unit tests (node:test)
+npm run build         # next build
+npm run qa:e2e        # Playwright smoke + authenticated operational flows
+npm run beta-check    # readiness gate
 ```
 
-## Scripts
+## Maps
 
-- `npm run dev`: local development server.
-- `npm run build`: production build validation.
-- `npm run lint`: static lint checks.
-- `npm run typecheck`: TypeScript validation.
-- `npm test`: local unit and contract tests.
-- `npm run qa:security`: repository secret and auth-surface audit.
-- `npm run beta-check`: beta readiness summary.
-- `npm run agents:status`: supervised runtime status.
-- `npm run telegram:status`: Telegram configuration status.
+No hard dependency on a paid maps API. Provider is resolved from `NEXT_PUBLIC_MAP_PROVIDER`
+(`mock` | `maplibre` | `osrm` | `openrouteservice` | `google` | `apple`) and **falls back safely
+to a local mock** when config is missing — reported honestly in health. See
+[`docs/MAPS_STRATEGY.md`](docs/MAPS_STRATEGY.md).
 
-## Environment Setup
-
-Copy the example environment file:
+## Public demo export
 
 ```bash
-cp .env.example .env.local
+npm run export:public-demo      # -> dist-public-demo/ (allowlist + fail-closed secret scan)
 ```
 
-Populate only the variables you need locally. Keep real credentials out of version control.
+Ships only the runnable product (app, demo seed, curated docs) with secrets, runtime data and
+internal ops tooling excluded by construction. See
+[`docs/PUBLIC_DEMO_EXPORT_PLAN.md`](docs/PUBLIC_DEMO_EXPORT_PLAN.md).
 
-Optional map-related variables:
+## Tech stack
 
-```txt
-NEXT_PUBLIC_MAP_PROVIDER=maplibre
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
-NEXT_PUBLIC_GOOGLE_MAP_ID=
-NEXT_PUBLIC_OPENROUTE_API_KEY=
-NEXT_PUBLIC_APPLE_MAPKIT_TOKEN=
-```
+Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS · Prisma · Zustand · Playwright.
 
-If no external map key is configured, the demo uses a local fallback visualization.
+## Credits
 
-## Demo Credentials
+- **Original idea, concept & vision:** Tobias Ammann Pampinella.
+- **Built by (AI models, human-orchestrated):** GPT-5.5 and Claude Opus 4.8.
 
-Demo credentials are generated locally through seed/demo scripts and must not be used in production.
+See [`CREDITS.md`](CREDITS.md).
 
-If local QA access is required, see [`docs/DEMO_LOCAL_ONLY.md`](docs/DEMO_LOCAL_ONLY.md). That document is explicitly local-only and must not be used as deployment guidance.
+## License
 
-## Available Routes
-
-- `/login`
-- `/admin`
-- `/admin/routes`
-- `/admin/kpis`
-- `/admin/cms`
-- `/admin/settings`
-- `/driver`
-- `/driver/route`
-- `/track/demo`
-
-## Telegram Bot
-
-The repository includes Telegram-oriented status and test flows for operational notifications. Bot tokens and chat identifiers must stay in local or deployment secrets only.
-
-Relevant endpoints and docs:
-
-- `/api/cms/telegram/status`
-- `/api/cms/telegram/test`
-- `/api/cms/telegram/project-intelligence`
-- `docs/TELEGRAM_SETUP_REQUIRED.md`
-
-## Bug Assistant
-
-The repository includes a supervised local bug intake and triage surface for beta operations.
-
-Relevant areas:
-
-- `/admin/bug-reports`
-- `/api/bugs`
-- `docs/BUG_REPORTING_ASSISTANT.md`
-
-## Agent Runtime
-
-The current runtime is supervised and local-first. It provides status reporting, lock checks, QA scripts and operational traceability. It is not an autonomous production agent platform.
-
-Relevant docs:
-
-- `AGENT_RUNTIME.md`
-- `docs/AGENT_RUNTIME_STATUS.md`
-- `docs/LOCAL_24_7_OPERATION.md`
-
-## Demo Sandbox
-
-The demo sandbox allows controlled simulation of:
-
-- route starts and pauses
-- traffic changes
-- blocked streets and delays
-- completed and failed deliveries
-- approval and audit-log flows
-
-This is for beta validation and product discovery. It is not a production event engine.
-
-## Security
-
-Security reporting and repository policy are documented in [`SECURITY.md`](SECURITY.md).
-
-Key constraints:
-
-- no committed `.env` files
-- no provider tokens in source
-- no production claims for demo-grade auth or mock persistence
-- human approval required for critical operational decisions
-
-## Contributing
-
-Contribution guidelines and branch workflow are documented in [`CONTRIBUTING.md`](CONTRIBUTING.md).
-
-Branch model:
-
-- `main`: stable releases only
-- `develop`: integration branch
-- `staging`: pre-release validation
-- `feature/*`: feature work
-- `fix/*`: bug fixes
-- `agent/*`: isolated agent work
-
-## Roadmap
-
-See [`ROADMAP.md`](ROADMAP.md) for the public milestone roadmap and [`docs/BETA_BUILD_PLAN.md`](docs/BETA_BUILD_PLAN.md) for the internal short-horizon stabilization plan.
-
-## AI-Built / Human-Orchestrated
-
-See [`AI_BUILT_PROJECT.md`](AI_BUILT_PROJECT.md) for communication rules, approval boundaries and positioning constraints.
-
-## Beta Stable Criteria
-
-The formal beta checklist and blockers are tracked in [`docs/BETA_STABLE_CRITERIA.md`](docs/BETA_STABLE_CRITERIA.md).
-
-A top-level summary copy is available in [`BETA_STABLE_CRITERIA.md`](BETA_STABLE_CRITERIA.md).
-
-## Current Limits
-
-- No production-grade backend persistence for the main product flows.
-- No realtime multi-user sync or WebSockets.
-- No production tenant isolation proof against a real database.
-- No production identity system.
-- Optional external maps are not mandatory and may remain disabled.
-- Several product areas still depend on local state and mock data.
+See [`LICENSE`](LICENSE). © 2026 Tobias Ammann Pampinella — all rights reserved (terms TBD by the owner).
