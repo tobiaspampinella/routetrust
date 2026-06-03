@@ -15,6 +15,7 @@ import { getTrackingSimulationElapsedSeconds } from "@/lib/trackingSimulation";
 import type {
   CustomerTrackingCms,
   DeliveryPackage,
+  Driver,
   IncidentSeverity,
   RiskLevel,
   RoutePulseData,
@@ -59,6 +60,9 @@ interface RoutePulseStore extends RoutePulseData {
   recalculateRouteEta: (routeId: string) => void;
   markRouteRisk: (routeId: string, risk: RiskLevel) => void;
   mockReassignRoute: (routeId: string) => void;
+  addDriver: (input: { name: string; phone: string; status?: Driver["status"] }) => void;
+  updateDriver: (driverId: string, input: Partial<Pick<Driver, "name" | "phone" | "status">>) => void;
+  removeDriver: (driverId: string) => void;
 }
 
 function pauseDelay(reason: string) {
@@ -183,6 +187,39 @@ export const useRoutePulseStore = create<RoutePulseStore>()(
         set({ currentUser: null });
       },
       setCurrentUser: (user) => set({ currentUser: user }),
+      addDriver: ({ name, phone, status = "available" }) => {
+        set((state) => ({
+          drivers: [
+            ...state.drivers,
+            {
+              id: `driver-${Date.now()}`,
+              name: name.trim(),
+              phone: phone.trim(),
+              status,
+              assignedRouteId: "",
+            },
+          ],
+        }));
+      },
+      updateDriver: (driverId, input) => {
+        set((state) => ({
+          drivers: state.drivers.map((driver) =>
+            driver.id === driverId
+              ? {
+                  ...driver,
+                  ...(input.name !== undefined ? { name: input.name.trim() } : {}),
+                  ...(input.phone !== undefined ? { phone: input.phone.trim() } : {}),
+                  ...(input.status !== undefined ? { status: input.status } : {}),
+                }
+              : driver,
+          ),
+        }));
+      },
+      removeDriver: (driverId) => {
+        set((state) => ({
+          drivers: state.drivers.filter((driver) => driver.id !== driverId),
+        }));
+      },
       resetDemo: () => {
         const freshState = cloneInitialRoutePulseData();
         set({ ...freshState, currentUser: get().currentUser });
