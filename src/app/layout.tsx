@@ -5,8 +5,9 @@ import { VersionFooter } from "@/components/shared/VersionFooter";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RoutePulse AI Tester",
-  description: "MVP tester local para validar el flujo operativo de RoutePulse AI.",
+  title: "RouteTrust — Operational intelligence for logistics teams",
+  description:
+    "RouteTrust helps logistics companies coordinate routes, approve AI-suggested decisions, track drivers, and keep customers informed in real time.",
 };
 
 export default function RootLayout({

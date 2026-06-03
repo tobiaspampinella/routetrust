@@ -36,4 +36,12 @@ test.describe("RouteTrust public smoke", () => {
     expect(res?.ok()).toBeTruthy();
     await expect(page.locator("body")).not.toBeEmpty();
   });
+
+  for (const path of ["/product", "/use-cases", "/contact", "/updates"]) {
+    test(`public page ${path} renders`, async ({ page }) => {
+      const res = await page.goto(path);
+      expect(res?.ok()).toBeTruthy();
+      await expect(page.locator("header")).toContainText(/RouteTrust/i);
+    });
+  }
 });
