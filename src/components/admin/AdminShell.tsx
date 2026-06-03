@@ -15,6 +15,7 @@ const navigation = [
   { href: "/admin/drivers", label: "Conductores", icon: UserRound },
   { href: "/admin/incidents", label: "Incidentes", icon: ShieldAlert },
   { href: "/admin/approvals", label: "Aprobaciones", icon: CheckCircle2 },
+  { href: "/admin/audit-logs", label: "Audit logs", icon: FileText },
   { href: "/admin/kpis", label: "KPIs", icon: BarChart3 },
   { href: "/admin/cms", label: "CMS", icon: FileText },
   { href: "/admin/project-status", label: "Estado", icon: Activity },
