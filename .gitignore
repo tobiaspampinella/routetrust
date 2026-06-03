@@ -71,3 +71,4 @@ runtime/github-sync/*.log
 runtime/github-sync/*.tmp
 runtime/local-model/*.tmp
 runtime/reports/*.tmp
+data/runtime/cms-drivers.json
