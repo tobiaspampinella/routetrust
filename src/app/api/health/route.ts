@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDatabaseHealth } from "@/lib/db/status";
+import { resolveMapProvider } from "@/lib/maps/provider";
 import { APP_VERSION } from "@/lib/version";
 import path from "node:path";
 import { ensureFile, readJson, runtimeDataPath } from "@/lib/storage/fileStore";
@@ -51,7 +52,8 @@ export async function GET() {
     : projectStatus.telegram?.status === "out_of_scope"
       ? "out_of_scope"
       : "not_configured";
-  const maps = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? "configured" : "fallback";
+  const mapProvider = resolveMapProvider();
+  const maps = mapProvider.status;
   const runtime = projectStatus.scheduler?.status === "running" ? "ok" : "degraded";
   const bugStoreStatus = bugStore === "ok" ? "ok" : "fail";
   const auth = authMode();
@@ -87,6 +89,7 @@ export async function GET() {
       storageMode,
       demoMode,
       authMode: auth,
+      mapProvider: mapProvider.active,
       serverReady,
       betaBlockers,
       checks: {
@@ -104,6 +107,7 @@ export async function GET() {
       },
       details: {
         db: database.detail,
+        maps: mapProvider.reason,
       },
     },
     { status: 200 },
