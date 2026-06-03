@@ -1,10 +1,11 @@
 # Locked Files
 
-Last updated: 2026-06-01T03:16:00.249Z
+Last updated: 2026-06-03T12:48:19.528Z
 
 ## Active Lock
 
-None.
+- `src/` -> CC-SESSION-001
+- `tests/` -> CC-SESSION-001
 
 ## Rules
 
