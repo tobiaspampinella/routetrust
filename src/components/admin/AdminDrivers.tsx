@@ -48,21 +48,51 @@ interface DriverDraft {
 const EMPTY_DRAFT: DriverDraft = { id: null, name: "", phone: "", status: "available" };
 
 export function AdminDrivers() {
-  const { drivers, routes, addDriver, updateDriver, removeDriver } = useRoutePulseStore(
+  const { routes, setStoreDrivers } = useRoutePulseStore(
     useShallow((state) => ({
-      drivers: state.drivers,
       routes: state.routes,
-      addDriver: state.addDriver,
-      updateDriver: state.updateDriver,
-      removeDriver: state.removeDriver,
+      setStoreDrivers: state.setDrivers,
     })),
   );
 
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [source, setSource] = useState<"db" | "file">("file");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<DriverStatus | "all">("all");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [draft, setDraft] = useState<DriverDraft>(EMPTY_DRAFT);
   const [pendingDelete, setPendingDelete] = useState<Driver | null>(null);
+
+  const applyDrivers = useCallback(
+    (next: Driver[]) => {
+      setDrivers(next);
+      setStoreDrivers(next);
+    },
+    [setStoreDrivers],
+  );
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/cms/drivers", { credentials: "include" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = (await response.json()) as { drivers: Driver[]; source: "db" | "file" };
+      applyDrivers(payload.drivers ?? []);
+      setSource(payload.source ?? "file");
+      setError(null);
+    } catch {
+      setError("No se pudieron cargar los conductores desde el backend.");
+    } finally {
+      setLoading(false);
+    }
+  }, [applyDrivers]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   const routeZone = useMemo(() => {
     const map = new Map<string, string>();
@@ -101,20 +131,68 @@ export function AdminDrivers() {
     setDrawerOpen(true);
   }
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!draft.name.trim() || !draft.phone.trim()) return;
-    if (draft.id) {
-      updateDriver(draft.id, { name: draft.name, phone: draft.phone, status: draft.status });
-    } else {
-      addDriver({ name: draft.name, phone: draft.phone, status: draft.status });
+    if (!draft.name.trim() || !draft.phone.trim() || saving) return;
+
+    setSaving(true);
+    try {
+      const existing = draft.id ? drivers.find((item) => item.id === draft.id) : undefined;
+      const isEditing = Boolean(draft.id);
+      const response = await fetch(isEditing ? `/api/cms/drivers/${encodeURIComponent(draft.id!)}` : "/api/cms/drivers", {
+        method: isEditing ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(
+          isEditing
+            ? {
+                name: draft.name,
+                phone: draft.phone,
+                status: draft.status,
+              }
+            : {
+                driver: {
+                  name: draft.name,
+                  phone: draft.phone,
+                  status: draft.status,
+                  assignedRouteId: existing?.assignedRouteId ?? "",
+                },
+              },
+        ),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = (await response.json()) as { drivers: Driver[] };
+      applyDrivers(payload.drivers ?? []);
+      setError(null);
+      setDrawerOpen(false);
+      setDraft(EMPTY_DRAFT);
+    } catch {
+      setError("No se pudo guardar el conductor.");
+    } finally {
+      setSaving(false);
     }
-    setDrawerOpen(false);
   }
 
-  function confirmDelete() {
-    if (pendingDelete) removeDriver(pendingDelete.id);
+  async function confirmDelete() {
+    const target = pendingDelete;
     setPendingDelete(null);
+    if (!target || saving) return;
+
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/cms/drivers/${encodeURIComponent(target.id)}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = (await response.json()) as { drivers: Driver[] };
+      applyDrivers(payload.drivers ?? []);
+      setError(null);
+    } catch {
+      setError("No se pudo eliminar el conductor.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   const kpis = [
@@ -126,17 +204,35 @@ export function AdminDrivers() {
 
   return (
     <AdminShell>
-      <PageHeader eyebrow="Operaciones" title="Conductores" description="Gestiona tu flota de conductores: alta, edición, estado operativo y asignación de ruta.">
-        <Button onClick={openCreate}>
-          <Plus className="h-4 w-4" />
-          Nuevo conductor
-        </Button>
+      <PageHeader
+        eyebrow="Operaciones"
+        title="Conductores"
+        description="Gestiona tu flota de conductores: alta, edicion, estado operativo y asignacion de ruta."
+      >
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => void refresh()} disabled={loading || saving}>
+            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+            Recargar
+          </Button>
+          <Button onClick={openCreate} disabled={loading}>
+            <Plus className="h-4 w-4" />
+            Nuevo conductor
+          </Button>
+        </div>
       </PageHeader>
 
       <div className="space-y-6 p-5 lg:p-8">
-        <AlertBanner tone="demo" title="Datos locales">
-          Los conductores se guardan en el navegador (store local persistente). Aún no hay backend de flota conectado.
+        <AlertBanner tone={source === "db" ? "success" : "demo"} title={source === "db" ? "Base de datos conectada" : "Backend local (archivo)"}>
+          {source === "db"
+            ? "Los conductores se estan sirviendo desde la base de datos."
+            : "Los conductores se guardan en data/runtime/cms-drivers.json hasta tener un modelo Prisma real."}
         </AlertBanner>
+
+        {error ? (
+          <AlertBanner tone="danger" title="Operacion incompleta">
+            {error}
+          </AlertBanner>
+        ) : null}
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {kpis.map((kpi) => (
@@ -153,7 +249,7 @@ export function AdminDrivers() {
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar por nombre, teléfono o ID"
+              placeholder="Buscar por nombre, telefono o ID"
               className="h-11 pl-10"
             />
           </div>
@@ -169,14 +265,27 @@ export function AdminDrivers() {
           </div>
         </div>
 
-        {filtered.length === 0 ? (
+        {loading ? (
+          <LoadingState label="Cargando conductores..." />
+        ) : error && drivers.length === 0 ? (
+          <ErrorState
+            title="No se pudo cargar la flota"
+            description={error}
+            action={
+              <Button variant="outline" onClick={() => void refresh()}>
+                <RefreshCw className="h-4 w-4" />
+                Reintentar
+              </Button>
+            }
+          />
+        ) : filtered.length === 0 ? (
           <EmptyState
             icon={drivers.length === 0 ? Truck : Search}
-            title={drivers.length === 0 ? "Sin conductores aún" : "Sin resultados"}
+            title={drivers.length === 0 ? "Sin conductores aun" : "Sin resultados"}
             description={
               drivers.length === 0
                 ? "Crea tu primer conductor para empezar a asignar rutas."
-                : "Ningún conductor coincide con la búsqueda o el filtro."
+                : "Ningun conductor coincide con la busqueda o el filtro."
             }
             action={
               drivers.length === 0 ? (
@@ -185,7 +294,14 @@ export function AdminDrivers() {
                   Nuevo conductor
                 </Button>
               ) : (
-                <Button size="sm" variant="outline" onClick={() => { setQuery(""); setStatusFilter("all"); }}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setQuery("");
+                    setStatusFilter("all");
+                  }}
+                >
                   Limpiar filtros
                 </Button>
               )
@@ -197,7 +313,7 @@ export function AdminDrivers() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Conductor</TableHead>
-                  <TableHead>Teléfono</TableHead>
+                  <TableHead>Telefono</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Ruta asignada</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
@@ -238,14 +354,14 @@ export function AdminDrivers() {
                       </TableCell>
                       <TableCell>
                         <div className="flex justify-end gap-1">
-                          <Button size="icon" variant="ghost" aria-label={`Editar ${driver.name}`} onClick={() => openEdit(driver)}>
+                          <Button size="icon" variant="ghost" aria-label={`Editar ${driver.name}`} onClick={() => openEdit(driver)} disabled={saving}>
                             <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
                             size="icon"
                             variant="ghost"
                             aria-label={`Eliminar ${driver.name}`}
-                            disabled={driver.status === "on_route"}
+                            disabled={saving || driver.status === "on_route"}
                             title={driver.status === "on_route" ? "No se puede eliminar un conductor en ruta" : undefined}
                             onClick={() => setPendingDelete(driver)}
                           >
@@ -269,16 +385,16 @@ export function AdminDrivers() {
         description={draft.id ? "Actualiza los datos del conductor." : "Da de alta un conductor en tu flota."}
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setDrawerOpen(false)}>
+            <Button variant="outline" onClick={() => setDrawerOpen(false)} disabled={saving}>
               Cancelar
             </Button>
-            <Button type="submit" form="driver-form">
-              {draft.id ? "Guardar cambios" : "Crear conductor"}
+            <Button type="submit" form="driver-form" disabled={saving}>
+              {saving ? "Guardando..." : draft.id ? "Guardar cambios" : "Crear conductor"}
             </Button>
           </div>
         }
       >
-        <form id="driver-form" onSubmit={submit} className="space-y-4">
+        <form id="driver-form" onSubmit={(event) => void submit(event)} className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="driver-name">Nombre</Label>
             <Input
@@ -290,7 +406,7 @@ export function AdminDrivers() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="driver-phone">Teléfono</Label>
+            <Label htmlFor="driver-phone">Telefono</Label>
             <Input
               id="driver-phone"
               value={draft.phone}
@@ -319,16 +435,16 @@ export function AdminDrivers() {
         open={pendingDelete !== null}
         onOpenChange={(open) => !open && setPendingDelete(null)}
         title="Eliminar conductor"
-        description={pendingDelete ? `Se eliminará a ${pendingDelete.name}. Esta acción no se puede deshacer.` : ""}
+        description={pendingDelete ? `Se eliminara a ${pendingDelete.name}. Esta accion no se puede deshacer.` : ""}
       >
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setPendingDelete(null)}>
+          <Button variant="outline" onClick={() => setPendingDelete(null)} disabled={saving}>
             <X className="h-4 w-4" />
             Cancelar
           </Button>
-          <Button variant="destructive" onClick={confirmDelete}>
+          <Button variant="destructive" onClick={() => void confirmDelete()} disabled={saving}>
             <Trash2 className="h-4 w-4" />
-            Eliminar
+            {saving ? "Eliminando..." : "Eliminar"}
           </Button>
         </div>
       </Modal>
