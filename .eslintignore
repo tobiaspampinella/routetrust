@@ -1,0 +1,16 @@
+# Build output
+.next/
+.next-dev/
+.next-build/
+.next-app/
+node_modules/
+
+# Vendored / runtime artifacts (local Postgres+pgAdmin install, logs, heartbeats)
+runtime/
+data/
+playwright-report/
+test-results/
+
+# Generated type/build info
+*.tsbuildinfo
+next-env.d.ts

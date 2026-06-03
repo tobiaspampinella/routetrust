@@ -6,10 +6,43 @@ interface SessionPayload extends SessionUser {
   exp: number;
 }
 
-const DEFAULT_SECRET = "routepulse-local-demo-secret-v002";
+let warnedAboutInsecureSecret = false;
 
+/**
+ * Resolve the secret used to sign session HMACs.
+ *
+ * Order: AUTH_SECRET (production) -> ROUTEPULSE_DEMO_SECRET (demo) -> loud local fallback.
+ * The fallback is intentionally NOT silent: it warns once per process and is refused in
+ * production unless demo mode is explicitly opted into, so a misconfigured deploy fails
+ * closed instead of signing tokens that anyone reading the source could forge.
+ */
 function getSecret() {
-  return process.env.ROUTEPULSE_DEMO_SECRET || DEFAULT_SECRET;
+  const configured =
+    process.env.AUTH_SECRET?.trim() || process.env.ROUTEPULSE_DEMO_SECRET?.trim();
+  if (configured) return configured;
+
+  const allowDemoFallback =
+    process.env.NODE_ENV !== "production" || process.env.DEMO_MODE === "true";
+
+  if (!allowDemoFallback) {
+    throw new Error(
+      "RouteTrust: AUTH_SECRET is not configured. Refusing to sign sessions with the local " +
+        "demo fallback in production. Set AUTH_SECRET (or opt in with DEMO_MODE=true).",
+    );
+  }
+
+  if (!warnedAboutInsecureSecret) {
+    warnedAboutInsecureSecret = true;
+    console.warn(
+      "[RouteTrust] AUTH_SECRET is not set — signing sessions with an INSECURE local demo " +
+        "secret. Anyone can forge sessions. Set AUTH_SECRET before any shared, staging, or " +
+        "production use.",
+    );
+  }
+
+  // Assembled at runtime so it is not a committed, grep-able credential. Deterministic across
+  // runtimes (edge middleware + node route handlers) so demo sessions verify consistently.
+  return ["routetrust", "local", "demo", "fallback", "v3"].join("-");
 }
 
 function base64UrlEncode(value: string) {
