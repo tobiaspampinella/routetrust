@@ -70,7 +70,8 @@
     "tester:browser": "node scripts/tester-browser",
     "devops:doctor": "node scripts/devops-doctor",
     "start:local-ops": "powershell -ExecutionPolicy Bypass -File scripts/start-routetrust-dev.ps1",
-    "qa:build": "node scripts/qa-build"
+    "qa:build": "node scripts/qa-build",
+    "export:public-demo": "node scripts/export-public-demo.js"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

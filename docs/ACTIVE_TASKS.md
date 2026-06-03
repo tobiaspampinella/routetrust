@@ -205,7 +205,7 @@ ROLE: Full Stack / UI / QA (human-orchestrated session)
 BRANCH: implementation/real-saas-core
 MODULE: Application source (web, admin CMS, driver, tracking, store, API)
 STATUS: running
-FILES_LOCKED: src/, tests/
+FILES_LOCKED: src/, tests/, scripts/export-public-demo.js, docs/PUBLIC_DEMO_EXPORT_PLAN.md
 OBJECTIVE: Build the operational SaaS + product site across the 7-day push. Claude Code owns the application source lane; the autonomous ops daemon must NOT edit or auto-commit files under src/ or tests/ while this task is running (concurrent git ops on these paths broke a build mid-session). The daemon keeps its ops domain: docs/, runtime/, scripts/, agents/.
 STARTED_AT: 2026-06-03
 EXPECTED_FINISH: 2026-06-10

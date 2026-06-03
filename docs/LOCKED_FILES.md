@@ -1,9 +1,11 @@
 # Locked Files
 
-Last updated: 2026-06-03T12:48:19.528Z
+Last updated: 2026-06-03T13:09:26.043Z
 
 ## Active Lock
 
+- `docs/PUBLIC_DEMO_EXPORT_PLAN.md` -> CC-SESSION-001
+- `scripts/export-public-demo.js` -> CC-SESSION-001
 - `src/` -> CC-SESSION-001
 - `tests/` -> CC-SESSION-001
 
