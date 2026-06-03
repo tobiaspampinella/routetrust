@@ -202,6 +202,138 @@ function processCommandLine(pid) {
   return sanitizeText(result.stdout || "");
 }
 
+function envFileHasDatabaseUrl(file) {
+  return readText(file)
+    .split(/\r?\n/)
+    .some((line) => {
+      const trimmed = line.trim();
+      return trimmed && !trimmed.startsWith("#") && /^DATABASE_URL\s*=/.test(trimmed) && trimmed.split("=").slice(1).join("=").trim().length > 0;
+    });
+}
+
+function readEnvValue(file, key) {
+  const prefix = new RegExp(`^${key}\\s*=`);
+  for (const line of readText(file).split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#") || !prefix.test(trimmed)) continue;
+    const raw = trimmed.split("=").slice(1).join("=").trim();
+    if (!raw) continue;
+    if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
+      return raw.slice(1, -1);
+    }
+    return raw;
+  }
+  return "";
+}
+
+function loadLocalEnvForChecks() {
+  if (process.env.DATABASE_URL?.trim()) return;
+  for (const file of [".env.local", ".env"]) {
+    const value = readEnvValue(file, "DATABASE_URL");
+    if (value) {
+      process.env.DATABASE_URL = value;
+      return;
+    }
+  }
+}
+
+async function cheapMain() {
+  const timestamp = nowIso();
+  const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://127.0.0.1:3000";
+
+  const healthCheck = await httpCheck(`${baseUrl}/api/health`);
+  const gitRemote = hasConfiguredGitRemote();
+  const branchName = getCurrentBranch();
+  const gitWorktree = getGitWorktreeStatus();
+  const gitPushSync = getGitPushSyncStatus();
+  const healthPayload = healthCheck.ok ? JSON.parse(healthCheck.body || "{}") : null;
+  const databaseUrlPresent = Boolean(process.env.DATABASE_URL) || envFileHasDatabaseUrl(".env.local") || envFileHasDatabaseUrl(".env");
+  const databaseReady = healthPayload?.checks?.db === "ok";
+  const storageMode = healthPayload?.storageMode || healthPayload?.checks?.persistence || "unknown";
+  const localDemoReady = healthCheck.status === 200;
+  const dbLocalReady = databaseUrlPresent && databaseReady;
+  const betaStableReady =
+    localDemoReady &&
+    dbLocalReady &&
+    storageMode === "db" &&
+    healthPayload?.checks?.auth === "real" &&
+    healthPayload?.demoMode === false &&
+    gitPushSync.synced &&
+    gitWorktree.clean;
+  const stagingReady = betaStableReady && gitRemote.configured && Boolean(process.env.STAGING_URL || process.env.NEXT_PUBLIC_STAGING_URL);
+
+  const blockers = [];
+  if (healthCheck.status !== 200) blockers.push("/api/health is not returning HTTP 200.");
+  if (!databaseUrlPresent) blockers.push("DATABASE_URL is absent.");
+  if (databaseUrlPresent && !databaseReady) blockers.push(`Database health is ${healthPayload?.checks?.db || "unknown"}.`);
+  if (storageMode !== "db") blockers.push(`Storage mode is ${storageMode}.`);
+  if (healthPayload?.checks?.auth !== "real") blockers.push(`Auth mode is ${healthPayload?.checks?.auth || healthPayload?.authMode || "unknown"}.`);
+  if (healthPayload?.demoMode === true) blockers.push("DEMO_MODE is enabled.");
+  if (!gitPushSync.synced) blockers.push(`GitHub push is pending for branch ${branchName}: ${gitPushSync.detail}.`);
+  if (!gitWorktree.clean) blockers.push(`Git worktree is dirty (${gitWorktree.entries.length} entries).`);
+
+  const reportStatus = stagingReady ? "STAGING_READY" : betaStableReady ? "BETA_STABLE_READY" : localDemoReady ? "LOCAL_DEMO_READY" : "BLOCKED";
+  const body = `# Beta Check Cheap Report
+
+Generated: ${timestamp}
+
+STATUS: ${reportStatus}
+
+## Classification
+
+- LOCAL_DEMO_READY: ${localDemoReady ? "YES" : "NO"}
+- DB_LOCAL_READY: ${dbLocalReady ? "YES" : "NO"}
+- BETA_STABLE_READY: ${betaStableReady ? "YES" : "NO"}
+- STAGING_READY: ${stagingReady ? "YES" : "NO"}
+
+## Cheap Checks Only
+
+- /api/health -> ${healthCheck.status}
+- DATABASE_URL present -> ${databaseUrlPresent ? "YES" : "NO"}
+- Database health -> ${healthPayload?.checks?.db || "unknown"}
+- Storage mode -> ${storageMode}
+- Auth mode -> ${healthPayload?.checks?.auth || healthPayload?.authMode || "unknown"}
+- Demo mode -> ${healthPayload?.demoMode === true ? "YES" : "NO"}
+- Git worktree clean -> ${gitWorktree.clean ? "YES" : "NO"}
+- Git push synced -> ${gitPushSync.synced ? "YES" : "NO"}
+
+## Blockers
+
+${blockers.length === 0 ? "- none" : blockers.map((item) => `- ${item}`).join("\n")}
+
+## Skipped By Design
+
+- typecheck
+- lint
+- unit tests
+- production build
+- browser smoke
+- Prisma migrations
+`;
+
+  writeText("runtime/reports/beta-check-cheap-latest.md", body);
+  writeText(
+    "runtime/reports/beta-check-cheap-latest.json",
+    `${JSON.stringify(
+      {
+        generatedAt: timestamp,
+        status: reportStatus,
+        localDemoReady,
+        dbLocalReady,
+        betaStableReady,
+        stagingReady,
+        blockers,
+      },
+      null,
+      2,
+    )}\n`,
+  );
+
+  console.log(reportStatus);
+  console.log("Cheap beta check report: runtime/reports/beta-check-cheap-latest.md");
+  if (!betaStableReady) process.exit(1);
+}
+
 async function main() {
   const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://127.0.0.1:3000";
   const snapshot = getRuntimeSnapshot();
@@ -584,7 +716,11 @@ ${`${prismaValidateResult.stdout}\n${prismaValidateResult.stderr}`.slice(0, 6000
   console.log("Report: docs/agent-reports/beta-check.md");
 }
 
-main().catch((error) => {
+loadLocalEnvForChecks();
+
+const entrypoint = process.env.ROUTETRUST_BETA_CHECK_CHEAP === "1" ? cheapMain : main;
+
+entrypoint().catch((error) => {
   console.error(error.stack || error.message);
   process.exit(1);
 });

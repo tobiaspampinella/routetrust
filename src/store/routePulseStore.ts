@@ -67,6 +67,7 @@ interface RoutePulseStore extends RoutePulseData {
   mockReassignRoute: (routeId: string) => void;
   approveRouteSuggestion: (routeId: string, note?: string) => void;
   rejectRouteSuggestion: (routeId: string, note?: string) => void;
+  setDrivers: (drivers: Driver[]) => void;
   addDriver: (input: { name: string; phone: string; status?: Driver["status"] }) => void;
   updateDriver: (driverId: string, input: Partial<Pick<Driver, "name" | "phone" | "status">>) => void;
   removeDriver: (driverId: string) => void;
@@ -196,6 +197,7 @@ export const useRoutePulseStore = create<RoutePulseStore>()(
         set({ currentUser: null });
       },
       setCurrentUser: (user) => set({ currentUser: user }),
+      setDrivers: (drivers) => set({ drivers }),
       addDriver: ({ name, phone, status = "available" }) => {
         set((state) => ({
           drivers: [

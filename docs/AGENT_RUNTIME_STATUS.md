@@ -1,6 +1,6 @@
 # Agent Runtime Status
 
-Generated: 2026-06-01T03:16:00.316Z
+Generated: 2026-06-03T12:03:46.879Z
 
 ## Runtime Truth Model
 
@@ -18,27 +18,33 @@ Documentation does not mean an agent is actively working.
 
 | Agent | Status | Mode | Active process | Tasks | Pending tasks |
 | --- | --- | --- | --- | ---: | ---: |
-| codex-node | pending | scheduled | none | 2 | 1 |
-| fullstack-engineer | completed | scheduled | none | 1 | 0 |
-| qa-analyst | completed | scheduled | none | 1 | 0 |
-| operational-auditor | pending | scheduled | none | 0 | 0 |
-| demo-engineer | pending | scheduled | none | 0 | 0 |
-| maps-agent | completed | scheduled | none | 1 | 0 |
-| telegram-agent | completed | scheduled | none | 1 | 0 |
-| bug-assistant-agent | completed | scheduled | none | 1 | 0 |
-| docs-agent | completed | scheduled | none | 1 | 0 |
-| ux-ui-agent | pending | scheduled | none | 2 | 1 |
-| fullstack-debug-agent | pending | scheduled | none | 1 | 1 |
-| qa-security-agent | pending | scheduled | none | 1 | 1 |
-| local-bug-assistant-agent | pending | scheduled | none | 1 | 1 |
+| codex-node | pending | executable | none | 2 | 1 |
+| fullstack-engineer | completed | executable | none | 1 | 0 |
+| qa-analyst | completed | executable | none | 1 | 0 |
+| operational-auditor | pending | executable | none | 0 | 0 |
+| demo-engineer | pending | executable | none | 0 | 0 |
+| maps-agent | completed | executable | none | 1 | 0 |
+| telegram-agent | completed | executable | none | 1 | 0 |
+| bug-assistant-agent | completed | executable | none | 1 | 0 |
+| docs-agent | completed | executable | none | 1 | 0 |
+| ux-ui-agent | pending | executable | none | 2 | 1 |
+| fullstack-debug-agent | pending | executable | none | 1 | 1 |
+| qa-security-agent | pending | executable | none | 1 | 1 |
+| local-bug-assistant-agent | pending | executable | none | 1 | 1 |
+| ux-agent | pending | executable | none | 0 | 0 |
+| fullstack-bug-fix-agent | pending | executable | none | 0 | 0 |
+| qa-validation-agent | pending | executable | none | 0 | 0 |
+| cybersecurity-validation-agent | pending | executable | none | 0 | 0 |
+| bug-triage-agent | pending | executable | none | 0 | 0 |
+| local-website-assistant-agent | pending | executable | none | 0 | 0 |
 
 ## Active Processes
 
-- scheduler: pid 15300
+- none
 
 ## Stale Process Markers
 
-- none
+- scheduler: stale marker docs/agent-logs/scheduler.running.json
 
 ## Tasks From docs/ACTIVE_TASKS.md
 
@@ -73,11 +79,4 @@ Invalid statuses:
 - The runtime is supervised and local.
 - It does not create autonomous LLM workers.
 - Product implementation still requires an explicit coding session.
-- Telegram delivery requires `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`.
-
-## Scheduler Cycle
-
-- agent:runner: exit 0
-- beta-check: exit 0
-- watchdog:once: exit 0
-- agents:status: exit 0
+- Telegram is optional and outside the local operations baseline.

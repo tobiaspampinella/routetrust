@@ -18,10 +18,12 @@ test-results/
 .env.example.local
 *.log
 logs/
+runtime/
 runtime/heartbeats/
 runtime/logs/
 runtime/project-status.json
 runtime/local-ops-status.json
+docs/WATCHDOG_REPORT.md
 docs/agent-logs/
 docs/agent-reports/*-agent-report.md
 docs/agent-reports/beta-check.md
@@ -63,3 +65,9 @@ dump/
 *.p12
 *.cer
 *.crt
+runtime/autonomous/*.log
+runtime/autonomous/*.tmp
+runtime/github-sync/*.log
+runtime/github-sync/*.tmp
+runtime/local-model/*.tmp
+runtime/reports/*.tmp

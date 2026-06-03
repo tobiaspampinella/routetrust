@@ -9,23 +9,29 @@ const {
   writeRuntimeStatusReport,
 } = require("./agent-runtime-lib.js");
 
-syncLockedFilesDoc();
+const readOnly = process.env.ROUTETRUST_STATUS_READONLY === "1";
+
+if (!readOnly) syncLockedFilesDoc();
 const snapshot = getRuntimeSnapshot();
 const lockState = checkLocks(snapshot.activeTasks);
-writeRuntimeStatusReport(snapshot, {
-  "Lock Validation": lockState.ok
-    ? "No lock inconsistencies detected."
-    : lockState.inconsistencies.map((item) => `- ${item}`).join("\n"),
-});
-writeProjectStatus(snapshot, {
-  locks: {
-    status: lockState.ok ? "healthy" : "warning",
-    active: lockState.activeLocks,
-    inconsistencies: lockState.inconsistencies,
-    lastUpdated: snapshot.generatedAt,
-  },
-});
-recordStatusLog(snapshot);
+
+if (!readOnly) {
+  writeRuntimeStatusReport(snapshot, {
+    "Lock Validation": lockState.ok
+      ? "No lock inconsistencies detected."
+      : lockState.inconsistencies.map((item) => `- ${item}`).join("\n"),
+  });
+  writeProjectStatus(snapshot, {
+    locks: {
+      status: lockState.ok ? "healthy" : "warning",
+      active: lockState.activeLocks,
+      inconsistencies: lockState.inconsistencies,
+      lastUpdated: snapshot.generatedAt,
+    },
+  });
+  recordStatusLog(snapshot);
+}
+
 printStatus(snapshot);
 
 console.log("");
