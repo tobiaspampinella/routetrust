@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { Activity, BarChart3, Bug, FileText, LayoutDashboard, LogOut, Route, Settings, Truck } from "lucide-react";
+import { Activity, BarChart3, Bug, FileText, LayoutDashboard, LogOut, Palette, Route, Settings, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { SessionUser } from "@/lib/types";
@@ -16,6 +16,7 @@ const navigation = [
   { href: "/admin/cms", label: "CMS", icon: FileText },
   { href: "/admin/project-status", label: "Estado", icon: Activity },
   { href: "/admin/bug-reports", label: "Bugs", icon: Bug },
+  { href: "/admin/design-system", label: "Design System", icon: Palette },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
