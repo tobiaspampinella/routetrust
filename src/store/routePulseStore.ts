@@ -13,6 +13,7 @@ import {
 import { calculateProjectedSLA } from "@/lib/kpiCalculations";
 import { getTrackingSimulationElapsedSeconds } from "@/lib/trackingSimulation";
 import type {
+  AuditEntry,
   CustomerTrackingCms,
   DeliveryPackage,
   Driver,
@@ -37,6 +38,8 @@ type LoginResult =
 
 interface RoutePulseStore extends RoutePulseData {
   currentUser: SessionUser | null;
+  auditLogs: AuditEntry[];
+  dismissedApprovals: string[];
   login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => Promise<void>;
   setCurrentUser: (user: SessionUser | null) => void;
@@ -62,6 +65,8 @@ interface RoutePulseStore extends RoutePulseData {
   recalculateRouteEta: (routeId: string) => void;
   markRouteRisk: (routeId: string, risk: RiskLevel) => void;
   mockReassignRoute: (routeId: string) => void;
+  approveRouteSuggestion: (routeId: string, note?: string) => void;
+  rejectRouteSuggestion: (routeId: string, note?: string) => void;
   addDriver: (input: { name: string; phone: string; status?: Driver["status"] }) => void;
   updateDriver: (driverId: string, input: Partial<Pick<Driver, "name" | "phone" | "status">>) => void;
   removeDriver: (driverId: string) => void;
@@ -157,6 +162,8 @@ export const useRoutePulseStore = create<RoutePulseStore>()(
     (set, get) => ({
       ...initialState,
       currentUser: null,
+      auditLogs: [],
+      dismissedApprovals: [],
       login: async (email, password) => {
         const response = await fetch("/api/auth/login", {
           method: "POST",
@@ -603,6 +610,80 @@ export const useRoutePulseStore = create<RoutePulseStore>()(
               if (driver.id === targetRoute.driverId) return { ...driver, status: "available" as const };
               return driver;
             }),
+          };
+        });
+      },
+      approveRouteSuggestion: (routeId, note) => {
+        set((state) => {
+          const targetRoute = state.routes.find((route) => route.id === routeId);
+          if (!targetRoute) return {};
+
+          const fallbackDriver = state.drivers.find(
+            (driver) => driver.id !== targetRoute.driverId && driver.status !== "paused",
+          );
+          const reassign = Boolean(fallbackDriver);
+
+          const routesWithDriver = reassign
+            ? state.routes.map((route) => (route.id === routeId ? { ...route, driverId: fallbackDriver!.id } : route))
+            : state.routes;
+          const refreshed = refreshPredictiveModel({ ...state, routes: routesWithDriver }, [routeId]);
+          const routes = refreshed.routes.map((route) =>
+            route.id === routeId ? { ...route, suggestedReassignments: [] } : route,
+          );
+          const drivers = reassign
+            ? state.drivers.map((driver) => {
+                if (driver.id === fallbackDriver!.id)
+                  return {
+                    ...driver,
+                    assignedRouteId: routeId,
+                    status: (targetRoute.status === "paused" ? "paused" : "on_route") as Driver["status"],
+                  };
+                if (driver.id === targetRoute.driverId) return { ...driver, status: "available" as const };
+                return driver;
+              })
+            : state.drivers;
+
+          const entry: AuditEntry = {
+            id: `audit-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            action: "route_approved",
+            routeId,
+            zone: targetRoute.zone,
+            detail: reassign
+              ? `AI reassignment applied on ${targetRoute.zone}.`
+              : `Suggestion approved (no driver available to reassign) on ${targetRoute.zone}.`,
+            note: note?.trim() || undefined,
+            actor: get().currentUser?.name ?? "admin",
+            createdAt: new Date().toISOString(),
+          };
+
+          return {
+            routes,
+            packages: refreshed.packages,
+            drivers,
+            auditLogs: [entry, ...state.auditLogs].slice(0, 50),
+            dismissedApprovals: [...new Set([...state.dismissedApprovals, routeId])],
+          };
+        });
+      },
+      rejectRouteSuggestion: (routeId, note) => {
+        set((state) => {
+          const targetRoute = state.routes.find((route) => route.id === routeId);
+          if (!targetRoute) return {};
+
+          const entry: AuditEntry = {
+            id: `audit-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            action: "route_rejected",
+            routeId,
+            zone: targetRoute.zone,
+            detail: `AI suggestion rejected on ${targetRoute.zone}; route kept as-is.`,
+            note: note?.trim() || undefined,
+            actor: get().currentUser?.name ?? "admin",
+            createdAt: new Date().toISOString(),
+          };
+
+          return {
+            auditLogs: [entry, ...state.auditLogs].slice(0, 50),
+            dismissedApprovals: [...new Set([...state.dismissedApprovals, routeId])],
           };
         });
       },

@@ -193,6 +193,19 @@ export interface OperationalIncident {
   resolvedAt?: string;
 }
 
+export type AuditAction = "route_approved" | "route_rejected";
+
+export interface AuditEntry {
+  id: string;
+  action: AuditAction;
+  routeId: string;
+  zone?: string;
+  detail: string;
+  note?: string;
+  actor: string;
+  createdAt: string;
+}
+
 export interface RoutePulseData {
   company: Company;
   warehouse: Warehouse;
