@@ -4,14 +4,15 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-[#0071e3] text-white shadow-sm hover:bg-[#0077ed]",
-        secondary: "bg-[#e8e8ed] text-[#1d1d1f] hover:bg-[#dedee3]",
-        outline: "border border-[#d2d2d7] bg-white/80 text-[#1d1d1f] hover:bg-white",
-        ghost: "text-[#1d1d1f] hover:bg-black/5",
+        default: "bg-ink text-white shadow-sm hover:bg-black",
+        brand: "bg-brand text-white shadow-sm hover:bg-brand-dark",
+        secondary: "bg-surface-muted text-ink hover:bg-line",
+        outline: "border border-line bg-white text-ink hover:bg-surface",
+        ghost: "text-ink hover:bg-black/5",
         destructive: "bg-destructive text-destructive-foreground hover:bg-red-700",
         success: "bg-emerald-600 text-white hover:bg-emerald-700",
         warning: "bg-amber-500 text-white hover:bg-amber-600",

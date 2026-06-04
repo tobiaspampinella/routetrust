@@ -10,6 +10,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // RouteTrust brand scale (Uber base + ChatGPT teal accent). Source of truth for the
+        // light product surface; prefer these over hardcoded hex.
+        ink: { DEFAULT: "#111111", soft: "#1d1d1f" },
+        surface: { DEFAULT: "#f7f7f8", muted: "#efeff1" },
+        line: { DEFAULT: "#e6e6eb", soft: "#f0f0f3" },
+        brand: {
+          DEFAULT: "#10a37f",
+          dark: "#19c37d",
+          50: "#e7f6f1",
+          100: "#c7eadd",
+          600: "#0e9474",
+          700: "#0b7d63",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

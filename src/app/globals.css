@@ -32,10 +32,33 @@
   --ink: #f8f7ff;
   --font-body: "Segoe UI", "Aptos", "Trebuchet MS", sans-serif;
   --font-display: "Bahnschrift", "Arial Narrow", "Segoe UI", sans-serif;
+
+  /* RouteTrust light design system — Uber base + ChatGPT teal accent. */
+  --rt-ink: #111111;
+  --rt-ink-soft: #1d1d1f;
+  --rt-surface: #f7f7f8;
+  --rt-line: #e6e6eb;
+  --rt-muted: #6b6b76;
+  --rt-muted-soft: #8e8ea0;
+  --rt-accent: #10a37f;
+  --rt-accent-dark: #19c37d;
 }
 
 * {
   border-color: hsl(var(--border));
+}
+
+/* RouteTrust shared utilities (Uber base + ChatGPT teal accent). */
+.rt-accent {
+  color: var(--rt-accent);
+}
+.rt-chip-active {
+  background-color: var(--rt-ink);
+  color: #fff;
+}
+.rt-focus-accent:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--rt-accent);
 }
 
 body {
