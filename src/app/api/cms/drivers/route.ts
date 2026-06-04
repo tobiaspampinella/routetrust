@@ -9,7 +9,14 @@ export async function GET(request: NextRequest) {
   const guard = await requireCmsPermission(request, "view");
   if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: guard.status });
 
-  const { drivers, source } = await listDrivers();
+  const { drivers, source } = await listDrivers({
+    tenantId: guard.tenantId,
+    actor: {
+      id: guard.user.id,
+      name: guard.user.name,
+      role: guard.user.role,
+    },
+  });
   return NextResponse.json({ drivers, source });
 }
 
@@ -32,6 +39,13 @@ export async function POST(request: NextRequest) {
     assignedRouteId: input.assignedRouteId ?? "",
   };
 
-  const drivers = await saveDriver(driver);
+  const drivers = await saveDriver(driver, {
+    tenantId: guard.tenantId,
+    actor: {
+      id: guard.user.id,
+      name: guard.user.name,
+      role: guard.user.role,
+    },
+  });
   return NextResponse.json({ driver, drivers }, { status: 201 });
 }

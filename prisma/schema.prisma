@@ -8,17 +8,19 @@ datasource db {
 }
 
 model Tenant {
-  id         String     @id @default(uuid())
-  name       String
-  slug       String     @unique
-  status     String     @default("active")
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  auditLogs  AuditLog[]
-  bugReports BugReport[]
-  users      User[]
-  routes     Route[]
-  drivers    Driver[]
+  id               String               @id @default(uuid())
+  name             String
+  slug             String               @unique
+  status           String               @default("active")
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  auditLogs        AuditLog[]
+  bugReports       BugReport[]
+  users            User[]
+  routes           Route[]
+  drivers          Driver[]
+  cmsIncidents     CmsIncident[]
+  approvalRequests CmsApprovalRequest[]
 }
 
 model User {
@@ -54,17 +56,18 @@ model Driver {
 }
 
 model Route {
-  id               String      @id @default(uuid())
+  id               String        @id @default(uuid())
   tenantId         String
-  status           String      @default("draft")
+  status           String        @default("draft")
   driverId         String?
   estimatedMinutes Int?
   slaDeadline      DateTime?
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  tenant           Tenant      @relation(fields: [tenantId], references: [id])
-  driver           Driver?     @relation(fields: [driverId], references: [id])
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  tenant           Tenant        @relation(fields: [tenantId], references: [id])
+  driver           Driver?       @relation(fields: [driverId], references: [id])
   stops            RouteStop[]
+  incidents        CmsIncident[]
 
   @@index([tenantId])
   @@index([status])
@@ -86,7 +89,7 @@ model RouteStop {
 }
 
 model AuditLog {
-  id         String    @id @default(uuid())
+  id         String   @id @default(uuid())
   tenantId   String?
   actorId    String?
   actorName  String?
@@ -95,17 +98,17 @@ model AuditLog {
   module     String
   entityId   String?
   entityType String?
-  result     String    @default("success")
+  result     String   @default("success")
   metadata   Json?
-  createdAt  DateTime  @default(now())
-  tenant     Tenant?   @relation(fields: [tenantId], references: [id])
+  createdAt  DateTime @default(now())
+  tenant     Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
   @@index([createdAt])
 }
 
 model BugReport {
-  id                String    @id
+  id                String   @id
   tenantId          String?
   source            String
   module            String
@@ -128,12 +131,56 @@ model BugReport {
   tags              Json
   triageNotes       Json?
   confidence        Float?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  tenant            Tenant?   @relation(fields: [tenantId], references: [id])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  tenant            Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
   @@index([status])
   @@index([severity])
   @@index([createdAt])
+}
+
+model CmsIncident {
+  id         String    @id
+  tenantId   String
+  title      String
+  status     String    @default("open")
+  severity   String    @default("medium")
+  ownerRole  String    @default("operations")
+  routeId    String?
+  detail     String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  resolvedAt DateTime?
+  tenant     Tenant    @relation(fields: [tenantId], references: [id])
+  route      Route?    @relation(fields: [routeId], references: [id])
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([severity])
+  @@index([createdAt])
+}
+
+model CmsApprovalRequest {
+  id             String    @id
+  tenantId       String
+  action         String
+  targetId       String
+  title          String
+  detail         String
+  requestedBy    String
+  requestedAt    DateTime
+  status         String    @default("pending")
+  decidedBy      String?
+  decidedAt      DateTime?
+  decisionReason String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  tenant         Tenant    @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([action])
+  @@index([requestedAt])
 }

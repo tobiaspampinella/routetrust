@@ -65,6 +65,15 @@ async function httpCheck(url) {
   }
 }
 
+function parseJsonBody(check) {
+  if (!check?.body?.trim()) return null;
+  try {
+    return JSON.parse(check.body);
+  } catch {
+    return null;
+  }
+}
+
 function hasConfiguredGitRemote() {
   const result = runShellCommand(`git -c safe.directory="${ROOT}" remote get-url origin`, "git remote get-url origin");
   return {
@@ -246,7 +255,7 @@ async function cheapMain() {
   const branchName = getCurrentBranch();
   const gitWorktree = getGitWorktreeStatus();
   const gitPushSync = getGitPushSyncStatus();
-  const healthPayload = healthCheck.ok ? JSON.parse(healthCheck.body || "{}") : null;
+  const healthPayload = healthCheck.ok ? parseJsonBody(healthCheck) : null;
   const databaseUrlPresent = Boolean(process.env.DATABASE_URL) || envFileHasDatabaseUrl(".env.local") || envFileHasDatabaseUrl(".env");
   const databaseReady = healthPayload?.checks?.db === "ok";
   const storageMode = healthPayload?.storageMode || healthPayload?.checks?.persistence || "unknown";
@@ -380,7 +389,7 @@ async function main() {
   const churnPolicy = runtimeChurnPolicyStatus();
   const bugSummary = summarizeBugs();
   const silentDemoSecret = hasSilentDemoSecret();
-  const healthPayload = healthCheck.ok ? JSON.parse(healthCheck.body || "{}") : null;
+  const healthPayload = healthCheck.ok ? parseJsonBody(healthCheck) : null;
   const databaseReady = healthPayload?.checks?.db === "ok";
   const bugReportsDbBacked = healthPayload?.storageMode === "db" || healthPayload?.checks?.persistence === "db";
   const dbLocalReady = databaseReady && prismaValidateResult.status === 0 && prismaMigration.exists;

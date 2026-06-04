@@ -12,6 +12,7 @@ async function main() {
       status: "active",
     },
     create: {
+      id: "tenant-demo-latam",
       name: "Demo Company",
       slug: "demo",
     },
@@ -21,6 +22,8 @@ async function main() {
     where: { tenantId: tenant.id },
     select: { id: true },
   });
+  await prismaClient.cmsApprovalRequest.deleteMany({ where: { tenantId: tenant.id } });
+  await prismaClient.cmsIncident.deleteMany({ where: { tenantId: tenant.id } });
   await prismaClient.routeStop.deleteMany({
     where: { routeId: { in: existingRoutes.map((route: { id: string }) => route.id) } },
   });
@@ -68,23 +71,47 @@ async function main() {
     },
   });
 
-  const driver = await prismaClient.driver.create({
-    data: {
-      tenantId: tenant.id,
-      name: "Carlos Mendez",
-      phone: "+52 55 0101 2020",
-      status: "available",
-      currentLat: 19.4326,
-      currentLng: -99.1332,
-      lastSeenAt: new Date(),
-    },
+  await prismaClient.driver.createMany({
+    data: [
+      {
+        id: "driver-001",
+        tenantId: tenant.id,
+        name: "Miguel Alvarez",
+        phone: "+52 55 0101 2020",
+        status: "on_route",
+        currentLat: 19.4326,
+        currentLng: -99.1332,
+        lastSeenAt: new Date(),
+      },
+      {
+        id: "driver-002",
+        tenantId: tenant.id,
+        name: "Laura Jimenez",
+        phone: "+52 55 0101 3030",
+        status: "on_route",
+        currentLat: 19.4157,
+        currentLng: -99.1645,
+        lastSeenAt: new Date(),
+      },
+      {
+        id: "driver-003",
+        tenantId: tenant.id,
+        name: "Carlos Gomez",
+        phone: "+52 55 0101 4040",
+        status: "available",
+        currentLat: 19.4271,
+        currentLng: -99.1712,
+        lastSeenAt: new Date(),
+      },
+    ],
   });
 
   await prismaClient.route.create({
     data: {
+      id: "route-001",
       tenantId: tenant.id,
-      driverId: driver.id,
-      status: "draft",
+      driverId: "driver-001",
+      status: "in_progress",
       estimatedMinutes: 45,
       slaDeadline: new Date(Date.now() + 60 * 60 * 1000),
       stops: {
@@ -117,7 +144,9 @@ async function main() {
 
   await prismaClient.route.create({
     data: {
+      id: "route-002",
       tenantId: tenant.id,
+      driverId: "driver-002",
       status: "suggested",
       estimatedMinutes: 35,
       slaDeadline: new Date(Date.now() + 90 * 60 * 1000),
@@ -146,6 +175,47 @@ async function main() {
           },
         ],
       },
+    },
+  });
+
+  await prismaClient.cmsIncident.createMany({
+    data: [
+      {
+        id: "incident-001",
+        tenantId: tenant.id,
+        title: "Customer absent at priority stop",
+        status: "open",
+        severity: "medium",
+        ownerRole: "customer_experience",
+        routeId: "route-002",
+        createdAt: new Date("2026-05-27T10:10:00.000Z"),
+        detail: "Requires proactive contact and possible second visit.",
+      },
+      {
+        id: "incident-002",
+        tenantId: tenant.id,
+        title: "Extended pause caused by road incident",
+        status: "in_review",
+        severity: "high",
+        ownerRole: "operations",
+        routeId: "route-002",
+        createdAt: new Date("2026-05-27T10:24:00.000Z"),
+        detail: "Impacts ETA for seven pending deliveries.",
+      },
+    ],
+  });
+
+  await prismaClient.cmsApprovalRequest.create({
+    data: {
+      id: "approval-001",
+      tenantId: tenant.id,
+      action: "approve_suggested_routes",
+      targetId: "route-002",
+      title: "Approve west route with SLA risk",
+      detail: "Estimated close 18:28. Human approval required because projected SLA is 88%.",
+      requestedBy: "RoutePulse AI rules engine",
+      requestedAt: new Date("2026-05-27T09:28:00.000Z"),
+      status: "pending",
     },
   });
 

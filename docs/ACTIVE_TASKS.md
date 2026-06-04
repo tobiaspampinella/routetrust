@@ -205,10 +205,31 @@ ROLE: Full Stack / UI / QA (human-orchestrated session)
 BRANCH: implementation/real-saas-core
 MODULE: Application source (web, admin CMS, driver, tracking, store, API)
 STATUS: completed
-FILES_LOCKED: src/, tests/, scripts/export-public-demo.js, docs/PUBLIC_DEMO_EXPORT_PLAN.md, README.md, LICENSE
+FILES_LOCKED:
 OBJECTIVE: Build the operational SaaS + product site across the 7-day push. Claude Code owns the application source lane; the autonomous ops daemon must NOT edit or auto-commit files under src/ or tests/ while this task is running (concurrent git ops on these paths broke a build mid-session). The daemon keeps its ops domain: docs/, runtime/, scripts/, agents/.
 STARTED_AT: 2026-06-03
 EXPECTED_FINISH: 2026-06-10
 RISKS: Concurrent daemon git operations on locked paths can corrupt the working tree or bundle Claude Code commits.
 DEPENDENCIES: docs/BUILD_ROADMAP_7DAY.md; locks honored via `npm run locks:check`.
 NEXT_STEP: Roadmap Days 1-7 delivered (operational SaaS + public site + sanitized export + README/credits). Lock released for handoff to the Codex/GPT lane (DB/Prisma migrations, public-repo push).
+
+[TASK]
+ID: RT-DB-IMPLEMENTATION-003
+OWNER: Codex GPT-5.5
+AGENT: Codex GPT-5.5
+ROLE: Backend/DB lane
+BRANCH: implementation/real-saas-core
+MODULE: Prisma logistics core persistence
+STATUS: completed
+PRIORITY: P0.2/P0.3
+OBJECTIVE: Port the verified Prisma migration and DB-aware CMS incidents/approvals persistence onto implementation/real-saas-core without route-map changes, then verify build and beta gates honestly.
+FILES_LOCKED:
+STARTED_AT: 2026-06-04T17:18:37.8923781-05:00
+EXPECTED_OUTPUT: implementation/real-saas-core contains the initial Prisma migration plus DB-aware CMS incidents/approvals APIs, with locks clean and checks executed.
+ACCEPTANCE_CRITERIA: locks check passes; prisma validate passes; typecheck/lint/test/build pass; public demo export remains clean; beta-check does not claim beta stable unless DB/runtime/git blockers are actually cleared.
+COMPLETED_AT: 2026-06-04T17:27:13.6854574-05:00
+ACTUAL_OUTPUT: Ported DB-aware CMS drivers, incidents, and approvals persistence onto implementation/real-saas-core; added initial Prisma migration, protected CMS APIs, mapping tests, beta-check JSON hardening, and docker-compose port alignment.
+CHECKS: npx prisma format pass; npx prisma validate pass; npx prisma generate pass after stopping stale dev server; npm run typecheck pass; npm run lint pass; npm test pass 20/20; npm run build pass; APP_URL=http://127.0.0.1:3001 npm run qa:smoke pass; E2E_BASE_URL=http://127.0.0.1:3001 npm run qa:e2e pass 12/12; npm run qa:security pass; npm run export:public-demo pass with clean secret scan; APP_URL=http://127.0.0.1:3001 npm run beta-check reports LOCAL_DEMO_READY with DB/runtime/git blockers.
+BLOCKERS: Docker is not installed or not in PATH and no Postgres is reachable at 127.0.0.1:55432, so database_health and bug_reports_db_backed remain false until DB is started and migrations are applied.
+NEXT_STEP: Bring up Postgres at DATABASE_URL, run npx prisma migrate dev and npm run db:seed, then verify /api/health storageMode=db and rerun beta-check from port 3000.
+
