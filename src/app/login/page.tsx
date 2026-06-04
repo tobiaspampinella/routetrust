@@ -139,7 +139,7 @@ export default function LoginPage() {
                   />
                 </div>
                 {error ? <p className="rounded-2xl border border-rose-400/18 bg-rose-400/10 px-3 py-2 text-sm font-medium text-rose-200">{error}</p> : null}
-                <Button type="submit" size="lg" className="h-14 w-full rounded-full bg-[#b49bff] text-[#090910] hover:bg-[#c7b7ff]" disabled={submitting}>
+                <Button type="submit" size="lg" className="h-14 w-full rounded-xl bg-brand text-white hover:bg-brand-dark" disabled={submitting}>
                   {submitting ? "Validando..." : "Entrar"}
                   <ArrowRight className="h-4 w-4" />
                 </Button>

@@ -75,7 +75,7 @@ export function LandingPage() {
         <div className="mx-auto max-w-7xl px-5 pb-20 pt-20 lg:px-8 lg:pb-28 lg:pt-28">
           <div className="mx-auto max-w-3xl text-center">
             <Reveal>
-              <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-4 py-1.5 text-sm font-medium text-[#0066cc] backdrop-blur">
+              <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-4 py-1.5 text-sm font-medium text-[#10a37f] backdrop-blur">
                 <Sparkles className="h-4 w-4" />
                 AI-built, human-orchestrated
               </span>
@@ -93,13 +93,13 @@ export function LandingPage() {
             </Reveal>
             <Reveal delay={240}>
               <div className="mt-9 flex flex-wrap justify-center gap-3">
-                <Button asChild size="lg" className="h-14 rounded-full px-7 text-base">
+                <Button asChild size="lg" className="h-14 rounded-xl px-7 text-base">
                   <Link href="/contact">
                     Request demo
                     <ArrowRight className="h-5 w-5" />
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="h-14 rounded-full px-7 text-base">
+                <Button asChild size="lg" variant="outline" className="h-14 rounded-xl px-7 text-base">
                   <Link href="/track/demo">View tracking demo</Link>
                 </Button>
               </div>
@@ -133,7 +133,7 @@ export function LandingPage() {
       <section className="bg-[#f5f5f7]">
         <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
           <Reveal className="max-w-2xl">
-            <p className="text-sm font-semibold text-[#0066cc]">One platform, four surfaces</p>
+            <p className="text-sm font-semibold text-[#10a37f]">One platform, four surfaces</p>
             <h2 className="mt-3 text-4xl font-semibold tracking-tight text-[#1d1d1f] lg:text-5xl">
               Built for everyone in the operation
             </h2>
@@ -153,7 +153,7 @@ export function LandingPage() {
                   <p className="mt-2 flex-1 text-[#6e6e73]">{module.description}</p>
                   <Link
                     href={module.href}
-                    className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#0066cc] transition-transform group-hover:translate-x-0.5"
+                    className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#10a37f] transition-transform group-hover:translate-x-0.5"
                   >
                     {module.cta}
                     <ArrowRight className="h-4 w-4" />
@@ -178,10 +178,10 @@ export function LandingPage() {
                 or rejects. Every decision is auditable.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button asChild size="lg" className="h-12 rounded-full px-6">
+                <Button asChild size="lg" className="h-12 rounded-xl px-6">
                   <Link href="/contact">Request demo</Link>
                 </Button>
-                <Button asChild size="lg" variant="ghost" className="h-12 rounded-full px-6 text-white hover:bg-white/10">
+                <Button asChild size="lg" variant="ghost" className="h-12 rounded-xl px-6 text-white hover:bg-white/10">
                   <Link href="/product">How it works</Link>
                 </Button>
               </div>
@@ -200,7 +200,7 @@ export function LandingPage() {
             {FEATURES.map((feature, index) => (
               <Reveal key={feature.title} delay={index * 70}>
                 <div className="rounded-3xl border border-black/5 bg-[#f5f5f7] p-7">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#0071e3] shadow-sm">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#10a37f] shadow-sm">
                     <feature.icon className="h-6 w-6" />
                   </span>
                   <h3 className="mt-5 text-xl font-semibold text-[#1d1d1f]">{feature.title}</h3>
@@ -224,10 +224,10 @@ export function LandingPage() {
                 Explore the live tracking demo, or request a guided walkthrough of the operator console.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <Button asChild size="lg" className="h-14 rounded-full bg-white px-7 text-base text-[#1d1d1f] hover:bg-white/90">
+                <Button asChild size="lg" className="h-14 rounded-xl bg-white px-7 text-base text-[#1d1d1f] hover:bg-white/90">
                   <Link href="/contact">Request demo</Link>
                 </Button>
-                <Button asChild size="lg" variant="ghost" className="h-14 rounded-full px-7 text-base text-white hover:bg-white/10">
+                <Button asChild size="lg" variant="ghost" className="h-14 rounded-xl px-7 text-base text-white hover:bg-white/10">
                   <Link href="/track/demo">
                     View tracking demo
                     <ArrowRight className="h-5 w-5" />
@@ -267,7 +267,7 @@ function HeroPreview() {
       <div className="px-5 pb-5">
         <div className="route-grid flex h-36 items-center justify-center rounded-2xl border border-black/5 bg-[#fbfbfd]">
           <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-[#6e6e73] shadow-sm">
-            <Truck className="h-4 w-4 text-[#0071e3]" />
+            <Truck className="h-4 w-4 text-[#10a37f]" />
             Live route map · 12 vehicles tracked
           </span>
         </div>

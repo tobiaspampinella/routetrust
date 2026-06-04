@@ -43,7 +43,7 @@ export default function UseCasesPage() {
       <section className="apple-hero-bg">
         <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-24">
           <Reveal className="max-w-3xl">
-            <p className="text-sm font-semibold text-[#0066cc]">Use cases</p>
+            <p className="text-sm font-semibold text-[#10a37f]">Use cases</p>
             <h1 className="mt-3 text-5xl font-semibold leading-[1.05] tracking-tight text-[#1d1d1f] lg:text-6xl">
               Built for the way logistics teams actually run.
             </h1>
@@ -68,7 +68,7 @@ export default function UseCasesPage() {
                   <ul className="mt-5 space-y-2">
                     {useCase.points.map((point) => (
                       <li key={point} className="flex items-start gap-2 text-sm text-[#1d1d1f]">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#0071e3]" />
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#10a37f]" />
                         {point}
                       </li>
                     ))}
@@ -79,7 +79,7 @@ export default function UseCasesPage() {
           </div>
 
           <Reveal className="mt-14 text-center">
-            <Button asChild size="lg" className="h-14 rounded-full px-7 text-base">
+            <Button asChild size="lg" className="h-14 rounded-xl px-7 text-base">
               <Link href="/contact">Request a demo for your operation</Link>
             </Button>
           </Reveal>

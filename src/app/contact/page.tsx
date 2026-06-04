@@ -31,7 +31,7 @@ export default function ContactPage() {
       <section className="apple-hero-bg">
         <div className="mx-auto grid max-w-7xl gap-12 px-5 py-20 lg:grid-cols-2 lg:px-8 lg:py-24">
           <Reveal>
-            <p className="text-sm font-semibold text-[#0066cc]">Contact</p>
+            <p className="text-sm font-semibold text-[#10a37f]">Contact</p>
             <h1 className="mt-3 text-5xl font-semibold leading-[1.05] tracking-tight text-[#1d1d1f] lg:text-6xl">
               Let&apos;s put your operation on RouteTrust.
             </h1>
@@ -42,13 +42,13 @@ export default function ContactPage() {
             <div className="mt-8 space-y-3">
               <div className="flex items-center gap-3 text-[#1d1d1f]">
                 <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
-                  <Mail className="h-5 w-5 text-[#0071e3]" />
+                  <Mail className="h-5 w-5 text-[#10a37f]" />
                 </span>
                 <span className="text-sm font-medium">Guided demo of the full operator console</span>
               </div>
               <div className="flex items-center gap-3 text-[#1d1d1f]">
                 <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
-                  <MessageSquare className="h-5 w-5 text-[#0071e3]" />
+                  <MessageSquare className="h-5 w-5 text-[#10a37f]" />
                 </span>
                 <span className="text-sm font-medium">Answers on local-first deployment and roadmap</span>
               </div>
@@ -103,7 +103,7 @@ export default function ContactPage() {
                     <Label htmlFor="c-message">Message</Label>
                     <Textarea id="c-message" value={form.message} onChange={(e) => set("message", e.target.value)} placeholder="Tell us about your operation…" />
                   </div>
-                  <Button type="submit" size="lg" className="w-full rounded-full">
+                  <Button type="submit" size="lg" className="w-full rounded-xl">
                     Request demo
                   </Button>
                 </form>

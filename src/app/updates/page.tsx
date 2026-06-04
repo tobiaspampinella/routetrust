@@ -83,7 +83,7 @@ export default function UpdatesPage() {
       <section className="apple-hero-bg">
         <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-24">
           <Reveal className="max-w-3xl">
-            <p className="text-sm font-semibold text-[#0066cc]">Updates</p>
+            <p className="text-sm font-semibold text-[#10a37f]">Updates</p>
             <h1 className="mt-3 text-5xl font-semibold leading-[1.05] tracking-tight text-[#1d1d1f] lg:text-6xl">
               What&apos;s shipping, and where we honestly are.
             </h1>
@@ -154,7 +154,7 @@ export default function UpdatesPage() {
                   <ul className="mt-3 space-y-2">
                     {entry.items.map((item) => (
                       <li key={item} className="flex items-start gap-2 text-sm text-[#6e6e73]">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#0071e3]" />
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#10a37f]" />
                         {item}
                       </li>
                     ))}

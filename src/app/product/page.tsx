@@ -49,7 +49,7 @@ export default function ProductPage() {
       <section className="apple-hero-bg">
         <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
           <Reveal className="max-w-3xl">
-            <p className="text-sm font-semibold text-[#0066cc]">The platform</p>
+            <p className="text-sm font-semibold text-[#10a37f]">The platform</p>
             <h1 className="mt-3 text-5xl font-semibold leading-[1.05] tracking-tight text-[#1d1d1f] lg:text-6xl">
               One operational layer, from control tower to doorstep.
             </h1>
@@ -58,10 +58,10 @@ export default function ProductPage() {
               smart move; a human stays in control of every decision.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="h-14 rounded-full px-7 text-base">
+              <Button asChild size="lg" className="h-14 rounded-xl px-7 text-base">
                 <Link href="/contact">Request demo</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="h-14 rounded-full px-7 text-base">
+              <Button asChild size="lg" variant="outline" className="h-14 rounded-xl px-7 text-base">
                 <Link href="/track/demo">View tracking demo</Link>
               </Button>
             </div>
@@ -98,10 +98,10 @@ export default function ProductPage() {
               No inflated production claims — see the live status on the updates page.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Button asChild size="lg" className="h-14 rounded-full px-7 text-base">
+              <Button asChild size="lg" className="h-14 rounded-xl px-7 text-base">
                 <Link href="/updates">See current status</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="h-14 rounded-full px-7 text-base">
+              <Button asChild size="lg" variant="outline" className="h-14 rounded-xl px-7 text-base">
                 <Link href="/contact">Talk to us</Link>
               </Button>
             </div>
