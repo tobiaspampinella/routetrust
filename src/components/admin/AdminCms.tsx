@@ -205,19 +205,19 @@ export function AdminCms() {
           <div className="mr-4 flex rounded-xl bg-slate-200 p-1">
             <button
               onClick={() => setActiveTab("enterprise")}
-              className={`rounded-lg px-4 py-1.5 text-sm font-bold transition-all ${activeTab === "enterprise" ? "bg-white text-sky-700 shadow" : "text-slate-500 hover:text-slate-900"}`}
+              className={`rounded-lg px-4 py-1.5 text-sm font-bold transition-all ${activeTab === "enterprise" ? "bg-white text-brand-700 shadow" : "text-slate-500 hover:text-slate-900"}`}
             >
               Enterprise
             </button>
             <button
               onClick={() => setActiveTab("demo")}
-              className={`rounded-lg px-4 py-1.5 text-sm font-bold transition-all ${activeTab === "demo" ? "bg-white text-sky-700 shadow" : "text-slate-500 hover:text-slate-900"}`}
+              className={`rounded-lg px-4 py-1.5 text-sm font-bold transition-all ${activeTab === "demo" ? "bg-white text-brand-700 shadow" : "text-slate-500 hover:text-slate-900"}`}
             >
               Demo Builder
             </button>
             <button
               onClick={() => setActiveTab("live")}
-              className={`rounded-lg px-4 py-1.5 text-sm font-bold transition-all ${activeTab === "live" ? "bg-white text-sky-700 shadow" : "text-slate-500 hover:text-slate-900"}`}
+              className={`rounded-lg px-4 py-1.5 text-sm font-bold transition-all ${activeTab === "live" ? "bg-white text-brand-700 shadow" : "text-slate-500 hover:text-slate-900"}`}
             >
               Live Ops
             </button>

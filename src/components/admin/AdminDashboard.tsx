@@ -305,7 +305,7 @@ export function AdminDashboard() {
           <CardContent>
             <div className="grid gap-3 md:grid-cols-2">
               {insights.map((insight) => (
-                <div key={insight} className="rounded-lg border border-sky-100 bg-sky-50/70 p-4 text-sm font-medium text-slate-800">
+                <div key={insight} className="rounded-lg border border-brand-100 bg-brand-50/70 p-4 text-sm font-medium text-slate-800">
                   {insight}
                 </div>
               ))}
@@ -333,7 +333,7 @@ function BetaReadinessTile({
   const toneClass = {
     green: "bg-emerald-50 text-emerald-700",
     amber: "bg-amber-50 text-amber-700",
-    blue: "bg-sky-50 text-sky-700",
+    blue: "bg-brand-50 text-brand-700",
   }[tone];
 
   return (

@@ -11,7 +11,7 @@ interface StatCardProps {
 }
 
 const toneClasses = {
-  blue: "bg-[#e8f2ff] text-[#0071e3]",
+  blue: "bg-brand-50 text-brand",
   green: "bg-emerald-50 text-emerald-700",
   amber: "bg-amber-50 text-amber-700",
   red: "bg-red-50 text-red-700",

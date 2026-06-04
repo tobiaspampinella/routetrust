@@ -176,7 +176,7 @@ export function AdminKpis() {
               {routeRows.map(({ route, stats }) => (
                 <div key={route.id} className="flex h-full flex-col justify-end gap-3">
                   <div
-                    className="rounded-t-md bg-sky-600"
+                    className="rounded-t-md bg-brand-600"
                     style={{ height: `${Math.max((stats.delivered / maxDelivered) * 100, 8)}%` }}
                   />
                   <div className="text-center">

@@ -305,7 +305,7 @@ export function CmsEnterpriseOverview() {
           metrics: { activeRoutes: 0, delayedDeliveries: 0, slaAtRisk: 0, incidentsOpen: 0 },
           branding: {
             companyName: name,
-            primaryColor: "#0071e3",
+            primaryColor: "#10a37f",
             secondaryColor: "#1d1d1f",
             language: "es-AR",
           },
@@ -1351,7 +1351,7 @@ function ApprovalsSection({
           <CardTitle>Human Approval Layer</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="rounded-2xl bg-sky-50 p-4 text-sm font-semibold leading-6 text-sky-900">
+          <p className="rounded-2xl bg-brand-50 p-4 text-sm font-semibold leading-6 text-brand-700">
             RoutePulse AI sugiere, estima y detecta riesgo. El operador humano aprueba o rechaza decisiones criticas antes de afectar la operacion.
           </p>
           <Button onClick={requestApproval}>
@@ -1533,7 +1533,7 @@ function SandboxSection({
             <CardTitle>Dashboard demo separado</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
-            <div className="rounded-2xl bg-sky-50 p-4 text-sm font-semibold leading-6 text-sky-900">
+            <div className="rounded-2xl bg-brand-50 p-4 text-sm font-semibold leading-6 text-brand-700">
               Sandbox aislado: estas acciones modifican solo estado mock/local para demo comercial, no datos productivos.
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
@@ -1621,7 +1621,7 @@ function SandboxSection({
         <CardContent className="space-y-3">
           {sandbox.events.map((event) => (
             <div key={event.id} className="grid gap-3 rounded-2xl border border-border p-4 sm:grid-cols-[auto_1fr_auto] sm:items-center">
-              <div className={`h-3 w-3 rounded-full ${event.tone === "success" ? "bg-emerald-500" : event.tone === "danger" ? "bg-red-500" : event.tone === "warning" ? "bg-amber-500" : "bg-sky-500"}`} />
+              <div className={`h-3 w-3 rounded-full ${event.tone === "success" ? "bg-emerald-500" : event.tone === "danger" ? "bg-red-500" : event.tone === "warning" ? "bg-amber-500" : "bg-brand-600"}`} />
               <div>
                 <p className="font-black text-[#1d1d1f]">{event.label}</p>
                 <p className="mt-1 text-sm font-medium text-[#6e6e73]">{event.detail}</p>
@@ -1666,7 +1666,7 @@ function MetricCard({ icon: Icon, label, value, detail, tone = "slate" }: { icon
     slate: "bg-slate-50 text-slate-700",
     green: "bg-emerald-50 text-emerald-700",
     amber: "bg-amber-50 text-amber-700",
-    blue: "bg-sky-50 text-sky-700",
+    blue: "bg-brand-50 text-brand-700",
   }[tone];
 
   return (

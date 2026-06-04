@@ -198,7 +198,7 @@ export function AdminDrivers() {
   const kpis = [
     { label: "Total", value: drivers.length, tone: "text-[#1d1d1f]" },
     { label: "Disponibles", value: counts.available, tone: "text-emerald-600" },
-    { label: "En ruta", value: counts.on_route, tone: "text-blue-600" },
+    { label: "En ruta", value: counts.on_route, tone: "text-brand" },
     { label: "Pausados / offline", value: counts.paused + counts.offline, tone: "text-amber-600" },
   ];
 

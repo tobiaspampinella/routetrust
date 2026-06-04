@@ -129,7 +129,7 @@ export function AdminSettings() {
                     type="checkbox"
                     checked={draft.simulationMode}
                     onChange={(event) => setValue("simulationMode", event.target.checked)}
-                    className="h-5 w-5 rounded border-slate-300 text-sky-600"
+                    className="h-5 w-5 rounded border-slate-300 text-brand-600"
                   />
                 </label>
               </div>
@@ -174,7 +174,7 @@ function ToggleField({ label, value, onChange }: { label: string; value: boolean
           type="checkbox"
           checked={value}
           onChange={(event) => onChange(event.target.checked)}
-          className="h-5 w-5 rounded border-slate-300 text-sky-600"
+          className="h-5 w-5 rounded border-slate-300 text-brand-600"
         />
       </label>
     </div>

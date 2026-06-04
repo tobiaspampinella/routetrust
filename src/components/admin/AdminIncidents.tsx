@@ -119,7 +119,7 @@ export function AdminIncidents() {
 
   const kpis = [
     { label: "Abiertos", value: counts.open, tone: "text-[#1d1d1f]" },
-    { label: "En revisión", value: counts.in_review, tone: "text-blue-600" },
+    { label: "En revisión", value: counts.in_review, tone: "text-brand" },
     { label: "Resueltos", value: counts.resolved, tone: "text-emerald-600" },
     { label: "Alta · sin resolver", value: counts.high, tone: "text-red-600" },
   ];

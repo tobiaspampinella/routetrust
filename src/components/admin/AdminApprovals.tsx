@@ -71,7 +71,7 @@ export function AdminApprovals() {
     { label: "Pendientes", value: queue.length, tone: "text-[#1d1d1f]" },
     { label: "Aprobadas", value: approvedCount, tone: "text-emerald-600" },
     { label: "Rechazadas", value: rejectedCount, tone: "text-red-600" },
-    { label: "Decisiones registradas", value: auditLogs.length, tone: "text-blue-600" },
+    { label: "Decisiones registradas", value: auditLogs.length, tone: "text-brand" },
   ];
 
   return (
