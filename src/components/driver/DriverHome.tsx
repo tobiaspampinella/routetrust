@@ -33,7 +33,7 @@ export function DriverHome() {
     <DriverShell>
       <div className="space-y-5 p-5">
         <section className="rounded-3xl bg-[#0b0f14] p-6 text-white">
-          <p className="text-sm font-medium text-[#22d3ee]">Conductor</p>
+          <p className="text-sm font-medium text-[#19c37d]">Conductor</p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">{currentUser?.name}</h1>
           <div className="mt-5 flex items-center justify-between rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
             <div>
@@ -53,7 +53,7 @@ export function DriverHome() {
                     <p className="text-sm font-semibold text-slate-500">{route.zone} · {routeStateText}</p>
                     <p className="mt-1 text-3xl font-bold text-slate-950">{formatPercent(stats.progress)}</p>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-md bg-sky-50 text-sky-700">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-md bg-brand-50 text-brand-700">
                     <Route className="h-6 w-6" />
                   </div>
                 </div>

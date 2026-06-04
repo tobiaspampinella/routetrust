@@ -89,7 +89,7 @@ export function CustomerTrackingMap3D({
                 : stop.status === "delivered"
                   ? "bg-emerald-100 text-emerald-800"
                   : stop.kind === "current"
-                    ? "bg-sky-500 text-white"
+                    ? "bg-brand-600 text-white"
                     : "bg-white text-slate-700",
             )}
             style={{ left: `${stop.x}%`, top: `${stop.y}%` }}

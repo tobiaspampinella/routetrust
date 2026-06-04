@@ -93,7 +93,7 @@ export function DriverRoute() {
             <section className="rounded-3xl bg-[#0b0f14] p-6 text-white">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-medium text-[#22d3ee]">Ruta actual</p>
+                  <p className="text-sm font-medium text-[#19c37d]">Ruta actual</p>
                   <h1 className="mt-1 text-2xl font-semibold tracking-tight">{route.id}</h1>
                   <p className="mt-1 text-sm text-white/60">Estado operativo: {routeStateText}</p>
                 </div>
@@ -117,7 +117,7 @@ export function DriverRoute() {
                         <p className="text-sm font-semibold text-slate-500">Proxima parada</p>
                         <h2 className="mt-1 text-xl font-bold text-slate-950">{currentStop.customerName}</h2>
                         <p className="mt-2 flex items-start gap-2 text-sm text-slate-600">
-                          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-sky-700" />
+                          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" />
                           {currentStop.address}
                         </p>
                         <p className="mt-2 text-sm font-semibold text-slate-700">{currentStop.locality}</p>
@@ -162,7 +162,7 @@ export function DriverRoute() {
                   Iniciar ruta
                 </Button>
               ) : (
-                <div className="rounded-2xl bg-sky-50 px-4 py-3 text-center text-sm font-bold text-sky-900">
+                <div className="rounded-2xl bg-brand-50 px-4 py-3 text-center text-sm font-bold text-brand-700">
                   Ruta en curso. Usa las acciones de la parada actual.
                 </div>
               )}

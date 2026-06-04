@@ -118,7 +118,7 @@ export function AdminApprovals() {
                         </p>
                         <h3 className="mt-1 text-lg font-semibold text-[#1d1d1f]">Sugerencia de reasignación</h3>
                       </div>
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0b0f14] px-3 py-1 text-xs font-semibold text-[#22d3ee]">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0b0f14] px-3 py-1 text-xs font-semibold text-[#19c37d]">
                         <Sparkles className="h-3.5 w-3.5" />
                         AI propuesta
                       </span>

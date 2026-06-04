@@ -269,7 +269,7 @@ export function FleetTrackingMap({
             preserveViewport: false,
             suppressMarkers: true,
             polylineOptions: {
-              strokeColor: "#0a84ff",
+              strokeColor: "#10a37f",
               strokeOpacity: 0.92,
               strokeWeight: 6,
             },
@@ -313,7 +313,7 @@ export function FleetTrackingMap({
       const isCustomer = index === routeCoordinates.length - 2;
       return new google.maps.Marker({
         icon: {
-          fillColor: isCustomer ? "#10b981" : "#0a84ff",
+          fillColor: isCustomer ? "#10b981" : "#10a37f",
           fillOpacity: 1,
           path: "M 0,0 m -10,0 a 10,10 0 1,0 20,0 a 10,10 0 1,0 -20,0",
           scale: isCustomer ? 1.15 : 1,
@@ -430,7 +430,7 @@ export function FleetTrackingMap({
               </p>
             </div>
             <div className="rounded-2xl bg-[#eaf4ff] px-4 py-3 text-right">
-              <p className="text-[11px] font-bold uppercase text-[#0066cc]">Estado ruta</p>
+              <p className="text-[11px] font-bold uppercase text-[#10a37f]">Estado ruta</p>
               <p className="mt-1 text-sm font-black text-[#1d1d1f]">{routeHealth}</p>
             </div>
           </div>
@@ -449,7 +449,7 @@ export function FleetTrackingMap({
               <p className="text-[11px] font-black uppercase text-white/50">Siguientes 4 paradas</p>
               <p className="mt-1 text-sm font-semibold text-white/80">ETA, trafico y drop-off por ubicacion</p>
             </div>
-            <Route className="h-5 w-5 text-sky-300" />
+            <Route className="h-5 w-5 text-brand-100" />
           </div>
 
           <div className="mt-3 space-y-2">
@@ -474,7 +474,7 @@ export function FleetTrackingMap({
                   <div
                     className={cn(
                       "flex h-8 w-8 items-center justify-center rounded-full text-xs font-black",
-                      index === 0 ? "bg-sky-400 text-slate-950" : "bg-white/15 text-white",
+                      index === 0 ? "bg-brand-600 text-slate-950" : "bg-white/15 text-white",
                     )}
                   >
                     {index + 1}
@@ -556,7 +556,7 @@ function LocalFleetMap({
               key={demoStops[index]?.id ?? index}
               className={cn(
                 "absolute z-20 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-white text-[11px] font-black shadow-xl",
-                isCustomer ? "bg-emerald-500 text-white" : "bg-sky-500 text-white",
+                isCustomer ? "bg-emerald-500 text-white" : "bg-brand-600 text-white",
               )}
               style={{ left: `${point.x}%`, top: `${point.y}%` }}
             >

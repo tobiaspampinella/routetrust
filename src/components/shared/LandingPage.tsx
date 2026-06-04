@@ -170,7 +170,7 @@ export function LandingPage() {
         <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <Reveal>
-              <p className="text-sm font-semibold text-[#22d3ee]">Decision workflow</p>
+              <p className="text-sm font-semibold text-[#19c37d]">Decision workflow</p>
               <h2 className="mt-3 text-4xl font-semibold tracking-tight lg:text-5xl">AI suggests. Human approves.</h2>
               <p className="mt-5 text-lg leading-8 text-white/70">
                 RouteTrust never ships an automated decision blindly. The engine proposes the optimal route,
@@ -281,7 +281,7 @@ function ApprovalPreview() {
     <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur">
       <div className="flex items-center justify-between">
         <span className="text-sm font-semibold text-white/60">Route RT-22 · suggestion</span>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#22d3ee]/15 px-3 py-1 text-xs font-semibold text-[#22d3ee]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#19c37d]/15 px-3 py-1 text-xs font-semibold text-[#19c37d]">
           <Sparkles className="h-3.5 w-3.5" />
           AI proposed
         </span>

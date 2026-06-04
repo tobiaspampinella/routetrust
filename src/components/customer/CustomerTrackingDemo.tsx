@@ -107,7 +107,7 @@ export function CustomerTrackingDemo() {
               <div className="space-y-4 px-5 pb-6 pt-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs font-bold uppercase text-sky-700">{trackingCms.productName} Control Tower Lite</p>
+                    <p className="text-xs font-bold uppercase text-brand-700">{trackingCms.productName} Control Tower Lite</p>
                     <h1 className="mt-1 text-2xl font-black tracking-normal text-slate-950">{trackingCms.customerHeadline}</h1>
                     <p className="mt-2 text-sm text-slate-600">{trackingCms.customerSubheadline}</p>
                   </div>
@@ -120,7 +120,7 @@ export function CustomerTrackingDemo() {
                       <p className="text-xs font-bold uppercase text-slate-400">ETA actualizado</p>
                       <p className="mt-1 text-3xl font-black">{order ? projection.orderEtaWindow : "--:--"}</p>
                     </div>
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-500 text-white">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-600 text-white">
                       <Timer className="h-7 w-7" />
                     </div>
                   </div>
@@ -194,7 +194,7 @@ export function CustomerTrackingDemo() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <InfoCard title="Destino">
                     <div className="flex items-start gap-3 text-sm text-slate-600">
-                      <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-sky-700" />
+                      <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" />
                       <div>
                         <p className="font-black text-slate-950">{order.locality}</p>
                         <p className="mt-1">{order.address}</p>
@@ -207,7 +207,7 @@ export function CustomerTrackingDemo() {
 
                   <InfoCard title="Último evento">
                     <div className="space-y-3">
-                      <div className="flex items-start gap-3 rounded-2xl bg-sky-50 p-4 text-sm text-sky-900">
+                      <div className="flex items-start gap-3 rounded-2xl bg-brand-50 p-4 text-sm text-brand-700">
                         <Bell className="mt-0.5 h-5 w-5 shrink-0" />
                         <p className="font-semibold">{order.lastEvent ?? "ETA recalculado con datos operativos."}</p>
                       </div>
