@@ -233,3 +233,23 @@ CHECKS: npx prisma format pass; npx prisma validate pass; npx prisma generate pa
 BLOCKERS: Docker is not installed or not in PATH and no Postgres is reachable at 127.0.0.1:55432, so database_health and bug_reports_db_backed remain false until DB is started and migrations are applied.
 NEXT_STEP: Bring up Postgres at DATABASE_URL, run npx prisma migrate dev and npm run db:seed, then verify /api/health storageMode=db and rerun beta-check from port 3000.
 
+
+[TASK]
+ID: RT-ROUTEMAP-API-004
+OWNER: Codex GPT-5.5
+AGENT: Codex GPT-5.5
+ROLE: Backend/RouteMap API lane
+BRANCH: implementation/real-saas-core
+MODULE: RouteMap API
+STATUS: completed
+PRIORITY: P0.4
+OBJECTIVE: Finish the RouteMap API surface on implementation/real-saas-core so RouteTrust can connect to route map points, routes, health, and deterministic route metrics without external map keys.
+FILES_LOCKED:
+STARTED_AT: 2026-06-04T17:34:07.8108731-05:00
+EXPECTED_OUTPUT: API endpoints for RouteMap points/routes/health with validation, file-backed local persistence, deterministic ETA/distance calculations, tests, and passing build.
+ACCEPTANCE_CRITERIA: locks check passes; typecheck/lint/test/build pass; HTTP smoke for /api/map/health, /api/map/points, /api/map/routes passes; no external map provider or secret required.
+COMPLETED_AT: 2026-06-04T17:46:58-05:00
+ACTUAL_OUTPUT: Ported the RouteMap API surface onto implementation/real-saas-core; added health, point, and route endpoints; added GET-by-id point support; added deterministic route metrics, validation schemas, file-backed local persistence, and route-map unit coverage.
+CHECKS: npm run typecheck pass; npm run lint pass; npm test pass 24/24; npm run build pass with /api/map/* routes in the production manifest; HTTP smoke pass for /api/map/health, points CRUD, route create/read/update, and protected point delete 409; npm run qa:smoke pass; npm run qa:security pass; npm run export:public-demo pass with clean secret scan; npm run qa:e2e pass 12/12.
+BLOCKERS: npm run beta-check remains blocked by global SaaS readiness gates outside RouteMap: DB health/bug reports DB-backed are not green, and beta cannot be claimed while worktree/report churn is dirty during this task.
+NEXT_STEP: Connect RouteTrust UI/service consumers to /api/map/health, /api/map/points, and /api/map/routes, then move RouteMap persistence behind Prisma when DB mode is active.
